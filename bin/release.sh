@@ -18,5 +18,6 @@ echo " -> br.tar.gz"
 find . -type f -name "*.br" | tar -cf - --files-from - | gzip -9 > ../frontend.br.tar.gz
 
 echo " -> release"
+cd ..
 release_version="v$(jq -r '.version' ../package.json)"
-gh release create $release_version --generate-notes ../frontend.tar.gz ../frontend.br.tar.gz
+gh release create $release_version --generate-notes frontend.tar.gz frontend.br.tar.gz
