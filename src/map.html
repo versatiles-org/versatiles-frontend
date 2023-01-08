@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>map</title>
+	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+	<script src="assets/maplibre-gl/maplibre-gl.js"></script>
+	<link href="assets/maplibre-gl/maplibre-gl.css" rel="stylesheet" />
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+		}
+
+		#map {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 100%;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="map"></div>
+	<script>
+		start()
+		async function start() {
+
+			let map = new maplibregl.Map({
+				container: 'map',
+				bounds: [-180, -80, 180, 80],
+				style: await getStyle(window.location.href, '/static/styles/positron/style.json', '/tiles/stuttgart/meta.json')
+			});
+
+			async function getStyle(base_url, style_url, tiles_url) {
+				let [style, meta] = await Promise.all([
+					download('/static/styles/positron/style.json'),
+					download('/tiles/stuttgart/meta.json')
+				])
+
+				meta.type = 'vector';
+				meta.tiles = [absoluteUrl('/tiles/stuttgart/{z}/{y}/{x}')];
+
+				style.sprite = absoluteUrl(style.sprite);
+				style.glyphs = absoluteUrl(style.glyphs);
+				style.sources = { openmaptiles: meta };
+
+				async function download(url) {
+					let response = await fetch(url);
+					return await response.json();
+				}
+				function absoluteUrl(url) {
+					url = new URL(encodeURI(url), base_url);
+					return decodeURI(url.href);
+				}
+				return style;
+			}
+
+		}
+	</script>
+
+</body>
+
+</html>

@@ -1,0 +1,11 @@
+{
+  "name": "opencloudtiles-frontend",
+  "version": "0.0.1",
+  "description": "",
+  "scripts": {
+    "generate": "bin/generate.sh",
+    "release": "bin/release.sh"
+  },
+  "author": "Michael Kreil <github@michael-kreil.de> (https://github.com/MichaelKreil)",
+  "license": "MIT"
+}
