@@ -5,8 +5,8 @@
 	<meta charset="utf-8" />
 	<title>map</title>
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-	<script src="assets/maplibre-gl/maplibre-gl.js"></script>
-	<link href="assets/maplibre-gl/maplibre-gl.css" rel="stylesheet" />
+	<script src="assets/maplibre/maplibre-gl.js"></script>
+	<link href="assets/maplibre/maplibre-gl.css" rel="stylesheet" />
 	<style>
 		body {
 			margin: 0;
@@ -31,29 +31,36 @@
 			let map = new maplibregl.Map({
 				container: 'map',
 				bounds: [-180, -80, 180, 80],
-				style: await getStyle(window.location.href, '/static/styles/positron/style.json', '/tiles/stuttgart/meta.json')
+				style: await getStyle('assets/styles/default/style.json', '/tiles/2023-01-planet/'),
+				maxZoom: 14,
 			});
 
-			async function getStyle(base_url, style_url, tiles_url) {
+			async function getStyle(style_url, tiles_path) {
 				let [style, meta] = await Promise.all([
-					download('/static/styles/positron/style.json'),
-					download('/tiles/stuttgart/meta.json')
+					download(style_url),
+					download(tiles_path + 'meta.json')
 				])
 
 				meta.type = 'vector';
-				meta.tiles = [absoluteUrl('/tiles/stuttgart/{z}/{y}/{x}')];
+				meta.tiles = [absoluteUrl(tiles_path + '{z}/{y}/{x}')];
 
-				style.sprite = absoluteUrl(style.sprite);
-				style.glyphs = absoluteUrl(style.glyphs);
-				style.sources = { openmaptiles: meta };
+				style.sprite = absoluteUrl(style_url, style.sprite);
+				style.glyphs = absoluteUrl(style_url, style.glyphs);
+				style.sources = { opencloudtiles: meta };
+
+				console.log({ style });
+				console.log({ meta });
 
 				async function download(url) {
 					let response = await fetch(url);
 					return await response.json();
 				}
-				function absoluteUrl(url) {
-					url = new URL(encodeURI(url), base_url);
-					return decodeURI(url.href);
+				function absoluteUrl(...urls) {
+					let url = encodeURI(window.location.href);
+					while (urls.length > 0) {
+						url = (new URL(encodeURI(urls.shift()), url)).href;
+					}
+					return decodeURI(url);
 				}
 				return style;
 			}
