@@ -31,7 +31,7 @@
 			let map = new maplibregl.Map({
 				container: 'map',
 				bounds: [-180, -80, 180, 80],
-				style: await getStyle('assets/styles/default/style.json', '/tiles/2023-01-planet/'),
+				style: await getStyle('assets/styles/default/style.json', '/tiles/osm/'),
 				maxZoom: 14,
 			});
 
@@ -46,7 +46,7 @@
 
 				style.sprite = absoluteUrl(style_url, style.sprite);
 				style.glyphs = absoluteUrl(style_url, style.glyphs);
-				style.sources = { opencloudtiles: meta };
+				style.sources = { versatiles: meta };
 
 				console.log({ style });
 				console.log({ meta });

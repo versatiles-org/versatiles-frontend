@@ -11,11 +11,11 @@ cd dist/frontend/
 
 echo " -> add fonts"
 mkdir -p assets/fonts
-curl -L --no-progress-meter "https://github.com/OpenCloudTiles/opencloudtiles-fonts/releases/latest/download/fonts.tar.gz" | gzip -d | tar -xf - -C assets/fonts/
+curl -L --no-progress-meter "https://github.com/versatiles-org/versatiles-fonts/releases/latest/download/fonts.tar.gz" | gzip -d | tar -xf - -C assets/fonts/
 
 echo " -> add styles"
 mkdir -p assets/styles
-curl -L --no-progress-meter "https://github.com/OpenCloudTiles/opencloudtiles-styles/releases/latest/download/styles.tar.gz" | gzip -d | tar -xf - -C assets/styles/
+curl -L --no-progress-meter "https://github.com/versatiles-org/versatiles-styles/releases/latest/download/styles.tar.gz" | gzip -d | tar -xf - -C assets/styles/
 
 echo " -> add maplibre"
 mkdir -p assets/maplibre
