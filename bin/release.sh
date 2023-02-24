@@ -1,7 +1,6 @@
 #!/bin/bash
 cd "$(dirname "$0")"
-
-git push
+set -e
 
 cd ../dist/frontend
 
@@ -9,10 +8,10 @@ echo " -> list files"
 find . -type f -not -name ".*" > ../files.txt
 
 echo " -> tar.gz"
-pv ../files.txt | tar -cf - --files-from - | gzip -9 > ../frontend.tar.gz
+cat ../files.txt | tar -cf - --files-from - | gzip -9 > ../frontend.tar.gz
 
 echo " -> brotli compress"
-cat ../files.txt | shuf | parallel -n 16 --bar --eta "brotli -Zfj {}"
+cat ../files.txt | shuf | parallel -n 16 "brotli -Zfj {}"
 
 echo " -> br.tar.gz"
 find . -type f -name "*.br" | tar -cf - --files-from - | gzip -9 > ../frontend.br.tar.gz

@@ -1,7 +1,7 @@
 name: Release frontend
 on:
   release:
-    types: [published]
+    types: [created]
 
 jobs:
   release:
