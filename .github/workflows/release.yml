@@ -1,0 +1,26 @@
+name: Release frontend
+on:
+  release:
+    types: [published]
+
+jobs:
+  release:
+    name: Build and release
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: "Get release tag name"
+        run: "echo \"RELEASE_TAG=${GITHUB_REF#refs/tags/}\" >> $GITHUB_ENV"
+
+      - name: Get Repo
+        uses: actions/checkout@v3
+
+      - name: Generate glyphs
+        run: npm install; npm run generate
+
+      - name: Generate release file
+        run: npm run release
+
+      - name: Add file to release
+        run: gh release upload $RELEASE_TAG dist/frontend.tar.gz dist/frontend.br.tar.gz --clobber
