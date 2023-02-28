@@ -6,6 +6,7 @@
 	<title>map</title>
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 	<script src="assets/maplibre/maplibre-gl.js"></script>
+	<script src="assets/style_maker.js"></script>
 	<link href="assets/maplibre/maplibre-gl.css" rel="stylesheet" />
 	<style>
 		body {
@@ -28,43 +29,15 @@
 		start()
 		async function start() {
 
+			let style = await getStyle('assets/styles/default/style.json', '/tiles/osm/{z}/{y}/{x}');
+			console.log(style);
 			let map = new maplibregl.Map({
 				container: 'map',
 				bounds: [-180, -80, 180, 80],
-				style: await getStyle('assets/styles/default/style.json', '/tiles/osm/'),
-				maxZoom: 14,
+				style: style,
+				maxZoom: 18,
+				hash: true,
 			});
-
-			async function getStyle(style_url, tiles_path) {
-				let [style, meta] = await Promise.all([
-					download(style_url),
-					download(tiles_path + 'meta.json')
-				])
-
-				meta.type = 'vector';
-				meta.tiles = [absoluteUrl(tiles_path + '{z}/{y}/{x}')];
-
-				style.sprite = absoluteUrl(style_url, style.sprite);
-				style.glyphs = absoluteUrl(style_url, style.glyphs);
-				style.sources = { versatiles: meta };
-
-				console.log({ style });
-				console.log({ meta });
-
-				async function download(url) {
-					let response = await fetch(url);
-					return await response.json();
-				}
-				function absoluteUrl(...urls) {
-					let url = encodeURI(window.location.href);
-					while (urls.length > 0) {
-						url = (new URL(encodeURI(urls.shift()), url)).href;
-					}
-					return decodeURI(url);
-				}
-				return style;
-			}
-
 		}
 	</script>
 
