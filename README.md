@@ -16,7 +16,14 @@ npm run release
 You can use the release file e.g. like this:
 ```bash
 mkdir frontend
-curl -L "https://github.com/versatiles-org/versatiles-frontend/releases/latest/download/frontend.tar.gz" | gzip -d | tar -xf - -C ./frontend/
+wget "https://github.com/versatiles-org/versatiles-frontend/releases/latest/download/frontend.tar.gz"
+gzip -dc frontend.tar.gz | tar -xf - -C ./frontend/
+```
+
+Or you can use the release file in `versatiles serve`
+```bash
+curl -L "https://github.com/versatiles-org/versatiles-frontend/releases/latest/download/frontend.br.tar.gz" | gzip -d > ./frontend.br.tar
+versatiles serve -s ./frontend.br.tar "planet.versatiles"
 ```
 
 ## content
