@@ -28,8 +28,9 @@
 	<script>
 		start()
 		async function start() {
+			let url = (new URLSearchParams(window.location.search)).get('url') || '/tiles/osm/';
 
-			let style = await getStyle('assets/styles/default/style.json', '/tiles/osm/{z}/{y}/{x}');
+			let style = await getStyle('assets/styles/default/style.json', url + '{z}/{y}/{x}');
 			console.log(style);
 			let map = new maplibregl.Map({
 				container: 'map',

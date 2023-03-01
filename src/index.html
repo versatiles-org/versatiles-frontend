@@ -21,17 +21,31 @@
 
 		iframe {
 			width: 100%;
-			border: 1px solid rgba(0,0,0,0.2);
+			border: 1px solid rgba(0, 0, 0, 0.2);
 			height: 60vh;
-			box-shadow: 3px 3px 10px rgba(0,0,0,0.2);
+			box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
 			border-radius: 5px;
 		}
 	</style>
+	<script>
+		start()
+
+		async function start() {
+			let tile_sources = await (await fetch("/api/tiles.json")).json();
+			
+			let html = [];
+			for (let source of tile_sources) {
+				html.push(`<h1><a href="map.html?url=${source.url}">${source.url}</a></h1>`);
+				html.push(`<iframe src="map.html?url=${source.url}"></iframe>`);
+			}
+			document.getElementById("maps").innerHTML = html.join('\n');
+		}
+	</script>
 </head>
 
 <body>
-	<article>
-		<iframe src="map.html"></iframe>
+	<article id="maps">
+		<!--<iframe src="map.html"></iframe>-->
 	</article>
 </body>
 
