@@ -30,8 +30,8 @@
 		async function start() {
 			let url = (new URLSearchParams(window.location.search)).get('url') || '/tiles/osm/';
 
-			let style = await getStyle('assets/styles/default/style.json', url + '{z}/{y}/{x}');
-			console.log(style);
+			let style = await styleMaker('assets/styles/shortbread/style.json', url + '{z}/{y}/{x}', { grey: 1 });
+			
 			let map = new maplibregl.Map({
 				container: 'map',
 				bounds: [-180, -80, 180, 80],
