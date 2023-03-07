@@ -30,11 +30,11 @@ curl -L --no-progress-meter "https://github.com/versatiles-org/versatiles-styles
 echo " -> add maplibre"
 mkdir -p $assets/maplibre
 curl -L --no-progress-meter -o maplibre.zip https://github.com/maplibre/maplibre-gl-js/releases/latest/download/dist.zip
-unzip -q -d tmp maplibre.zip
-cp tmp/*.js $assets/maplibre/
-cp tmp/*.css $assets/maplibre/
-cp tmp/*.map $assets/maplibre/
-rm -r tmp
+unzip -q maplibre.zip
+mv dist/*.js $assets/maplibre/
+mv dist/*.css $assets/maplibre/
+mv dist/*.map $assets/maplibre/
+rm -r dist
 rm maplibre.zip
 
 echo " -> add frontend"
