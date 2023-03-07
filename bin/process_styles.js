@@ -2,7 +2,8 @@
 
 import process from 'node:process';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
+import { resolve } from 'node:path';
+import { minify } from 'uglify-js';
 
 
 let path = process.argv[2];
@@ -42,7 +43,7 @@ readdirSync(path).forEach(styleName => {
 	validateAndPatchStyle();
 	writeFileSync(resolve(stylePath, 'style.min.json'), JSON.stringify(style));
 	writeFileSync(resolve(stylePath, 'style.json'), JSON.stringify(style, null, '\t'));
-	saveWrapped(resolve(stylePath, 'style.js'))
+	saveWrapped();
 
 
 
@@ -103,8 +104,19 @@ readdirSync(path).forEach(styleName => {
 		}
 	}
 
-	function saveWrapped(filename) {
+	function saveWrapped() {
+		let code = [
+			`const style = ${JSON.stringify(style, null, '\t')};`
+		];
+		code = code.join('\n');
+		code = `function getStyle(opt) {\n${code};\nreturn style;\n}`;
+
+		writeFileSync(resolve(stylePath, 'style.js'), code, 'utf8');
+
+		let result = minify(code);
+		if (result.error) console.error();
+		code = result.code;
 		
-		// use https://www.npmjs.com/package/colord
+		writeFileSync(resolve(stylePath, 'style.min.js'), code, 'utf8');
 	}
 })

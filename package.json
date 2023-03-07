@@ -8,5 +8,8 @@
   },
   "type": "module",
   "author": "Michael Kreil <github@michael-kreil.de> (https://github.com/MichaelKreil)",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "uglify-js": "^3.17.4"
+  }
 }
