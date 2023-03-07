@@ -6,14 +6,14 @@ function make_style(tileSource, options) {
 			.invert: false
 			.tint: 0
 			.tintColor: '#fff'
-			.labels : true
-			.symbols: true
+			.hideLabels: false
+			.hideSymbols: false
 	*/
 
 	let style = $STYLE;
 
-	style.sprite = absoluteUrl(style.sprite);
-	style.glyphs = absoluteUrl(style.glyphs);
+	if (style.sprites) style.sprites = absoluteUrl(style.sprites);
+	if (style.glyphs) style.glyphs = absoluteUrl(style.glyphs);
 	Object.values(style.sources).forEach(source => source.tiles = [absoluteUrl(tileSource)]);
 
 	if (options) patchLayers(style.layers);
@@ -61,8 +61,8 @@ function make_style(tileSource, options) {
 				if (layer.paint[key]) layer.paint[key] = fixColorValue(layer.paint[key]);
 			})
 			if (layer.layout) {
-				if (!options.labels) delete layer.layout['text-field'];
-				if (!options.symbols) delete layer.layout['icon-image'];
+				if (options.hideLabels) delete layer.layout['text-field'];
+				if (options.hideSymbols) delete layer.layout['icon-image'];
 			}
 		})
 
@@ -73,19 +73,33 @@ function make_style(tileSource, options) {
 		}
 
 		function parseColor(text) {
-			if (/^#[0-9a-f]{6}$/i.test(text)) {
+			text = text.replace(/\s+/g, '').toLowerCase();
+			let match;
+
+			if (match = text.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/)) {
 				return [
-					parseInt(text.slice(1, 3), 16),
-					parseInt(text.slice(3, 5), 16),
-					parseInt(text.slice(5, 7), 16)
-				];
+					parseInt(match[1], 16),
+					parseInt(match[2], 16),
+					parseInt(match[3], 16),
+					1
+				]
 			}
 
-			if (/^#[0-9a-f]{3}$/i.test(text)) {
+			if (match = text.match(/^#([0-9a-f])([0-9a-f])([0-9a-f])$/)) {
 				return [
-					parseInt(text.slice(1, 2), 16) * 17,
-					parseInt(text.slice(2, 3), 16) * 17,
-					parseInt(text.slice(3, 4), 16) * 17
+					parseInt(match[1], 16) * 17,
+					parseInt(match[2], 16) * 17,
+					parseInt(match[3], 16) * 17,
+					1
+				]
+			}
+
+			if (match = text.match(/^rgba\(([0-9.]+),([0-9.]+),([0-9.]+),([0-9.]+)\)$/)) {
+				return [
+					parseFloat(match[1]),
+					parseFloat(match[2]),
+					parseFloat(match[3]),
+					parseFloat(match[4])
 				]
 			}
 
@@ -93,7 +107,7 @@ function make_style(tileSource, options) {
 		}
 
 		function repairColor(color) {
-			let [r, g, b] = parseColor(color);
+			let [r, g, b, a] = parseColor(color);
 
 			if (options.grey) {
 				let m = options.grey * (r * 0.299 + g * 0.587 + b * 0.114);
@@ -116,9 +130,13 @@ function make_style(tileSource, options) {
 				b = b * (1 - options.tint) + options.tint * options.tintColor[2];
 			}
 
-			let result = '#' + [r, g, b].map(v => ('00' + Math.round(Math.min(255, Math.max(0, v))).toString(16)).slice(-2)).join('');
-			
-			return result;
+			color = [r, g, b].map(v => Math.round(Math.min(255, Math.max(0, v))));
+
+			if (a === 1) {
+				return '#' + color.map(v => ('00' + Math.round(v).toString(16)).slice(-2)).join('');
+			} else {
+				return 'rgba(' + color.join(',') + ',' + a.toFixed(3) + ')';
+			}
 		}
 	}
 }

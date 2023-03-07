@@ -31,10 +31,16 @@
 			let tilesUrl = (new URLSearchParams(window.location.search)).get('url') || '/tiles/osm/';
 			tilesUrl += '{z}/{y}/{x}';
 
+			let style = make_style(tilesUrl, {
+				//mgrey:1,
+				//mhideLabels: true,
+				//mhideSymbols: true,
+			});
+
 			let map = new maplibregl.Map({
 				container: 'map',
 				bounds: [-180, -80, 180, 80],
-				style: make_style(tilesUrl, { grey: 1 }),
+				style: style,
 				maxZoom: 18,
 				hash: true,
 			});
