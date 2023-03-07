@@ -26,10 +26,10 @@ readdirSync(fontsPath).forEach(subFolder => {
 
 
 
-readdirSync(path).forEach(subFolder => {
-	if (subFolder.startsWith('.')) return;
+readdirSync(path).forEach(styleName => {
+	if (styleName.startsWith('.')) return;
 
-	let stylePath = resolve(path, subFolder);
+	let stylePath = resolve(path, styleName);
 	let styleFilename = resolve(stylePath, 'style.json');
 	if (!existsSync(styleFilename)) {
 		console.error(`ERROR - style "${styleFilename}" not found`);
@@ -37,7 +37,7 @@ readdirSync(path).forEach(subFolder => {
 	}
 
 	let style = JSON.parse(readFileSync(styleFilename, 'utf8'));
-	console.log('process', subFolder);
+	console.log('process', styleName);
 
 	validateAndPatchStyle();
 	writeFileSync(resolve(stylePath, 'style.min.json'), JSON.stringify(style));
@@ -47,32 +47,27 @@ readdirSync(path).forEach(subFolder => {
 
 
 	function validateAndPatchStyle() {
+		fixMeta();
+		fixTileSource();
+		fixSprites();
+		fixGlyphs();
 
-		checkMeta();
-		fixPaths();
-		fixFontNames();
-		checkSprites();
-
-		function checkMeta() {
+		function fixMeta() {
 			if (style.metadata.license !== 'https://creativecommons.org/publicdomain/zero/1.0/') throw Error();
 		}
 
-		function fixPaths() {
-			// don't reference glyphs
-			delete style.glyphs;
-
+		function fixTileSource() {
 			// don't reference tile source
 			Object.values(style.sources).forEach(source => {
 				delete source.tiles;
 			})
-
-			if (style.sprites) style.sprites = './sprite';
 		}
 
-		function checkSprites() {
+		function fixSprites() {
 			let knownSprites = new Set();
 			if (style.sprites) {
-				let sprites = JSON.parse(readFileSync(resolve(stylePath, style.sprites + '.json'), 'utf8'));
+				style.sprites = `/assets/styles/${styleName}/sprite`;
+				let sprites = JSON.parse(readFileSync(resolve(stylePath, 'sprite.json'), 'utf8'));
 				Object.keys(sprites).forEach(name => knownSprites.add(name));
 			}
 
@@ -86,7 +81,9 @@ readdirSync(path).forEach(subFolder => {
 			})
 		}
 
-		function fixFontNames() {
+		function fixGlyphs() {
+			style.glyphs = '/assets/fonts/{fontstack}/{range}.pbf'
+
 			style.layers.forEach(layer => {
 				if (!layer.layout) return;
 				if (!layer.layout['text-font']) return;
@@ -107,88 +104,7 @@ readdirSync(path).forEach(subFolder => {
 	}
 
 	function saveWrapped(filename) {
+		
 		// use https://www.npmjs.com/package/colord
 	}
 })
-
-
-/*
-
-
-
-
-// -------------------------------------------------------------------------------------
-
-
-
-async function validateStyle(style, path) {
-	let knownFontNames = readFileSync(resolve(__dirname, '../src/known_fonts.txt'), 'utf8');
-	knownFontNames = knownFontNames.split('\n').map(f => f.replace(/[^a-z_]+/g, '')).filter(f => f.length > 2);
-	knownFontNames = new Set(knownFontNames);
-
-	checkMeta();
-	fixPaths();
-	fixFontNames();
-	checkSprites();
-
-	async function checkMeta() {
-		if (style.metadata.license !== 'https://creativecommons.org/publicdomain/zero/1.0/') throw Error();
-	}
-
-	function fixPaths() {
-		// don't reference glyphs
-		delete style.glyphs;
-
-		// don't reference tile source
-		Object.values(style.sources).forEach(source => {
-			delete source.tiles;
-		})
-
-		if (style.sprites) style.sprites = './sprite';
-	}
-
-	function checkSprites() {
-		let knownSprites = new Set();
-		if (style.sprites) {
-			let sprites = JSON.parse(readFileSync(resolve(path, style.sprites + '.json'), 'utf8'));
-			Object.keys(sprites).forEach(name => knownSprites.add(name));
-		}
-
-		let attributes = 'background-pattern,fill-extrusion-pattern,fill-pattern,icon-image,line-pattern'.split(',');
-		style.layers.forEach(layer => {
-			if (!layer.paint) return;
-			attributes.forEach(attribute => {
-				if (!layer.paint[attribute]) return;
-				throw Error('implement "resolvedImage" checking');
-			})
-		})
-	}
-
-	function fixFontNames() {
-		style.layers.forEach(layer => {
-			if (!layer.layout) return;
-			if (!layer.layout['text-font']) return;
-
-			let list = layer.layout['text-font'];
-			if (!Array.isArray(list)) throw Error('must be an array');
-			for (let i = 0; i < list.length; i++) {
-				if (typeof list[i] !== 'string') throw Error('must be an array of strings');
-
-				list[i] = list[i].toLowerCase().replace(/\s+/g, '_');
-
-				if (!knownFontNames.has(list[i])) {
-					throw Error(`unknown font name "${list[i]}"`)
-				}
-			}
-		})
-	}
-}
-
-function saveMinified(style, filename) {
-	writeFileSync(filename, JSON.stringify(style), 'utf8');
-}
-
-function saveWrapped() {
-	// use https://www.npmjs.com/package/colord
-}
-*/
