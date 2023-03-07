@@ -12,8 +12,8 @@ function make_style(tileSource, options) {
 
 	let style = $STYLE;
 
-	style.sprite = absoluteUrl(styleUrl, style.sprite);
-	style.glyphs = absoluteUrl(styleUrl, style.glyphs);
+	style.sprite = absoluteUrl(style.sprite);
+	style.glyphs = absoluteUrl(style.glyphs);
 	Object.values(style.sources).forEach(source => source.tiles = [absoluteUrl(tileSource)]);
 
 	if (options) patchLayers(style.layers);
@@ -29,9 +29,9 @@ function make_style(tileSource, options) {
 
 	return style;
 
-	function patchLayers(layers, options) {
-		if (options.grey) options.grey = Math.min(1, Math.max(0, grey));
-		if (options.tint) options.tint = Math.min(1, Math.max(0, tint));
+	function patchLayers(layers) {
+		if (options.grey) options.grey = Math.min(1, Math.max(0, options.grey));
+		if (options.tint) options.tint = Math.min(1, Math.max(0, options.tint));
 		if (options.tintColor) options.tintColor = parseColor(options.tintColor);
 
 		let paintColorKeys = [
@@ -61,8 +61,8 @@ function make_style(tileSource, options) {
 				if (layer.paint[key]) layer.paint[key] = fixColorValue(layer.paint[key]);
 			})
 			if (layer.layout) {
-				if (!labels) delete layer.layout['text-field'];
-				if (!symbols) delete layer.layout['icon-image'];
+				if (!options.labels) delete layer.layout['text-field'];
+				if (!options.symbols) delete layer.layout['icon-image'];
 			}
 		})
 
@@ -96,8 +96,8 @@ function make_style(tileSource, options) {
 			let [r, g, b] = parseColor(color);
 
 			if (options.grey) {
-				let m = opt.grey * (r * 0.299 + g * 0.587 + b * 0.114);
-				let f = 1 - opt.grey;
+				let m = options.grey * (r * 0.299 + g * 0.587 + b * 0.114);
+				let f = 1 - options.grey;
 				r = r * f + m;
 				g = g * f + m;
 				b = b * f + m;
