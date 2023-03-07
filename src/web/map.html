@@ -6,8 +6,8 @@
 	<title>map</title>
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 	<script src="assets/maplibre/maplibre-gl.js"></script>
-	<script src="assets/style_maker.js"></script>
 	<link href="assets/maplibre/maplibre-gl.css" rel="stylesheet" />
+	<script src="assets/styles/shortbread/style.js"></script>
 	<style>
 		body {
 			margin: 0;
@@ -28,14 +28,13 @@
 	<script>
 		start()
 		async function start() {
-			let url = (new URLSearchParams(window.location.search)).get('url') || '/tiles/osm/';
+			let tilesUrl = (new URLSearchParams(window.location.search)).get('url') || '/tiles/osm/';
+			tilesUrl += '{z}/{y}/{x}';
 
-			let style = await styleMaker('assets/styles/shortbread/style.json', url + '{z}/{y}/{x}', { grey: 1 });
-			
 			let map = new maplibregl.Map({
 				container: 'map',
 				bounds: [-180, -80, 180, 80],
-				style: style,
+				style: make_style(tilesUrl, { grey: 1 }),
 				maxZoom: 18,
 				hash: true,
 			});
