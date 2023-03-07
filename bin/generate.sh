@@ -38,4 +38,4 @@ rm -r tmp
 rm maplibre.zip
 
 echo " -> add frontend"
-cp -r ../src/* frontend/
+cp -r ../src/web/* frontend/

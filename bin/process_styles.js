@@ -2,8 +2,12 @@
 
 import process from 'node:process';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { dirname, resolve } from 'node:path';
 import { minify } from 'uglify-js';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+
 
 
 let path = process.argv[2];
@@ -105,11 +109,8 @@ readdirSync(path).forEach(styleName => {
 	}
 
 	function saveWrapped() {
-		let code = [
-			`const style = ${JSON.stringify(style, null, '\t')};`
-		];
-		code = code.join('\n');
-		code = `function getStyle(opt) {\n${code};\nreturn style;\n}`;
+		let code = readFileSync(resolve(__dirname, '../src/snippets/style_maker.js'), 'utf8');
+		code = code.replace('$STYLE', JSON.stringify(style, null, '\t'));
 
 		writeFileSync(resolve(stylePath, 'style.js'), code, 'utf8');
 
