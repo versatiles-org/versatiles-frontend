@@ -13,5 +13,5 @@ cat ../files.txt | tar -cf - --files-from - | gzip -9 > ../frontend.tar.gz
 echo " -> brotli compress"
 cat ../files.txt | shuf | parallel -n 16 "brotli -Zfj {}"
 
-echo " -> br.tar.gz"
-find . -type f -name "*.br" | tar -cf - --files-from - | gzip -9 > ../frontend.br.tar.gz
+echo " -> br.tar"
+find . -type f -name "*.br" | tar -cf - --files-from - > ../frontend.br.tar

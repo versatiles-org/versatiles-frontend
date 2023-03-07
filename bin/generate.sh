@@ -5,7 +5,7 @@ set -e
 cd ..
 
 echo " -> prepare folders"
-rm -rf dist || true
+rm -r dist || true
 mkdir dist
 cd dist
 
