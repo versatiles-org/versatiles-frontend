@@ -46,17 +46,17 @@
 		start()
 		async function start() {
 			let tilesUrl = (new URLSearchParams(window.location.search)).get('url') || '/tiles/osm/';
+			tilesUrl += '{z}/{y}/{x}';
 
-			let style = await loadStyle('shortbread', tilesUrl + '{z}/{y}/{x}', {
-				//mgrey:1,
-				//mhideLabels: true,
-				//mhideSymbols: true,
-			});
+			const styleNames = 'shortbread,neutrino,eclipse'.split(',');
+			const loadedStyles = {};
+
+			loadedStyles.shortbread = await loadStyle('shortbread', tilesUrl, {});
 
 			let map = new maplibregl.Map({
 				container: 'map',
 				bounds: [-180, -80, 180, 80],
-				style,
+				style: loadedStyles.shortbread,
 				maxZoom: 18,
 				hash: true,
 			});
@@ -64,7 +64,6 @@
 			addStyleControl();
 
 			function addStyleControl() {
-				const styleNames = 'shortbread,neutrino,eclipse'.split(',');
 
 				function addNode(tagName, properties, parent) {
 					let node = document.createElement(tagName);
@@ -95,7 +94,7 @@
 
 						let elements = {};
 						let table = addNode('table', { id: 'csc_table' }, this._container);
-						addRow('style', 'Style', 'select', {}, styleNames.map(n => `<option value="${n}">${n}</option>`).join(''))
+						addRow('style_name', 'Style', 'select', {}, styleNames.map(n => `<option value="${n}">${n}</option>`).join(''))
 						addRow('grey', 'grey', 'input', { type: 'range', value: 0, min: 0, max: 100 });
 						addRow('invert', 'invert', 'input', { type: 'checkbox' });
 						addRow('fade', 'fade', 'input', { type: 'range', value: 0, min: 0, max: 100 });
@@ -119,17 +118,39 @@
 							input.addEventListener('input', handleChange);
 						}
 
-						function handleChange() {
-							let style = elements.style.value;
-							let grey = elements.grey.valueAsNumber;
-							let invert = elements.invert.checked;
-							let fade = elements.fade.valueAsNumber;
-							let fade_color = elements.fade_color.value;
-							let tint = elements.tint.valueAsNumber;
-							let tint_color = elements.tint_color.value;
-							let hide_labels = elements.hide_labels.checked;
-							let hide_symbols = elements.hide_symbols.checked;
-							console.log({ style, grey, invert, fade, fade_color, tint, tint_color, hide_labels, hide_symbols })
+						async function handleChange() {
+							let styleName = elements.style_name.value;
+							let options = {
+								grey: elements.grey.valueAsNumber / 100,
+								invert: elements.invert.checked,
+								fade: elements.fade.valueAsNumber / 100,
+								fadeColor: elements.fade_color.value,
+								tint: elements.tint.valueAsNumber / 100,
+								tintColor: elements.tint_color.value,
+								hideLabels: elements.hide_labels.checked,
+								hideSymbols: elements.hide_symbols.checked,
+							}
+
+							if (!loadedStyles[styleName]) {
+								loadedStyles[styleName] = await (await fetch('/assets/styles/' + styleName + '/style.min.json')).json();
+							}
+
+							let style = deepClone(loadedStyles[styleName]);
+							style = makeStyle(style, tilesUrl, options);
+
+							console.log(options);
+
+							map.setStyle(style);
+
+							function deepClone(obj) {
+								if (typeof obj !== 'object') return obj;
+								if (Array.isArray(obj)) return obj.map(deepClone);
+								let clone = {};
+								for (let [key, val] of Object.entries(obj)) {
+									clone[key] = deepClone(val);
+								}
+								return clone;
+							}
 						}
 
 						return this._container;

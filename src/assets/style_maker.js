@@ -3,10 +3,12 @@
 	options default values
 		.grey: 0
 		.invert: false
+		.hueRotate: 0
 		.fade: 0
 		.fadeColor: '#fff'
 		.tint: 0
 		.tintColor: '#f00'
+		.gamma: 0
 		.hideLabels: false
 		.hideSymbols: false
 */
@@ -131,10 +133,9 @@ function makeStyle(style, tileSource, options) {
 			}
 
 			if (options.invert) {
-				let m = 255 - Math.max(r, g, b) - Math.min(r, g, b);
-				r += m;
-				g += m;
-				b += m;
+				r = 255-r;
+				g = 255-g;
+				b = 255-b;
 			}
 
 			if (options.fade) {
@@ -144,14 +145,12 @@ function makeStyle(style, tileSource, options) {
 			}
 
 			if (options.tint) {
-				let c = rgbToHsv(r, g, b);
-				let t = rgbToHsv(options.tintColor);
-				c[0] = t[0];
-				c[1] *= t[1] / 100;
-				c = hsvToRgb(c);
-				r = c[0];
-				g = c[1];
-				b = c[2];
+				let c1 = rgbToHsv(r, g, b);
+				let c2 = rgbToHsv(...options.tintColor);
+				let c4 = hsvToRgb(c2[0], c2[1] * c1[1] / 100, c1[2]);
+				r = r * (1 - options.tint) + c4[0] * options.tint;
+				g = g * (1 - options.tint) + c4[1] * options.tint;
+				b = b * (1 - options.tint) + c4[2] * options.tint;
 			}
 
 			color = [r, g, b].map(v => Math.round(Math.min(255, Math.max(0, v))));
