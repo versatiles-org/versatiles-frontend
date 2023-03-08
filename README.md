@@ -11,7 +11,7 @@ npm run release
 ```
 
 - Generates a `dist/frontend.tar.gz` with all files.
-- Generates also `dist/frontend.br.tar.gz` where all files are precompressed with brotli.
+- Generates also `dist/frontend.br.tar` where all files are precompressed with brotli.
 
 You can use the release file e.g. like this:
 ```bash
@@ -22,7 +22,7 @@ gzip -dc frontend.tar.gz | tar -xf - -C ./frontend/
 
 Or you can use the release file in `versatiles serve`
 ```bash
-curl -L "https://github.com/versatiles-org/versatiles-frontend/releases/latest/download/frontend.br.tar.gz" | gzip -d > ./frontend.br.tar
+curl -L "https://github.com/versatiles-org/versatiles-frontend/releases/latest/download/frontend.br.tar" > ./frontend.br.tar
 versatiles serve -s ./frontend.br.tar "planet.versatiles"
 ```
 
