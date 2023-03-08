@@ -5,7 +5,7 @@ set -e
 cd ..
 
 echo " -> prepare folders"
-rm -r dist || true
+rm -rf dist || true
 mkdir dist
 cd dist
 
@@ -38,4 +38,4 @@ rm -r dist
 rm maplibre.zip
 
 echo " -> add frontend"
-cp -r ../src/web/* frontend/
+cp -r ../src/* frontend/

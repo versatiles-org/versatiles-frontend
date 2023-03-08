@@ -47,7 +47,6 @@ readdirSync(path).forEach(styleName => {
 	validateAndPatchStyle();
 	writeFileSync(resolve(stylePath, 'style.min.json'), JSON.stringify(style));
 	writeFileSync(resolve(stylePath, 'style.json'), JSON.stringify(style, null, '\t'));
-	saveWrapped();
 
 
 
@@ -107,18 +106,5 @@ readdirSync(path).forEach(styleName => {
 				}
 			})
 		}
-	}
-
-	function saveWrapped() {
-		let code = readFileSync(resolve(__dirname, '../src/snippets/style_maker.js'), 'utf8');
-		code = code.replace('$STYLE', JSON.stringify(style, null, '\t'));
-
-		writeFileSync(resolve(stylePath, 'style.js'), code, 'utf8');
-
-		let result = minify(code);
-		if (result.error) console.error();
-		code = result.code;
-		
-		writeFileSync(resolve(stylePath, 'style.min.js'), code, 'utf8');
 	}
 })
