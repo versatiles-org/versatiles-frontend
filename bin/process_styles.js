@@ -65,6 +65,7 @@ readdirSync(path).forEach(styleName => {
 			// don't reference tile source
 			Object.values(style.sources).forEach(source => {
 				delete source.tiles;
+				source.attribution = '<a href="https://www.openstreetmap.org/copyright/de">© OpenStreetMap</a>'
 			})
 		}
 
