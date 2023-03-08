@@ -20,6 +20,23 @@
 			bottom: 0;
 			width: 100%;
 		}
+
+		#csc_table,
+		#csc_table input,
+		#csc_table select {
+			font-size: 10px;
+			border-spacing: 0px;
+			line-height: 1.1em;
+		}
+
+		#csc_table td:first-child {
+			text-align: right;
+			padding-right: 3px;
+		}
+
+		#csc_table input[type="range"] {
+			width: 50px;
+		}
 	</style>
 </head>
 
@@ -39,10 +56,93 @@
 			let map = new maplibregl.Map({
 				container: 'map',
 				bounds: [-180, -80, 180, 80],
-				style: style,
+				style,
 				maxZoom: 18,
 				hash: true,
 			});
+
+			addStyleControl();
+
+			function addStyleControl() {
+				const styleNames = 'shortbread,neutrino,eclipse'.split(',');
+
+				function addNode(tagName, properties, parent) {
+					let node = document.createElement(tagName);
+					for (let [key, value] of Object.entries(properties)) {
+						if (key === 'style') {
+							for (let [styleKey, styleValue] of Object.entries(value)) {
+								node.style[styleKey] = styleValue
+							}
+							continue;
+						}
+						node[key] = value;
+					}
+					if (parent) parent.appendChild(node);
+					return node;
+				}
+
+				class StyleControl {
+					onAdd(map) {
+						this._map = map;
+						this._container = addNode('div', {
+							className: 'maplibregl-ctrl', style: {
+								backgroundColor: '#fff',
+								borderRadius: '4px',
+								padding: '6px',
+								boxShadow: '0 0 0 2px rgba(0,0,0,.1)'
+							}
+						});
+
+						let elements = {};
+						let table = addNode('table', { id: 'csc_table' }, this._container);
+						addRow('style', 'Style', 'select', {}, styleNames.map(n => `<option value="${n}">${n}</option>`).join(''))
+						addRow('grey', 'grey', 'input', { type: 'range', value: 0, min: 0, max: 100 });
+						addRow('invert', 'invert', 'input', { type: 'checkbox' });
+						addRow('fade', 'fade', 'input', { type: 'range', value: 0, min: 0, max: 100 });
+						addRow('fade_color', 'fade color', 'input', { type: 'text', size: 8, value: '#fff' });
+						addRow('tint', 'tint', 'input', { type: 'range', value: 0, min: 0, max: 100 });
+						addRow('tint_color', 'tint color', 'input', { type: 'text', size: 8, value: '#f00' });
+						addRow('hide_labels', 'hide labels', 'input', { type: 'checkbox' });
+						addRow('hide_symbols', 'hide symbols', 'input', { type: 'checkbox' });
+
+						function addRow(name, label, tagName, properties, innerHTML) {
+							let id = 'cdc_' + name;
+							properties.id = id;
+							let row = addNode('tr', {}, table);
+							let cell1 = addNode('td', {}, row);
+							let cell2 = addNode('td', {}, row);
+							let input = addNode(tagName, properties, cell1);
+							if (innerHTML) input.innerHTML = innerHTML;
+							addNode('label', { for: id }, cell2).innerHTML = label;
+
+							elements[name] = input;
+							input.addEventListener('input', handleChange);
+						}
+
+						function handleChange() {
+							let style = elements.style.value;
+							let grey = elements.grey.valueAsNumber;
+							let invert = elements.invert.checked;
+							let fade = elements.fade.valueAsNumber;
+							let fade_color = elements.fade_color.value;
+							let tint = elements.tint.valueAsNumber;
+							let tint_color = elements.tint_color.value;
+							let hide_labels = elements.hide_labels.checked;
+							let hide_symbols = elements.hide_symbols.checked;
+							console.log({ style, grey, invert, fade, fade_color, tint, tint_color, hide_labels, hide_symbols })
+						}
+
+						return this._container;
+					}
+
+					onRemove() {
+						this._container.parentNode.removeChild(this._container);
+						this._map = undefined;
+					}
+				}
+				let styleControl = new StyleControl();
+				map.addControl(styleControl, 'top-right');
+			}
 		}
 	</script>
 

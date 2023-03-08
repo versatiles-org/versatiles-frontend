@@ -3,8 +3,10 @@
 	options default values
 		.grey: 0
 		.invert: false
+		.fade: 0
+		.fadeColor: '#fff'
 		.tint: 0
-		.tintColor: '#fff'
+		.tintColor: '#f00'
 		.hideLabels: false
 		.hideSymbols: false
 */
@@ -12,7 +14,7 @@
 async function loadStyle(styleName, tileSource, options) {
 	if (!styleName) throw Error('loadStyle needs a style name');
 
-	let style = await (await fetch('/assets/styles/'+styleName+'/style.min.json')).json();
+	let style = await (await fetch('/assets/styles/' + styleName + '/style.min.json')).json();
 	return makeStyle(style, tileSource, options)
 }
 
@@ -24,7 +26,7 @@ function makeStyle(style, tileSource, options) {
 	if (style.glyphs) style.glyphs = absoluteUrl(style.glyphs);
 	Object.values(style.sources).forEach(source => source.tiles = [absoluteUrl(tileSource)]);
 
-	if (options) patchLayers(style.layers);
+	if (options) patchLayers(style.layers, options);
 
 	function absoluteUrl(...urls) {
 		// use encodeURI/decodeURI to handle curly brackets in path templates
@@ -37,12 +39,15 @@ function makeStyle(style, tileSource, options) {
 
 	return style;
 
-	function patchLayers(layers) {
+	function patchLayers(layers, options) {
 		if (options.grey) options.grey = Math.min(1, Math.max(0, options.grey));
+		if (options.fade) options.fade = Math.min(1, Math.max(0, options.fade));
 		if (options.tint) options.tint = Math.min(1, Math.max(0, options.tint));
-		if (options.tintColor) options.tintColor = parseColor(options.tintColor);
 
-		let paintColorKeys = [
+		options.fadeColor = parseColor(options.fadeColor || '#fff');
+		options.tintColor = parseColor(options.tintColor || '#f00');
+
+		const paintColorKeys = [
 			'background-color',
 			'circle-color',
 			'circle-stroke-color',
@@ -132,10 +137,21 @@ function makeStyle(style, tileSource, options) {
 				b += m;
 			}
 
+			if (options.fade) {
+				r = r * (1 - options.fade) + options.fade * options.fadeColor[0];
+				g = g * (1 - options.fade) + options.fade * options.fadeColor[1];
+				b = b * (1 - options.fade) + options.fade * options.fadeColor[2];
+			}
+
 			if (options.tint) {
-				r = r * (1 - options.tint) + options.tint * options.tintColor[0];
-				g = g * (1 - options.tint) + options.tint * options.tintColor[1];
-				b = b * (1 - options.tint) + options.tint * options.tintColor[2];
+				let c = rgbToHsv(r, g, b);
+				let t = rgbToHsv(options.tintColor);
+				c[0] = t[0];
+				c[1] *= t[1] / 100;
+				c = hsvToRgb(c);
+				r = c[0];
+				g = c[1];
+				b = c[2];
 			}
 
 			color = [r, g, b].map(v => Math.round(Math.min(255, Math.max(0, v))));
@@ -145,6 +161,43 @@ function makeStyle(style, tileSource, options) {
 			} else {
 				return 'rgba(' + color.join(',') + ',' + a.toFixed(3) + ')';
 			}
+		}
+
+		function rgbToHsv(r, g, b) {
+			const max = Math.max(r, g, b);
+			const delta = max - Math.min(r, g, b);
+
+			const hh = delta
+				? max === r
+					? (g - b) / delta
+					: max === g
+						? 2 + (b - r) / delta
+						: 4 + (r - g) / delta
+				: 0;
+
+			return [
+				60 * (hh < 0 ? hh + 6 : hh),
+				max ? (delta / max) * 100 : 0,
+				(max / 255) * 100
+			]
+		}
+
+		function hsvToRgb(h, s, v) {
+			h = (h / 360) * 6;
+			s = s / 100;
+			v = v / 100;
+
+			const hh = Math.floor(h),
+				b = v * (1 - s),
+				c = v * (1 - (h - hh) * s),
+				d = v * (1 - (1 - h + hh) * s),
+				module = hh % 6;
+
+			return [
+				[v, c, b, b, d, v][module] * 255,
+				[d, v, v, c, b, b][module] * 255,
+				[b, b, d, v, v, c][module] * 255
+			]
 		}
 	}
 }
