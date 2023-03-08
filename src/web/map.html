@@ -7,7 +7,7 @@
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 	<script src="assets/maplibre/maplibre-gl.js"></script>
 	<link href="assets/maplibre/maplibre-gl.css" rel="stylesheet" />
-	<script src="assets/styles/shortbread/style.js"></script>
+	<script src="assets/style_maker.js"></script>
 	<style>
 		body {
 			margin: 0;
@@ -29,9 +29,8 @@
 		start()
 		async function start() {
 			let tilesUrl = (new URLSearchParams(window.location.search)).get('url') || '/tiles/osm/';
-			tilesUrl += '{z}/{y}/{x}';
 
-			let style = make_style(tilesUrl, {
+			let style = await loadStyle('shortbread', tilesUrl + '{z}/{y}/{x}', {
 				//mgrey:1,
 				//mhideLabels: true,
 				//mhideSymbols: true,
