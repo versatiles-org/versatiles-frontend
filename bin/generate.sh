@@ -5,7 +5,7 @@ set -ex
 cd ..
 
 echo " -> prepare folders"
-rm -r dist
+rm -rf dist
 mkdir -p dist
 cd dist
 
