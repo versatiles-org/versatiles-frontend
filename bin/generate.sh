@@ -5,8 +5,8 @@ set -e
 cd ..
 
 echo " -> prepare folders"
-rm -rf dist || true
-mkdir dist
+rm -rf dist
+mkdir -p dist
 cd dist
 
 assets="frontend/assets"

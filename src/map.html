@@ -97,12 +97,18 @@
 						addRow('style_name', 'Style', 'select', {}, styleNames.map(n => `<option value="${n}">${n}</option>`).join(''))
 						addRow('grey', 'grey', 'input', { type: 'range', value: 0, min: 0, max: 100 });
 						addRow('invert', 'invert', 'input', { type: 'checkbox' });
+						addRow('gamma', 'gamma', 'input', { type: 'range', value: 0, min: -100, max: 100 });
 						addRow('fade', 'fade', 'input', { type: 'range', value: 0, min: 0, max: 100 });
 						addRow('fade_color', 'fade color', 'input', { type: 'text', size: 8, value: '#fff' });
 						addRow('tint', 'tint', 'input', { type: 'range', value: 0, min: 0, max: 100 });
 						addRow('tint_color', 'tint color', 'input', { type: 'text', size: 8, value: '#f00' });
 						addRow('hide_labels', 'hide labels', 'input', { type: 'checkbox' });
 						addRow('hide_symbols', 'hide symbols', 'input', { type: 'checkbox' });
+
+						let button = addNode('a', { download: 'style.json' }, this._container);
+						button.innerText = 'download style.json';
+
+						handleChange();
 
 						function addRow(name, label, tagName, properties, innerHTML) {
 							let id = 'cdc_' + name;
@@ -118,11 +124,12 @@
 							input.addEventListener('input', handleChange);
 						}
 
-						async function handleChange() {
+						async function getStyle() {
 							let styleName = elements.style_name.value;
 							let options = {
 								grey: elements.grey.valueAsNumber / 100,
 								invert: elements.invert.checked,
+								gamma: elements.gamma.valueAsNumber / 30,
 								fade: elements.fade.valueAsNumber / 100,
 								fadeColor: elements.fade_color.value,
 								tint: elements.tint.valueAsNumber / 100,
@@ -138,9 +145,7 @@
 							let style = deepClone(loadedStyles[styleName]);
 							style = makeStyle(style, tilesUrl, options);
 
-							console.log(options);
-
-							map.setStyle(style);
+							return style;
 
 							function deepClone(obj) {
 								if (typeof obj !== 'object') return obj;
@@ -151,6 +156,12 @@
 								}
 								return clone;
 							}
+						}
+
+						async function handleChange() {
+							let style = await getStyle();
+							button.setAttribute('href', 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(style));
+							map.setStyle(style);
 						}
 
 						return this._container;

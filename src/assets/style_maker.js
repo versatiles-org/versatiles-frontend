@@ -133,14 +133,21 @@ function makeStyle(style, tileSource, options) {
 			}
 
 			if (options.invert) {
-				r = 255-r;
-				g = 255-g;
-				b = 255-b;
+				r = 255 - r;
+				g = 255 - g;
+				b = 255 - b;
+			}
+
+			if (options.gamma) {
+				let gamma = Math.pow(2, options.gamma);
+				r = 255 * Math.pow(Math.max(0, (r / 255)), gamma);
+				g = 255 * Math.pow(Math.max(0, (g / 255)), gamma);
+				b = 255 * Math.pow(Math.max(0, (b / 255)), gamma);
 			}
 
 			if (options.hueRotate) {
 				let c = rgbToHsv(r, g, b);
-				c[0] = (c[0] + 360*options.hueRotate) % 360;
+				c[0] = (c[0] + 360 * options.hueRotate) % 360;
 
 				options.hueRotate
 				let c2 = rgbToHsv(...options.tintColor);
