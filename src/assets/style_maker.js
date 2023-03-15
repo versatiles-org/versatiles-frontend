@@ -28,7 +28,7 @@ function makeStyle(style, tileSource, options) {
 	if (style.glyphs) style.glyphs = absoluteUrl(style.glyphs);
 	Object.values(style.sources).forEach(source => source.tiles = [absoluteUrl(tileSource)]);
 
-	if (options) patchLayers(style.layers, options);
+	if (options) patchLayers(style, options);
 
 	function absoluteUrl(...urls) {
 		// use encodeURI/decodeURI to handle curly brackets in path templates
@@ -41,10 +41,17 @@ function makeStyle(style, tileSource, options) {
 
 	return style;
 
-	function patchLayers(layers, options) {
+	function patchLayers(style, options) {
 		if (options.grey) options.grey = Math.min(1, Math.max(0, options.grey));
 		if (options.fade) options.fade = Math.min(1, Math.max(0, options.fade));
 		if (options.tint) options.tint = Math.min(1, Math.max(0, options.tint));
+		if (options.hideLayerIds) {
+			try {
+				options.hideLayerIds = new RegExp(options.hideLayerIds);
+			} catch (e) {
+				options.hideLayerIds = false;
+			}
+		}
 
 		options.fadeColor = parseColor(options.fadeColor || '#fff');
 		options.tintColor = parseColor(options.tintColor || '#f00');
@@ -71,14 +78,18 @@ function makeStyle(style, tileSource, options) {
 			'text-halo-color',
 		]
 
-		layers.forEach(layer => {
-			paintColorKeys.forEach(key => {
-				if (layer.paint[key]) layer.paint[key] = fixColorValue(layer.paint[key]);
-			})
+		style.layers = style.layers.filter(layer => {
 			if (layer.layout) {
 				if (options.hideLabels) delete layer.layout['text-field'];
 				if (options.hideSymbols) delete layer.layout['icon-image'];
 			}
+			if (options.hideLayerIds) {
+				if (options.hideLayerIds.test(layer.id)) return false;
+			}
+			paintColorKeys.forEach(key => {
+				if (layer.paint[key]) layer.paint[key] = fixColorValue(layer.paint[key]);
+			})
+			return true;
 		})
 
 		function fixColorValue(value) {
