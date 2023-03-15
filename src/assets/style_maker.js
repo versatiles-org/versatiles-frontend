@@ -145,18 +145,6 @@ function makeStyle(style, tileSource, options) {
 				b = 255 * Math.pow(Math.max(0, (b / 255)), gamma);
 			}
 
-			if (options.hueRotate) {
-				let c = rgbToHsv(r, g, b);
-				c[0] = (c[0] + 360 * options.hueRotate) % 360;
-
-				options.hueRotate
-				let c2 = rgbToHsv(...options.tintColor);
-				let c4 = hsvToRgb(c2[0], c2[1] * c1[1] / 100, c1[2]);
-				r = r * (1 - options.tint) + c4[0] * options.tint;
-				g = g * (1 - options.tint) + c4[1] * options.tint;
-				b = b * (1 - options.tint) + c4[2] * options.tint;
-			}
-
 			if (options.fade) {
 				r = r * (1 - options.fade) + options.fade * options.fadeColor[0];
 				g = g * (1 - options.fade) + options.fade * options.fadeColor[1];
@@ -170,6 +158,16 @@ function makeStyle(style, tileSource, options) {
 				r = r * (1 - options.tint) + c4[0] * options.tint;
 				g = g * (1 - options.tint) + c4[1] * options.tint;
 				b = b * (1 - options.tint) + c4[2] * options.tint;
+			}
+
+			if (options.hueRotate) {
+				let c = rgbToHsv(r, g, b);
+				c[0] += 360 * options.hueRotate;
+				while (c[0] >= 360) c[0] -= 360;
+				c = hsvToRgb(c[0], c[1], c[2]);
+				r = c[0];
+				g = c[1];
+				b = c[2];
 			}
 
 			color = [r, g, b].map(v => Math.round(Math.min(255, Math.max(0, v))));

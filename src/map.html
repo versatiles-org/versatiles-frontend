@@ -102,6 +102,7 @@
 						addRow('fade_color', 'fade color', 'input', { type: 'text', size: 8, value: '#fff' });
 						addRow('tint', 'tint', 'input', { type: 'range', value: 0, min: 0, max: 100 });
 						addRow('tint_color', 'tint color', 'input', { type: 'text', size: 8, value: '#f00' });
+						addRow('hue_rotate', 'rotate hue', 'input', { type: 'range', value: 0, min: 0, max: 360 });
 						addRow('hide_labels', 'hide labels', 'input', { type: 'checkbox' });
 						addRow('hide_symbols', 'hide symbols', 'input', { type: 'checkbox' });
 
@@ -134,6 +135,7 @@
 								fadeColor: elements.fade_color.value,
 								tint: elements.tint.valueAsNumber / 100,
 								tintColor: elements.tint_color.value,
+								hueRotate: elements.hue_rotate.valueAsNumber / 360,
 								hideLabels: elements.hide_labels.checked,
 								hideSymbols: elements.hide_symbols.checked,
 							}
