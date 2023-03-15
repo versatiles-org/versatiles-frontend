@@ -1,11 +1,11 @@
 #!/bin/bash
 cd "$(dirname "$0")"
-set -e
+set -ex
 
 cd ..
 
 echo " -> prepare folders"
-rm -rf dist
+rm -r dist
 mkdir -p dist
 cd dist
 

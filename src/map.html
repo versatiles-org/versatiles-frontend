@@ -160,7 +160,8 @@
 
 						async function handleChange() {
 							let style = await getStyle();
-							button.setAttribute('href', 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(style));
+							let download = 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(JSON.stringify(style));
+							button.setAttribute('href', download);
 							map.setStyle(style);
 						}
 
