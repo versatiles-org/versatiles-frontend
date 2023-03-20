@@ -46,7 +46,7 @@
 		start()
 		async function start() {
 			let tilesUrl = (new URLSearchParams(window.location.search)).get('url') || '/tiles/osm/';
-			tilesUrl += '{z}/{y}/{x}';
+			tilesUrl += '{z}/{x}/{y}';
 
 			const styleNames = 'shortbread,neutrino,eclipse'.split(',');
 			const loadedStyles = {};
