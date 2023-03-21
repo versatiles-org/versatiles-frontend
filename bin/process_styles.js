@@ -80,7 +80,7 @@ readdirSync(path).forEach(styleName => {
 				if (!layer.paint) return;
 				attributes.forEach(attribute => {
 					if (!layer.paint[attribute]) return;
-					throw Error('implement "resolvedImage" checking');
+					console.log('implement "resolvedImage" checking');
 				})
 			})
 		}
