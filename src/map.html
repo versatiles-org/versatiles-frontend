@@ -49,10 +49,19 @@
 			let tilesUrl = (new URLSearchParams(window.location.search)).get('url') || '/tiles/osm/';
 			tilesUrl += '{z}/{x}/{y}';
 
-			const styleNames = 'shortbread,neutrino,eclipse'.split(',');
+			const styleNames = [
+				'colorful',
+				'colorful.nolabel',
+				'neutrino',
+				'neutrino.nolabel',
+				'eclipse',
+				'eclipse.nolabel',
+				'empty',
+			];
+
 			const loadedStyles = {};
 
-			loadedStyles.shortbread = await loadStyle('shortbread', tilesUrl, {});
+			loadedStyles.shortbread = await loadStyle('colorful', tilesUrl, {});
 
 			let map = new maplibregl.Map({
 				container: 'map',

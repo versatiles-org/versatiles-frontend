@@ -16,7 +16,7 @@
 async function loadStyle(styleName, tileSource, options) {
 	if (!styleName) throw Error('loadStyle needs a style name');
 
-	let style = await (await fetch('/assets/styles/' + styleName + '/style.min.json')).json();
+	let style = await (await fetch('/assets/styles/' + styleName + '.json')).json();
 	return makeStyle(style, tileSource, options)
 }
 
