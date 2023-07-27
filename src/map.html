@@ -56,17 +56,12 @@
 				'neutrino.nolabel',
 				'eclipse',
 				'eclipse.nolabel',
-				'empty',
 			];
-
-			const loadedStyles = {};
-
-			loadedStyles.shortbread = await loadStyle('colorful', tilesUrl, {});
 
 			let map = new maplibregl.Map({
 				container: 'map',
-				bounds: [-180, -80, 180, 80],
-				style: loadedStyles.shortbread,
+				//bounds: [-180, -80, 180, 80],
+				style: await makeStyle('colorful', tilesUrl),
 				maxZoom: 18,
 				hash: true,
 			});
@@ -152,24 +147,7 @@
 								hideSymbols: elements.hide_symbols.checked,
 							}
 
-							if (!loadedStyles[styleName]) {
-								loadedStyles[styleName] = await (await fetch('/assets/styles/' + styleName + '/style.min.json')).json();
-							}
-
-							let style = deepClone(loadedStyles[styleName]);
-							style = makeStyle(style, tilesUrl, options);
-
-							return style;
-
-							function deepClone(obj) {
-								if (typeof obj !== 'object') return obj;
-								if (Array.isArray(obj)) return obj.map(deepClone);
-								let clone = {};
-								for (let [key, val] of Object.entries(obj)) {
-									clone[key] = deepClone(val);
-								}
-								return clone;
-							}
+							return await makeStyle(styleName, tilesUrl, options);
 						}
 
 						async function handleChange() {
