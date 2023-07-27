@@ -29,9 +29,9 @@ readdirSync(fontsPath).forEach(subFolder => {
 
 readdirSync(path).forEach(styleName => {
 	if (styleName.startsWith('.')) return;
+	if (!styleName.endsWith('.json')) return;
 
-	let stylePath = resolve(path, styleName);
-	let styleFilename = resolve(stylePath, 'style.json');
+	let styleFilename = resolve(path, styleName);
 	if (!existsSync(styleFilename)) {
 		console.error(`ERROR - style "${styleFilename}" not found`);
 		process.exit(1);
@@ -41,8 +41,7 @@ readdirSync(path).forEach(styleName => {
 	console.log('process', styleName);
 
 	validateAndPatchStyle();
-	writeFileSync(resolve(stylePath, 'style.min.json'), JSON.stringify(style));
-	writeFileSync(resolve(stylePath, 'style.json'), JSON.stringify(style, null, '\t'));
+	writeFileSync(styleFilename, JSON.stringify(style));
 
 
 
