@@ -19,17 +19,17 @@ for i in "${font_names[@]}"
 do
 	fontname=${font_names[$i]}
 	echo "    -> add $fontname"
-	curl -L --no-progress-meter "https://github.com/versatiles-org/versatiles-fonts/releases/latest/download/$fontname.tar.gz" | gzip -d | tar -xf - -C $assets/fonts/
+	curl -Ls "https://github.com/versatiles-org/versatiles-fonts/releases/latest/download/$fontname.tar.gz" | gzip -d | tar -xf - -C $assets/fonts/
 done
 
 echo " -> add styles"
 mkdir -p $assets/styles
-curl -L --no-progress-meter "https://github.com/versatiles-org/versatiles-styles/releases/latest/download/styles.tar.gz" | gzip -d | tar -xf - -C $assets/styles/
+curl -Ls "https://github.com/versatiles-org/versatiles-styles/releases/latest/download/styles.tar.gz" | gzip -d | tar -xf - -C $assets/styles/
 ../bin/process_styles.js $assets/styles/
 
 echo " -> add maplibre"
 mkdir -p $assets/maplibre
-curl -L --no-progress-meter -o maplibre.zip https://github.com/maplibre/maplibre-gl-js/releases/latest/download/dist.zip
+curl -Ls -o maplibre.zip https://github.com/maplibre/maplibre-gl-js/releases/latest/download/dist.zip
 unzip -q maplibre.zip
 mv dist/*.js $assets/maplibre/
 mv dist/*.css $assets/maplibre/

@@ -1,13 +1,13 @@
 {
   "name": "versatiles-frontend",
-  "version": "0.0.3",
+  "version": "1.0.0",
   "description": "",
   "scripts": {
-    "generate": "bin/generate.sh",
-    "release": "bin/release.sh"
+    "build": "bin/build.sh",
+    "dist": "bin/release.sh"
   },
   "type": "module",
-  "author": "Michael Kreil <github@michael-kreil.de> (https://github.com/MichaelKreil)",
+  "author": "Michael Kreil <versatiles@michael-kreil.de>",
   "license": "MIT",
   "dependencies": {}
 }

@@ -2,10 +2,7 @@
 
 import process from 'node:process';
 import { existsSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
-import { dirname, resolve } from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
+import { resolve } from 'node:path';
 
 
 
@@ -63,7 +60,7 @@ readdirSync(path).forEach(styleName => {
 			// don't reference tile source
 			Object.values(style.sources).forEach(source => {
 				delete source.tiles;
-				source.attribution = '<a href="https://www.openstreetmap.org/copyright/de">© OpenStreetMap</a>'
+				//source.attribution = '<a href="https://www.openstreetmap.org/copyright/de">© OpenStreetMap</a>'
 			})
 		}
 
