@@ -27,7 +27,7 @@ jobs:
       - run: gh release create $RELEASE_TAG || true
         name: create release if needed
 
-      - run: gh release upload $RELEASE_TAG --clobber dist/*.tar.gz
+      - run: gh release upload $RELEASE_TAG --clobber dist/*.tar.gz dist/*.br.tar
         name: add file to release
 
       - run: gh release edit $RELEASE_TAG --draft=false --latest --prerelease=false
