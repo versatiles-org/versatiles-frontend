@@ -42,11 +42,20 @@ cp -r ../src/* frontend/
 
 echo " -> make release notes"
 
-V_FONTS=$(curl -s https://api.github.com/repos/versatiles-org/versatiles-fonts/tags | jq -r 'first(.[] | .name | select(startswith("v")))')
-V_STYLES=$(curl -s https://api.github.com/repos/versatiles-org/versatiles-styles/tags | jq -r 'first(.[] | .name | select(startswith("v")))')
-V_SPRITES=$(curl -s https://api.github.com/repos/versatiles-org/versatiles-sprites/tags | jq -r 'first(.[] | .name | select(startswith("v")))')
+echo "   -> get version: frontend"
 V_FRONTEND=v$(jq -r '.version' ../package.json)
-V_MAPLIBRE=$(curl -s https://api.github.com/repos/maplibre/maplibre-gl-js/tags | jq -r 'first(.[] | .name | select(startswith("v")))')
+
+echo "   -> get version: fonts"
+V_FONTS=$(curl -s 'https://api.github.com/repos/versatiles-org/versatiles-fonts/tags' | jq -r 'first(.[] | .name | select(startswith("v")))')
+
+echo "   -> get version: styles"
+V_STYLES=$(curl -s 'https://api.github.com/repos/versatiles-org/versatiles-styles/tags' | jq -r 'first(.[] | .name | select(startswith("v")))')
+
+echo "   -> get version: sprites"
+V_SPRITES=$(curl -s 'https://api.github.com/repos/versatiles-org/versatiles-sprites/tags' | jq -r 'first(.[] | .name | select(startswith("v")))')
+
+echo "   -> get version: maplibre"
+V_MAPLIBRE=$(curl -s 'https://api.github.com/repos/maplibre/maplibre-gl-js/tags' | jq -r 'first(.[] | .name | select(startswith("v")))')
 
 echo "" > notes.md
 echo "## VersaTiles Frontend *$V_FRONTEND*" >> notes.md
