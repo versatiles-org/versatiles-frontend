@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
   repository_dispatch:
   schedule:
-    - cron: '10 3 * * 1'
+    - cron: "10 3 * * 1"
 
 jobs:
   release:
@@ -17,19 +17,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - run: 'echo "RELEASE_TAG=v$(jq -r ''.version'' package.json)" >> $GITHUB_ENV'
-        name: get version
+      - name: get version
+        run: 'echo "RELEASE_TAG=v$(jq -r ''.version'' package.json)" >> $GITHUB_ENV'
 
       - run: npm install
-
       - run: npm run build
       - run: npm run dist
 
-      - run: gh release create $RELEASE_TAG || true
-        name: create release if needed
+      - name: create release if needed
+        run: gh release view $RELEASE_TAG || gh release create $RELEASE_TAG
 
-      - run: gh release upload $RELEASE_TAG --clobber dist/*.tar.gz dist/*.br.tar
-        name: add file to release
+      - name: add files to release
+        run: gh release upload $RELEASE_TAG --clobber dist/*.tar.gz dist/*.br.tar
 
-      - run: gh release edit $RELEASE_TAG --draft=false --latest --prerelease=false
-        name: update release
+      - name: update release
+        run: gh release edit $RELEASE_TAG --draft=false --latest --prerelease=false --notes-file=dist/notes.md
