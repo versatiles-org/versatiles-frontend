@@ -29,3 +29,6 @@ jobs:
 
       - name: update release
         run: gh release edit $RELEASE_TAG --draft=false --latest --prerelease=false --notes-file=dist/notes.md
+
+      - name: trigger docker release
+        run: 'curl -XPOST -u "michaelkreil:${{secrets.PAT_TOKEN}}" https://api.github.com/repos/versatiles-org/versatiles-docker/actions/workflows/release.yml/dispatches --data ''{"ref":"main"}'''

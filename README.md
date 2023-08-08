@@ -1,4 +1,4 @@
-# frontend
+# VersaTiles Frontend
 
 ## generate and package frontend
 
