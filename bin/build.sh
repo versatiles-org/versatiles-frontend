@@ -49,10 +49,10 @@ V_FRONTEND=v$(jq -r '.version' ../package.json)
 V_MAPLIBRE=$(curl -s https://api.github.com/repos/maplibre/maplibre-gl-js/tags | jq -r 'first(.[] | .name | select(startswith("v")))')
 
 echo "" > notes.md
-echo "# VersaTiles Frontend $V_FRONTEND" >> notes.md
+echo "## VersaTiles Frontend *$V_FRONTEND*" >> notes.md
 echo "" >> notes.md
-echo "includes:" >> notes.md
-echo "- MapLibre GL JS $V_MAPLIBRE" >> notes.md
-echo "- VersaTiles Fonts $V_FONTS" >> notes.md
-echo "- VersaTiles Sprites $V_SPRITES" >> notes.md
-echo "- VersaTiles Styles $V_STYLES" >> notes.md
+echo "also includes:" >> notes.md
+echo "- MapLibre GL JS *$V_MAPLIBRE*" >> notes.md
+echo "- VersaTiles Fonts *$V_FONTS*" >> notes.md
+echo "- VersaTiles Sprites *$V_SPRITES*" >> notes.md
+echo "- VersaTiles Styles *$V_STYLES*" >> notes.md
