@@ -7,8 +7,10 @@
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 	<link rel="shortcut icon" href="assets/favicon.ico" />
 	<script src="assets/maplibre/maplibre-gl.js"></script>
+	<script src="assets/maplibre-inspect/maplibre-gl-inspect.min.js"></script>
 	<script src="assets/style_maker.js"></script>
 	<link href="assets/maplibre/maplibre-gl.css" rel="stylesheet" />
+	<link href="assets/maplibre-inspect/maplibre-gl-inspect.css" rel="stylesheet" />
 	<style>
 		body {
 			margin: 0;
@@ -67,6 +69,7 @@
 			});
 
 			addStyleControl();
+			map.addControl(new MaplibreInspect());
 
 			function addStyleControl() {
 

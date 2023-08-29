@@ -29,13 +29,18 @@ curl -Ls "https://github.com/versatiles-org/versatiles-styles/releases/latest/do
 
 echo " -> add maplibre"
 mkdir -p $assets/maplibre
-curl -Ls -o maplibre.zip https://github.com/maplibre/maplibre-gl-js/releases/latest/download/dist.zip
+curl -Lso maplibre.zip https://github.com/maplibre/maplibre-gl-js/releases/latest/download/dist.zip
 unzip -q maplibre.zip
 mv dist/*.js $assets/maplibre/
 mv dist/*.css $assets/maplibre/
 mv dist/*.map $assets/maplibre/
 rm -r dist
 rm maplibre.zip
+
+echo " -> add maplibre-inspect"
+mkdir -p $assets/maplibre-inspect
+curl -Lso $assets/maplibre-inspect/maplibre-gl-inspect.min.js https://github.com/acalcutt/maplibre-gl-inspect/releases/download/v1.4.6/maplibre-gl-inspect.min.js
+curl -Lso $assets/maplibre-inspect/maplibre-gl-inspect.css https://github.com/acalcutt/maplibre-gl-inspect/releases/download/v1.4.6/maplibre-gl-inspect.css
 
 echo " -> add frontend"
 cp -r ../src/* frontend/
