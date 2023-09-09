@@ -1,11 +1,11 @@
 #!/bin/bash
-cd "$(dirname "$0")"
+cd "$(dirname "$0")/.."
 set -e
 
-cd ..
-
 echo " -> prepare folders"
-if [ -d "dist" ]; then rm -Rf dist; fi
+if [ -d "dist" ]; then
+	rm -rf dist || true
+fi
 mkdir -p dist
 cd dist
 
