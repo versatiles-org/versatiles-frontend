@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
-import { basename, relative, resolve } from 'node:path';
+import { basename, resolve } from 'node:path';
 import { cleanupFolder, copyRecursive, curl, ensureFolder } from './lib/utils.js';
 import Progress from './lib/progress.js';
 import notes from './lib/release_notes.js';
-import { readFileSync, watch } from 'node:fs';
+import { existsSync, readFileSync, rmSync, watch } from 'node:fs';
 
 
 
@@ -69,7 +69,15 @@ function addFrontend() {
 			s.open();
 			let filenameSrc = resolve(folders.src, filename);
 			let filenameDst = resolve(folders.frontend, filename);
-			await copyRecursive(filenameSrc, filenameDst);
+			try {
+				if (existsSync(filenameSrc)) {
+					await copyRecursive(filenameSrc, filenameDst);
+				} else {
+					rmSync(filenameDst);
+				}
+			} catch (err) {
+				console.error('Error:', err);
+			}
 			s.close();
 		})
 	}
