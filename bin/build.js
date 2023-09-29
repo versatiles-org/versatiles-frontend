@@ -1,15 +1,15 @@
 #!/usr/bin/env node
 
-import { basename, resolve } from 'node:path';
+import { basename, relative, resolve } from 'node:path';
 import { cleanupFolder, copyRecursive, curl, ensureFolder } from './lib/utils.js';
-import progress from './lib/progress.js';
+import Progress from './lib/progress.js';
 import notes from './lib/release_notes.js';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { readFileSync, watch } from 'node:fs';
 
 
 
-const watch = process.argv[2] === 'watch';
-if (watch) console.log('Start in watch mode');
+const watch_mode = process.argv[2] === 'watch';
+if (watch_mode) console.log('Start in watch mode');
 
 const path = new URL('../', import.meta.url).pathname;
 const folders = {
@@ -24,6 +24,8 @@ const folders = {
 
 // create an empty folder
 await cleanupFolder(folders.dist);
+
+let progress = new Progress();
 
 await parallel(
 	addFrontend(),
@@ -62,9 +64,18 @@ async function resolveAsync(entry) {
 function addFrontend() {
 	let s = progress.add('frontend');
 	ensureFolder(folders.frontend);
+	if (watch_mode) {
+		watch(folders.src, { recursive: true }, async (eventType, filename) => {
+			s.open();
+			let filenameSrc = resolve(folders.src, filename);
+			let filenameDst = resolve(folders.frontend, filename);
+			await copyRecursive(filenameSrc, filenameDst);
+			s.close();
+		})
+	}
 	return async () => {
-		notes.setVersion(JSON.parse(readFileSync(resolve(path, 'package.json'))).version);
 		await copyRecursive(folders.src, folders.frontend);
+		notes.setVersion(JSON.parse(readFileSync(resolve(path, 'package.json'))).version);
 		s.close();
 	}
 }
