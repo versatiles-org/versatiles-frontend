@@ -6,12 +6,18 @@
 	<meta charset="utf-8" />
 	<title>map</title>
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-	<link rel="shortcut icon" href="assets/favicon.ico" />
+
+	<link rel="shortcut icon" sizes="16x16 24x24 32x32 48x48 64x64" href="assets/logo/favicon.ico">
+	<link rel="icon" type="image/png" href="assets/logo/versatiles.32.png" sizes="32x32" />
+	<link rel="icon" type="image/png" href="assets/logo/versatiles.48.png" sizes="48x48" />
+	<link rel="icon" type="image/png" href="assets/logo/versatiles.64.png" sizes="64x64" />
+	<link rel="icon" type="image/png" href="assets/logo/versatiles.96.png" sizes="96x96" />
 	<style>
 		body {
 			font-family: sans-serif;
 			margin: 20px 20px;
 		}
+
 		article {
 			width: 800px;
 			max-width: 100%;
@@ -21,8 +27,10 @@
 
 		iframe {
 			width: 100%;
+			max-width: 256px;
 			border: 1px solid rgba(0, 0, 0, 0.2);
-			height: 60vh;
+			height: 256px;
+			margin: auto;
 			box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
 			border-radius: 5px;
 		}
@@ -32,11 +40,14 @@
 
 		async function start() {
 			let tile_sources = await (await fetch("/api/tiles.json")).json();
-			
+
+			console.log(tile_sources);
+
 			let html = [];
 			for (let source of tile_sources) {
-				html.push(`<h1><a href="map.html?url=${source.url}">${source.url}</a></h1>`);
-				html.push(`<iframe src="map.html?url=${source.url}"></iframe>`);
+				let url = 'preview.html?url=' + source.url;
+				html.push(`<h2><a href="${url}">${source.url}</a></h2>`);
+				//html.push(`<iframe src="${url}"></iframe>`);
 			}
 			document.getElementById("maps").innerHTML = html.join('\n');
 		}
