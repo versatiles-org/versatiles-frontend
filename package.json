@@ -3,11 +3,14 @@
   "version": "1.1.0",
   "description": "",
   "scripts": {
-    "build": "bin/build.sh",
+    "build": "bin/build.js",
+    "watch": "bin/build.js watch",
     "dist": "bin/release.sh"
   },
   "type": "module",
   "author": "Michael Kreil <versatiles@michael-kreil.de>",
   "license": "MIT",
-  "dependencies": {}
+  "dependencies": {
+    "tar-stream": "^3.1.6"
+  }
 }
