@@ -30,7 +30,7 @@ await parallel(
 		addFonts('noto_sans'),
 		addStyles(),
 	),
-	//addMaplibre(),
+	addMaplibre(),
 	addMaplibreInspect(),
 )();
 
@@ -93,11 +93,7 @@ function addMaplibre() {
 	let folder = getAssetFolder('maplibre');
 	return async () => {
 		await curl('https://github.com/maplibre/maplibre-gl-js/releases/latest/download/dist.zip')
-			.unzip((filename, buffer) => {
-				if (/dist\/.*\.(js|css|map)$/.test(filename)) {
-					writeFileSync(resolve(folder, basename(filename)), buffer)
-				}
-			});
+			.unzip(filename => /dist\/.*\.(js|css|map)$/.test(filename) && resolve(folder, basename(filename)));
 		s.close();
 	}
 }

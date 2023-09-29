@@ -26,7 +26,8 @@ function Progress() {
 	}
 
 	function redraw() {
-		const status = '\u001b[u' + labelList.map(l => '\u001b[' + (l.closed ? 32 : 31) + 'm' + l.name + '\u001b[0m\n').join('');
+		labelList.sort((a, b) => a.name < b.name ? -1 : 1)
+		const status = ' - \u001b[u' + labelList.map(l => '\u001b[' + (l.closed ? 32 : 31) + 'm' + l.name + '\u001b[0m\n').join('');
 		process.stderr.write(status);
 	}
 }

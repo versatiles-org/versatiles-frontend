@@ -5,6 +5,7 @@ import { dirname, join, resolve } from 'node:path';
 import { createGunzip } from 'node:zlib';
 import { finished, pipeline } from 'node:stream/promises';
 import tar from 'tar-stream';
+import unzipper from 'unzipper';
 
 export async function cleanupFolder(path) {
 	if (existsSync(path)) await rm(path, { recursive: true, maxRetries: 3, retryDelay: 100 });
@@ -39,7 +40,7 @@ export function ensureFolder(path) {
 }
 
 export function curl(url) {
-	return { save, ungzip_untar }
+	return { save, ungzip_untar, unzip }
 
 	async function save(filename) {
 		await pipeline(await getStream(), createWriteStream(filename));
@@ -55,6 +56,19 @@ export function curl(url) {
 			finished(stream.pipe(createWriteStream(filename))).then(() => next());
 		})
 		await pipeline(await getStream(), createGunzip(), extract);
+	}
+
+	async function unzip(cb) {
+		const zip = unzipper.Parse();
+		zip.on('entry', entry => {
+			const fileName = cb(entry.path);
+			if (fileName) {
+				entry.pipe(createWriteStream(fileName));
+			} else {
+				entry.autodrain();
+			}
+		});
+		await pipeline(await getStream(), zip);
 	}
 
 	async function getStream() {
