@@ -40,7 +40,7 @@ export function ensureFolder(path) {
 }
 
 export function curl(url) {
-	return { save, ungzip_untar, unzip }
+	return { get_latest_git_tag, save, ungzip_untar, unzip }
 
 	async function save(filename) {
 		await pipeline(await getStream(), createWriteStream(filename));
@@ -71,8 +71,19 @@ export function curl(url) {
 		await pipeline(await getStream(), zip);
 	}
 
+	async function get_latest_git_tag() {
+		let data = await getJSON();
+		data = data.filter(v => v.name.startsWith('v'));
+		return data[0].name.slice(1);
+	}
+
 	async function getStream() {
 		const response = await fetch(url, { redirect: 'follow' });
 		return response.body;
+	}
+
+	async function getJSON() {
+		const response = await fetch(url, { redirect: 'follow' });
+		return await response.json();
 	}
 }

@@ -1,9 +1,10 @@
 #!/usr/bin/env node
 
-import { writeFileSync } from 'node:fs';
 import { basename, resolve } from 'node:path';
 import { cleanupFolder, copyRecursive, curl, ensureFolder } from './lib/utils.js';
 import progress from './lib/progress.js';
+import notes from './lib/release_notes.js';
+import { readFileSync, writeFileSync } from 'node:fs';
 
 
 
@@ -34,6 +35,10 @@ await parallel(
 	addMaplibreInspect(),
 )();
 
+notes.save(resolve(folders.dist, 'notes.txt'));
+
+
+
 function parallel(...promises) {
 	return () => Promise.all(promises.map(resolveAsync))
 }
@@ -58,12 +63,14 @@ function addFrontend() {
 	let s = progress.add('frontend');
 	ensureFolder(folders.frontend);
 	return async () => {
+		notes.setVersion(JSON.parse(readFileSync(resolve(path, 'package.json'))).version);
 		await copyRecursive(folders.src, folders.frontend);
 		s.close();
 	}
 }
 
 function addFonts(...font_names) {
+	let setVersion = notes.add('[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)');
 	let folder = getAssetFolder('fonts');
 	let asyncFunctions = font_names.map(font_name => {
 		let s = progress.add('font ' + font_name);
@@ -73,10 +80,13 @@ function addFonts(...font_names) {
 			s.close('font ' + font_name);
 		}
 	});
-	return parallel(...asyncFunctions);
+	return parallel(...asyncFunctions, async () => {
+		setVersion(await curl('https://api.github.com/repos/versatiles-org/versatiles-fonts/tags').get_latest_git_tag());
+	});
 }
 
 function addStyles() {
+	let setVersion = notes.add('[VersaTiles style](https://github.com/versatiles-org/versatiles-styles)');
 	let folder = getAssetFolder('styles');
 	let s = progress.add('styles');
 	return async () => {
@@ -84,21 +94,25 @@ function addStyles() {
 			.ungzip_untar(folder);
 		let { process_styles } = await import('./process_styles.js');
 		await process_styles(folder, getAssetFolder('fonts'));
+		setVersion(await curl('https://api.github.com/repos/versatiles-org/versatiles-styles/tags').get_latest_git_tag());
 		s.close();
 	}
 }
 
 function addMaplibre() {
+	let setVersion = notes.add('[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)');
 	let s = progress.add('maplibre');
 	let folder = getAssetFolder('maplibre');
 	return async () => {
 		await curl('https://github.com/maplibre/maplibre-gl-js/releases/latest/download/dist.zip')
 			.unzip(filename => /dist\/.*\.(js|css|map)$/.test(filename) && resolve(folder, basename(filename)));
+		setVersion(await curl('https://api.github.com/repos/maplibre/maplibre-gl-js/tags').get_latest_git_tag());
 		s.close();
 	}
 }
 
 function addMaplibreInspect() {
+	let setVersion = notes.add('[MapLibre GL Inspect](https://github.com/acalcutt/maplibre-gl-inspect)');
 	let s = progress.add('maplibre-inspect');
 	let folder = getAssetFolder('maplibre-inspect');
 	return async () => {
@@ -109,38 +123,11 @@ function addMaplibreInspect() {
 		await curl('https://github.com/acalcutt/maplibre-gl-inspect/releases/download/v1.4.6/maplibre-gl-inspect.css')
 			.save(resolve(folder, 'maplibre-gl-inspect.css'));
 
+		setVersion(await curl('https://api.github.com/repos/acalcutt/maplibre-gl-inspect/tags').get_latest_git_tag());
+
 		s.close();
 	}
 }
-
-/*
-
-echo " -> make release notes"
-
-echo "   -> get version: frontend"
-V_FRONTEND=v$(jq -r '.version' ../package.json)
-
-echo "   -> get version: fonts"
-V_FONTS=$(curl -s 'https://api.github.com/repos/versatiles-org/versatiles-fonts/tags' | jq -r 'first(.[] | .name | select(startswith("v")))')
-
-echo "   -> get version: styles"
-V_STYLES=$(curl -s 'https://api.github.com/repos/versatiles-org/versatiles-styles/tags' | jq -r 'first(.[] | .name | select(startswith("v")))')
-
-echo "   -> get version: sprites"
-V_SPRITES=$(curl -s 'https://api.github.com/repos/versatiles-org/versatiles-sprites/tags' | jq -r 'first(.[] | .name | select(startswith("v")))')
-
-echo "   -> get version: maplibre"
-V_MAPLIBRE=$(curl -s 'https://api.github.com/repos/maplibre/maplibre-gl-js/tags' | jq -r 'first(.[] | .name | select(startswith("v")))')
-
-echo "" > notes.md
-echo "## VersaTiles Frontend *$V_FRONTEND*" >> notes.md
-echo "" >> notes.md
-echo "also includes:" >> notes.md
-echo "- MapLibre GL JS *$V_MAPLIBRE*" >> notes.md
-echo "- VersaTiles Fonts *$V_FONTS*" >> notes.md
-echo "- VersaTiles Sprites *$V_SPRITES*" >> notes.md
-echo "- VersaTiles Styles *$V_STYLES*" >> notes.md
-*/
 
 function getAssetFolder(name) {
 	let folder = resolve(folders.assets, name);
