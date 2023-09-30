@@ -4,7 +4,7 @@
 
 <head>
 	<meta charset="utf-8" />
-	<title>map</title>
+	<title>VersaTiles</title>
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 
 	<link rel="shortcut icon" sizes="16x16 24x24 32x32 48x48 64x64" href="assets/logo/favicon.ico">
@@ -76,21 +76,22 @@
 		start()
 
 		async function start() {
-			let tile_sources = await (await fetch("/api/tiles.json")).json();
+			let tile_sources = await (await fetch("/api/sources")).json();
 
 			console.log(tile_sources);
 
 			let html = [];
 			for (let source of tile_sources) {
-				let url = 'preview.html?url=' + source.url;
+				let url = 'preview.html?name=' + source.name;
+				let {container} = source;
 				html.push(...[
 					`<a href="${url}">`,
 					`<div class="box">`,
 					`<h2>${source.name}</h2>`,
 					`<div class="row"><div>url:</div><div>${source.url}</div></div>`,
-					`<div class="row"><div>container:</div><div>${source.info.container}</div></div>`,
-					`<div class="row"><div>format:</div><div>${source.info.format}</div></div>`,
-					`<div class="row"><div>zoom:</div><div>${source.info.zoom_min}-${source.info.zoom_max}</div></div>`,
+					`<div class="row"><div>container:</div><div>${container.type}</div></div>`,
+					`<div class="row"><div>format:</div><div>${container.format}</div></div>`,
+					`<div class="row"><div>zoom:</div><div>${container.zoom_min}-${container.zoom_max}</div></div>`,
 					`</div>`,
 					`</a>`
 				]);

@@ -26,6 +26,12 @@ curl -L "https://github.com/versatiles-org/versatiles-frontend/releases/latest/d
 versatiles serve -s ./frontend.br.tar "planet.versatiles"
 ```
 
+## develop
+
+```bash
+versatiles serve -i 127.0.0.1 -s ../versatiles-frontend/dist/frontend --minimal-recompression extract.versatiles hitzekarte.tar planet-latest.versatiles points.versatiles test.versatiles unfaelle_png.mbtiles vg250_gem_20201231.versatiles vg250_krs_20201231.versatiles
+```
+
 ## content
 
 - HTML and scripts from `src` folder

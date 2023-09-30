@@ -58,6 +58,8 @@ function StyleMaker() {
 
 		if (options) patchLayers(style, options);
 
+		return style;
+
 		function absoluteUrl(...urls) {
 			// use encodeURI/decodeURI to handle curly brackets in path templates
 			let url = encodeURI(window.location.href);
@@ -66,8 +68,6 @@ function StyleMaker() {
 			}
 			return decodeURI(url);
 		}
-
-		return style;
 
 		function patchLayers(style, options) {
 			if (options.grey) options.grey = Math.min(1, Math.max(0, options.grey));
