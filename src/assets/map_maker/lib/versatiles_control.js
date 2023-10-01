@@ -6,18 +6,6 @@ export default function VersatilesControl(opt) {
 		{ name: 'inspector', svg: "<svg xmlns='http://www.w3.org/2000/svg' width='23' height='23' fill='#000' viewBox='0 0 16 16'><path d='M10.5 1C8.02 1 6 3.02 6 5.5C6 6.56 6.38 7.52 7 8.29L2.02 13.27L2.73 13.98L7.70 9C8.48 9.62 9.44 10 10.5 10C12.98 10 15 7.98 15 5.5C15 3.02 12.98 1 10.5 1ZM10.5 2C12.44 2 14 3.56 14 5.5C14 7.44 12.44 9 10.5 9C8.56 9 7 7.44 7 5.5C7 3.56 8.56 2 10.5 2Z'/></svg>" }
 	)
 
-	function addIconStyles(...styles) {
-		let styleSheet = document.styleSheets[document.styleSheets.length - 1];
-		styles.forEach(({ name, svg }) => {
-			svg = svg.replaceAll('%', '%25');
-			svg = svg.replaceAll('"', '%22');
-			svg = svg.replaceAll('<', '%3C');
-			svg = svg.replaceAll('>', '%3E');
-			svg = svg.replaceAll('#', '%23');
-			styleSheet.insertRule(`button.maplibregl-ctrl-${name} .maplibregl-ctrl-icon { background-image: url("data:image/svg+xml;charset=utf-8,${svg}"); }`)
-		})
-	}
-
 	const container = createDOM('div', 'maplibregl-ctrl maplibregl-ctrl-group');
 	container.addEventListener('contextmenu', (e) => e.preventDefault());
 
@@ -59,11 +47,24 @@ export default function VersatilesControl(opt) {
 
 	function updateZoomButtons() {
 		const zoom = map.getZoom();
-		const isMax = zoom === map.getMaxZoom();
-		const isMin = zoom === map.getMinZoom();
-		zoomInButton.disabled = isMax;
-		zoomOutButton.disabled = isMin;
-		zoomInButton.setAttribute('aria-disabled', isMax.toString());
-		zoomOutButton.setAttribute('aria-disabled', isMin.toString());
+		toggleButton(zoomInButton, zoom >= map.getMaxZoom());
+		toggleButton(zoomOutButton, zoom <= map.getMinZoom());
+	}
+
+	function toggleButton(button, state) {
+		button.disabled = state;
+		button.setAttribute('aria-disabled', state.toString());
+	}
+
+	function addIconStyles(...styles) {
+		let styleSheet = document.styleSheets[document.styleSheets.length - 1];
+		styles.forEach(({ name, svg }) => {
+			svg = svg.replaceAll('%', '%25');
+			svg = svg.replaceAll('"', '%22');
+			svg = svg.replaceAll('<', '%3C');
+			svg = svg.replaceAll('>', '%3E');
+			svg = svg.replaceAll('#', '%23');
+			styleSheet.insertRule(`button.maplibregl-ctrl-${name} .maplibregl-ctrl-icon { background-image: url("data:image/svg+xml;charset=utf-8,${svg}"); }`)
+		})
 	}
 }

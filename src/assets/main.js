@@ -12,5 +12,5 @@ async function start() {
 	const id = (new URLSearchParams(window.location.search)).get('id');
 	if (!id) throw Error('id is not defined');
 
-	let mapMaker = await MapMaker(maplibregl, 'map', '/api/source/' + id);
+	await MapMaker(maplibregl, 'map', '/api/source/' + id);
 }
