@@ -1,6 +1,7 @@
 async function make_map(meta_url) {
 	const info = await loadJSON(meta_url);
 
+	const source_name = 'data_source';
 
 	const tiles_url = window.location.origin + info.url;
 	const container = info.container;
@@ -15,6 +16,7 @@ async function make_map(meta_url) {
 
 	switch (container.format) {
 		case 'pbf': await initVectorMap(); break;
+		case 'jpg': case 'jpeg': case 'png': await initRasterMap(); break;
 		default:
 			throw Error('Unknown format ' + container.format);
 	}
@@ -45,16 +47,14 @@ async function make_map(meta_url) {
 	}
 
 	async function initVectorMap() {
-		const source_name = 'data_source';
 		const meta = await loadJSON(tiles_url + 'meta.json');
 		style.sources[source_name] = {
-			tilejson: '3.0.0',
 			scheme: 'xyz',
 			type: 'vector',
 			tiles: [tiles_url + '{z}/{x}/{y}'],
 			vector_layers: meta.vector_layers,
 		};
-		
+
 		if (is_shortbread()) {
 			await addShortbreadStyle()
 		} else {
@@ -125,6 +125,20 @@ async function make_map(meta_url) {
 			let count = meta.vector_layers.filter(l => id_set.has(l.id)).length;
 			return (count > known_ids.length / 2)
 		}
+	}
+
+	async function initRasterMap() {
+		style.sources[source_name] = {
+			scheme: 'xyz',
+			type: 'raster',
+			tiles: [tiles_url + '{z}/{x}/{y}'],
+		}
+
+		style.layers.push({
+			id: source_name+'_raster',
+			source: source_name,
+			type: 'raster',
+		});
 	}
 
 	async function loadJSON(url) {
