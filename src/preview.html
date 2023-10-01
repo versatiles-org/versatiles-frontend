@@ -13,9 +13,10 @@
 	<link rel="icon" type="image/png" href="assets/logo/versatiles.64.png" sizes="64x64" />
 	<link rel="icon" type="image/png" href="assets/logo/versatiles.96.png" sizes="96x96" />
 
-	<script src="assets/maplibre/maplibre-gl.js"></script>
-	<script src="assets/maplibre-inspect/maplibre-gl-inspect.min.js"></script>
-	<script src="assets/style_maker.js"></script>
+	<script async src="assets/maplibre/maplibre-gl.js"></script>
+	<script async src="assets/map_maker.js"></script>
+	<script async src="assets/random_color.js"></script>
+	<script async src="assets/style_maker.js"></script>
 	<link href="assets/maplibre/maplibre-gl.css" rel="stylesheet" />
 	<link href="assets/maplibre-inspect/maplibre-gl-inspect.css" rel="stylesheet" />
 	<style>
@@ -48,268 +49,19 @@
 			width: 100px;
 		}
 	</style>
-</head>
 
-<body>
-	<div id="map"></div>
 	<script>
-		start()
-
-		function log(text) {
-			console.log(text);
-		}
-
 		async function start() {
 			const id = (new URLSearchParams(window.location.search)).get('id');
 			if (!id) throw Error('id is not defined');
 
-			let map = getMap('/api/source/' + id);
-		}
-
-		async function getMap(meta_url) {
-			const info = await loadJSON(meta_url);
-
-
-			const tiles_url = window.location.origin + info.url;
-			const container = info.container;
-
-			const style = {
-				id: 'auto_generated',
-				name: 'auto_generated',
-				version: 8,
-				sources: {},
-				layers: []
-			};
-
-			switch (container.format) {
-				case 'pbf': await initVectorMap(); break;
-				default:
-					throw Error('Unknown format ' + container.format);
-			}
-
-			addBoundingBox();
-
-			let map = new maplibregl.Map({
-				container: 'map',
-				style,
-				bounds: info.container.bbox,
-				hash: true,
-				maxZoom: 18,
-				minZoom: 0,
-			});
-
-			return map;
-
-			function addBoundingBox() {
-				let [x0, y0, x1, y1] = container.bbox;
-				let coordinates = [[[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]];
-				style.sources._bounding_box = {
-					type: 'geojson', data: { type: 'Feature', geometry: { type: 'Polygon', coordinates } }
-				};
-				style.layers.push({
-					id: '_bounding_box', source: '_bounding_box', type: 'line',
-					paint: { 'line-color': '#000', 'line-opacity': 0.5, 'line-dasharray': [3, 3], 'line-width': 1 }
-				});
-			}
-
-			async function initVectorMap() {
-				const source_name = 'data_source';
-				const meta = await loadJSON(tiles_url + 'meta.json');
-				style.sources[source_name] = {
-					tilejson: '3.0.0',
-					scheme: 'xyz',
-					type: 'vector',
-					tiles: [tiles_url + '{z}/{x}/{y}'],
-					vector_layers: meta.vector_layers,
-				};
-				//console.log(meta);
-				if (is_shortbread()) {
-					await addShortbreadStyle()
-				} else {
-					await addInspectorStyle()
-				}
-
-				async function addShortbreadStyle() {
-					let my_style = await loadJSON('/assets/styles/colorful.json');
-					if (my_style.glyphs) style.glyphs = my_style.glyphs;
-					if (my_style.sprite) style.sprite = my_style.sprite;
-					my_style.layers.forEach(layer => layer.source = source_name)
-					style.layers = style.layers.concat(my_style.layers);
-				}
-
-				async function addInspectorStyle() {
-					let new_layers = {
-						background: [{ 'id': 'background', 'type': 'background', 'paint': { 'background-color': '#fff' } }],
-						circle: [], line: [], fill: []
-					}
-
-					meta.vector_layers.forEach(vector_layer => {
-						const color = o => `rgb(255,0,0,${o})`;
-
-						addLayer('Point', 'circle', { paint: { 'circle-color': color(0.8), 'circle-radius': 2 } });
-						addLayer('LineString', 'line', { layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': color(0.6) } });
-						addLayer('Polygon', 'fill', { paint: { 'fill-color': color(0.3), 'fill-antialias': true, 'fill-outline-color': color(0.6) } });
-
-						function addLayer(geoType, layerType, style) {
-							new_layers[layerType].push(Object.assign(style, {
-								id: `${source_name}-${vector_layer.id}-${layerType}`,
-								'source-layer': vector_layer.id,
-								source: source_name,
-								type: layerType,
-								filter: ['==', '$type', geoType]
-							}))
-						}
-					})
-					style.layers = style.layers.concat(
-						new_layers.background,
-						new_layers.fill,
-						new_layers.line,
-						new_layers.circle,
-					);
-				}
-
-				function is_shortbread() {
-					if (!Array.isArray(meta.vector_layers)) throw Error();
-
-					let known_ids = ['place_labels', 'boundaries', 'boundary_labels', 'addresses', 'water_lines', 'water_lines_labels', 'dam_lines', 'dam_polygons', 'pier_lines', 'pier_polygons', 'bridges', 'street_polygons', 'streets_polygons_labels', 'ferries', 'streets', 'street_labels', 'street_labels_points', 'aerialways', 'public_transport', 'buildings', 'water_polygons', 'ocean', 'water_polygons_labels', 'land', 'sites', 'pois'];
-					let id_set = new Set(known_ids);
-					let count = meta.vector_layers.filter(l => id_set.has(l.id)).length;
-					return (count > known_ids.length / 2)
-				}
-			}
-
-			//tilesUrl += '{z}/{x}/{y}';
-
-			/*
-						const styleNames = [
-							'colorful',
-							'colorful.nolabel',
-							'neutrino',
-							'neutrino.nolabel',
-							'eclipse',
-							'eclipse.nolabel',
-						];
-			
-						let map = new maplibregl.Map({
-							container: 'map',
-							//bounds: [-180, -80, 180, 80],
-							style: await makeStyle('colorful', tilesUrl),
-							maxZoom: 18,
-							hash: true,
-						});
-			
-						addStyleControl();
-						map.addControl(new MaplibreInspect());
-			
-						function addStyleControl() {
-			
-							function addNode(tagName, properties, parent) {
-								let node = document.createElement(tagName);
-								for (let [key, value] of Object.entries(properties)) {
-									if (key === 'style') {
-										for (let [styleKey, styleValue] of Object.entries(value)) {
-											node.style[styleKey] = styleValue
-										}
-										continue;
-									}
-									node[key] = value;
-								}
-								if (parent) parent.appendChild(node);
-								return node;
-							}
-			
-							class StyleControl {
-								onAdd(map) {
-									this._map = map;
-									this._container = addNode('div', {
-										className: 'maplibregl-ctrl', style: {
-											backgroundColor: '#fff',
-											borderRadius: '4px',
-											padding: '6px',
-											boxShadow: '0 0 0 2px rgba(0,0,0,.1)'
-										}
-									});
-			
-									let elements = {};
-									let table = addNode('table', { id: 'csc_table' }, this._container);
-									addRow('style_name', 'Style', 'select', {}, styleNames.map(n => `<option value="${n}">${n}</option>`).join(''))
-									addRow('grey', 'grey', 'input', { type: 'range', value: 0, min: 0, max: 100 });
-									addRow('invert', 'invert', 'input', { type: 'checkbox' });
-									addRow('gamma', 'gamma', 'input', { type: 'range', value: 0, min: -100, max: 100 });
-									addRow('fade', 'fade', 'input', { type: 'range', value: 0, min: 0, max: 100 });
-									addRow('fade_color', 'fade color', 'input', { type: 'text', size: 8, value: '#fff' });
-									addRow('tint', 'tint', 'input', { type: 'range', value: 0, min: 0, max: 100 });
-									addRow('tint_color', 'tint color', 'input', { type: 'text', size: 8, value: '#f00' });
-									addRow('hue_rotate', 'rotate hue', 'input', { type: 'range', value: 0, min: 0, max: 360 });
-									addRow('hide_layer_ids', 'hide layer ids', 'input', { type: 'text' });
-									addRow('hide_labels', 'hide labels', 'input', { type: 'checkbox' });
-									addRow('hide_symbols', 'hide symbols', 'input', { type: 'checkbox' });
-			
-									let button = addNode('a', { download: 'style.json' }, this._container);
-									button.innerText = 'download style.json';
-			
-									handleChange();
-			
-									function addRow(name, label, tagName, properties, innerHTML) {
-										let id = 'cdc_' + name;
-										properties.id = id;
-										let row = addNode('tr', {}, table);
-										let cell1 = addNode('td', {}, row);
-										let cell2 = addNode('td', {}, row);
-										let input = addNode(tagName, properties, cell1);
-										if (innerHTML) input.innerHTML = innerHTML;
-										addNode('label', { for: id }, cell2).innerHTML = label;
-			
-										elements[name] = input;
-										input.addEventListener('input', handleChange);
-									}
-			
-									async function getStyle() {
-										let styleName = elements.style_name.value;
-										let options = {
-											grey: elements.grey.valueAsNumber / 100,
-											invert: elements.invert.checked,
-											gamma: elements.gamma.valueAsNumber / 30,
-											fade: elements.fade.valueAsNumber / 100,
-											fadeColor: elements.fade_color.value,
-											tint: elements.tint.valueAsNumber / 100,
-											tintColor: elements.tint_color.value,
-											hueRotate: elements.hue_rotate.valueAsNumber / 360,
-											hideLayerIds: elements.hide_layer_ids.value,
-											hideLabels: elements.hide_labels.checked,
-											hideSymbols: elements.hide_symbols.checked,
-										}
-			
-										return await makeStyle(styleName, tilesUrl, options);
-									}
-			
-									async function handleChange() {
-										let style = await getStyle();
-										let download = 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(JSON.stringify(style));
-										button.setAttribute('href', download);
-										map.setStyle(style);
-									}
-			
-									return this._container;
-								}
-			
-								onRemove() {
-									this._container.parentNode.removeChild(this._container);
-									this._map = undefined;
-								}
-							}
-							let styleControl = new StyleControl();
-							map.addControl(styleControl, 'top-right');
-						}
-						*/
-		}
-
-
-		async function loadJSON(url) {
-			return await (await fetch(url)).json();
+			let map = make_map('/api/source/' + id);
 		}
 	</script>
+</head>
 
+<body onload="start()">
+	<div id="map"></div>
 </body>
 
 </html>

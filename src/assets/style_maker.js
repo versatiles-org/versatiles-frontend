@@ -257,3 +257,130 @@ function StyleMaker() {
 		}
 	}
 };
+
+
+
+			//tilesUrl += '{z}/{x}/{y}';
+
+			/*
+						const styleNames = [
+							'colorful',
+							'colorful.nolabel',
+							'neutrino',
+							'neutrino.nolabel',
+							'eclipse',
+							'eclipse.nolabel',
+						];
+			
+						let map = new maplibregl.Map({
+							container: 'map',
+							//bounds: [-180, -80, 180, 80],
+							style: await makeStyle('colorful', tilesUrl),
+							maxZoom: 18,
+							hash: true,
+						});
+			
+						addStyleControl();
+						map.addControl(new MaplibreInspect());
+			
+						function addStyleControl() {
+			
+							function addNode(tagName, properties, parent) {
+								let node = document.createElement(tagName);
+								for (let [key, value] of Object.entries(properties)) {
+									if (key === 'style') {
+										for (let [styleKey, styleValue] of Object.entries(value)) {
+											node.style[styleKey] = styleValue
+										}
+										continue;
+									}
+									node[key] = value;
+								}
+								if (parent) parent.appendChild(node);
+								return node;
+							}
+			
+							class StyleControl {
+								onAdd(map) {
+									this._map = map;
+									this._container = addNode('div', {
+										className: 'maplibregl-ctrl', style: {
+											backgroundColor: '#fff',
+											borderRadius: '4px',
+											padding: '6px',
+											boxShadow: '0 0 0 2px rgba(0,0,0,.1)'
+										}
+									});
+			
+									let elements = {};
+									let table = addNode('table', { id: 'csc_table' }, this._container);
+									addRow('style_name', 'Style', 'select', {}, styleNames.map(n => `<option value="${n}">${n}</option>`).join(''))
+									addRow('grey', 'grey', 'input', { type: 'range', value: 0, min: 0, max: 100 });
+									addRow('invert', 'invert', 'input', { type: 'checkbox' });
+									addRow('gamma', 'gamma', 'input', { type: 'range', value: 0, min: -100, max: 100 });
+									addRow('fade', 'fade', 'input', { type: 'range', value: 0, min: 0, max: 100 });
+									addRow('fade_color', 'fade color', 'input', { type: 'text', size: 8, value: '#fff' });
+									addRow('tint', 'tint', 'input', { type: 'range', value: 0, min: 0, max: 100 });
+									addRow('tint_color', 'tint color', 'input', { type: 'text', size: 8, value: '#f00' });
+									addRow('hue_rotate', 'rotate hue', 'input', { type: 'range', value: 0, min: 0, max: 360 });
+									addRow('hide_layer_ids', 'hide layer ids', 'input', { type: 'text' });
+									addRow('hide_labels', 'hide labels', 'input', { type: 'checkbox' });
+									addRow('hide_symbols', 'hide symbols', 'input', { type: 'checkbox' });
+			
+									let button = addNode('a', { download: 'style.json' }, this._container);
+									button.innerText = 'download style.json';
+			
+									handleChange();
+			
+									function addRow(name, label, tagName, properties, innerHTML) {
+										let id = 'cdc_' + name;
+										properties.id = id;
+										let row = addNode('tr', {}, table);
+										let cell1 = addNode('td', {}, row);
+										let cell2 = addNode('td', {}, row);
+										let input = addNode(tagName, properties, cell1);
+										if (innerHTML) input.innerHTML = innerHTML;
+										addNode('label', { for: id }, cell2).innerHTML = label;
+			
+										elements[name] = input;
+										input.addEventListener('input', handleChange);
+									}
+			
+									async function getStyle() {
+										let styleName = elements.style_name.value;
+										let options = {
+											grey: elements.grey.valueAsNumber / 100,
+											invert: elements.invert.checked,
+											gamma: elements.gamma.valueAsNumber / 30,
+											fade: elements.fade.valueAsNumber / 100,
+											fadeColor: elements.fade_color.value,
+											tint: elements.tint.valueAsNumber / 100,
+											tintColor: elements.tint_color.value,
+											hueRotate: elements.hue_rotate.valueAsNumber / 360,
+											hideLayerIds: elements.hide_layer_ids.value,
+											hideLabels: elements.hide_labels.checked,
+											hideSymbols: elements.hide_symbols.checked,
+										}
+			
+										return await makeStyle(styleName, tilesUrl, options);
+									}
+			
+									async function handleChange() {
+										let style = await getStyle();
+										let download = 'data:application/octet-stream;charset=utf-8,' + encodeURIComponent(JSON.stringify(style));
+										button.setAttribute('href', download);
+										map.setStyle(style);
+									}
+			
+									return this._container;
+								}
+			
+								onRemove() {
+									this._container.parentNode.removeChild(this._container);
+									this._map = undefined;
+								}
+							}
+							let styleControl = new StyleControl();
+							map.addControl(styleControl, 'top-right');
+						}
+						*/
