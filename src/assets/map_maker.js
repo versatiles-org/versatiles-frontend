@@ -83,20 +83,18 @@ async function make_map(meta_url) {
 				if (/state|country|place/.test(vector_layer.id)) hue = 'pink';
 				if (/road|highway|transport|streets/.test(vector_layer.id)) hue = 'orange';
 				if (/contour|building|point/.test(vector_layer.id)) hue = 'monochrome';
-				if (/building/.test(vector_layer.id)) luminosity = 'dark';
+				if (/building|point/.test(vector_layer.id)) luminosity = 'dark';
 				if (/contour|landuse/.test(vector_layer.id)) hue = 'yellow';
 				if (/wood|forest|park|landcover|land/.test(vector_layer.id)) hue = 'green';
 
-				const rgb = randomColor({
+				const color = randomColor({
 					luminosity,
 					hue,
 					seed: vector_layer.id,
-					format: 'rgbArray',
+					format: 'hsla',
 					opacity: 0.6
 				});
-				console.log(rgb);
-
-				const color = `rgba(255,0,0,0.6)`;
+				console.log(color);
 
 				addLayer('Point', 'circle', { paint: { 'circle-color': color, 'circle-radius': 2 } });
 				addLayer('LineString', 'line', { layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': color } });

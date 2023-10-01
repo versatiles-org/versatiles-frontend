@@ -14,68 +14,14 @@ let randomColor = (function () {
 	return randomColor;
 
 	function randomColor(options) {
-		options = options || {};
+		options ??= {};
 
-		// Check if there is a seed and ensure it's an
-		// integer. Otherwise, reset the seed value.
-		if (
-			options.seed !== undefined &&
-			options.seed !== null &&
-			options.seed === parseInt(options.seed, 10)
-		) {
-			seed = options.seed;
-
-			// A string was passed as a seed
-		} else if (typeof options.seed === "string") {
-			seed = stringToInteger(options.seed);
-
-			// Something was passed as a seed but it wasn't an integer or string
-		} else if (options.seed !== undefined && options.seed !== null) {
-			throw new TypeError("The seed value must be an integer or string");
-
-			// No seed, reset the value outside.
-		} else {
-			seed = null;
-		}
-
-		var H, S, B;
-
-		// Check if we need to generate multiple colors
-		if (options.count !== null && options.count !== undefined) {
-			var totalColors = options.count,
-				colors = [];
-			// Value false at index i means the range i is not taken yet.
-			for (var i = 0; i < options.count; i++) {
-				colorRanges.push(false);
-			}
-			options.count = null;
-
-			while (totalColors > colors.length) {
-				var color = randomColor(options);
-
-				if (seed !== null) {
-					options.seed = seed;
-				}
-
-				colors.push(color);
-			}
-
-			options.count = totalColors;
-
-			return colors;
-		}
-
-		// First we pick a hue (H)
-		H = pickHue(options);
-
-		// Then use H to determine saturation (S)
-		S = pickSaturation(H, options);
-
-		// Then use S and H to determine brightness (B).
-		B = pickBrightness(H, S, options);
-
-		// Then we return the HSB color in the desired format
-		return setFormat([H, S, B], options);
+		seed = stringToInteger(options.seed);
+		let H = pickHue(options);
+		let S = pickSaturation(H, options);
+		let B = pickBrightness(H, S, options);
+		let hslColor = HSVtoHSL([H, S, B]);
+		return `hsla(${hslColor[0]},${hslColor[1]}%,${hslColor[2]}%,${options.opacity || 1})`
 	};
 
 	function pickHue(options) {
@@ -174,50 +120,6 @@ let randomColor = (function () {
 		return randomWithin([bMin, bMax]);
 	}
 
-	function setFormat(hsv, options) {
-		switch (options.format) {
-			case "hsvArray":
-				return hsv;
-
-			case "hslArray":
-				return HSVtoHSL(hsv);
-
-			case "hsl":
-				var hsl = HSVtoHSL(hsv);
-				return "hsl(" + hsl[0] + ", " + hsl[1] + "%, " + hsl[2] + "%)";
-
-			case "hsla":
-				var hslColor = HSVtoHSL(hsv);
-				var alpha = options.alpha || Math.random();
-				return (
-					"hsla(" +
-					hslColor[0] +
-					", " +
-					hslColor[1] +
-					"%, " +
-					hslColor[2] +
-					"%, " +
-					alpha +
-					")"
-				);
-
-			case "rgbArray":
-				return HSVtoRGB(hsv);
-
-			case "rgb":
-				var rgb = HSVtoRGB(hsv);
-				return "rgb(" + rgb.join(", ") + ")";
-
-			case "rgba":
-				var rgbColor = HSVtoRGB(hsv);
-				var alpha = options.alpha || Math.random();
-				return "rgba(" + rgbColor.join(", ") + ", " + alpha + ")";
-
-			default:
-				return HSVtoHex(hsv);
-		}
-	}
-
 	function getMinimumBrightness(H, S) {
 		var lowerBounds = getColorInfo(H).lowerBounds;
 
@@ -287,38 +189,12 @@ let randomColor = (function () {
 	}
 
 	function randomWithin(range) {
-		if (seed === null) {
-			//generate random evenly destinct number from : https://martin.ankerl.com/2009/12/09/how-to-create-random-colors-programmatically/
-			var golden_ratio = 0.618033988749895;
-			var r = Math.random();
-			r += golden_ratio;
-			r %= 1;
-			return Math.floor(range[0] + r * (range[1] + 1 - range[0]));
-		} else {
-			//Seeded random algorithm from http://indiegamr.com/generate-repeatable-random-numbers-in-js/
-			var max = range[1] || 1;
-			var min = range[0] || 0;
-			seed = (seed * 9301 + 49297) % 233280;
-			var rnd = seed / 233280.0;
-			return Math.floor(min + rnd * (max - min));
-		}
-	}
-
-	function HSVtoHex(hsv) {
-		var rgb = HSVtoRGB(hsv);
-
-		function componentToHex(c) {
-			var hex = c.toString(16);
-			return hex.length == 1 ? "0" + hex : hex;
-		}
-
-		var hex =
-			"#" +
-			componentToHex(rgb[0]) +
-			componentToHex(rgb[1]) +
-			componentToHex(rgb[2]);
-
-		return hex;
+		//Seeded random algorithm from http://indiegamr.com/generate-repeatable-random-numbers-in-js/
+		let max = range[1] || 1;
+		let min = range[0] || 0;
+		seed = (seed * 9301 + 49297) % 233280;
+		let rnd = seed / 233280.0;
+		return Math.floor(min + rnd * (max - min));
 	}
 
 	function defineColor(name, hueRange, lowerBounds) {
@@ -448,72 +324,6 @@ let randomColor = (function () {
 		);
 	}
 
-	function HSVtoRGB(hsv) {
-		// this doesn't work for the values of 0 and 360
-		// here's the hacky fix
-		var h = hsv[0];
-		if (h === 0) {
-			h = 1;
-		}
-		if (h === 360) {
-			h = 359;
-		}
-
-		// Rebase the h,s,v values
-		h = h / 360;
-		var s = hsv[1] / 100,
-			v = hsv[2] / 100;
-
-		var h_i = Math.floor(h * 6),
-			f = h * 6 - h_i,
-			p = v * (1 - s),
-			q = v * (1 - f * s),
-			t = v * (1 - (1 - f) * s),
-			r = 256,
-			g = 256,
-			b = 256;
-
-		switch (h_i) {
-			case 0:
-				r = v;
-				g = t;
-				b = p;
-				break;
-			case 1:
-				r = q;
-				g = v;
-				b = p;
-				break;
-			case 2:
-				r = p;
-				g = v;
-				b = t;
-				break;
-			case 3:
-				r = p;
-				g = q;
-				b = v;
-				break;
-			case 4:
-				r = t;
-				g = p;
-				b = v;
-				break;
-			case 5:
-				r = v;
-				g = p;
-				b = q;
-				break;
-		}
-
-		var result = [
-			Math.floor(r * 255),
-			Math.floor(g * 255),
-			Math.floor(b * 255),
-		];
-		return result;
-	}
-
 	function HexToHSB(hex) {
 		hex = hex.replace(/^#/, "");
 		hex = hex.length === 3 ? hex.replace(/(.)/g, "$1$1") : hex;
@@ -537,7 +347,7 @@ let randomColor = (function () {
 	}
 
 	function HSVtoHSL(hsv) {
-		var h = hsv[0],
+		let h = hsv[0],
 			s = hsv[1] / 100,
 			v = hsv[2] / 100,
 			k = (2 - s) * v;
@@ -550,10 +360,9 @@ let randomColor = (function () {
 	}
 
 	function stringToInteger(string) {
-		var total = 0;
-		for (var i = 0; i !== string.length; i++) {
-			if (total >= Number.MAX_SAFE_INTEGER) break;
-			total += string.charCodeAt(i);
+		let total = 0;
+		for (let i = 0; i < string.length; i++) {
+			total = (total * 257 + string.charCodeAt(i)) % 4294967296;
 		}
 		return total;
 	}
