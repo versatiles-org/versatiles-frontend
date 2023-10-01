@@ -82,12 +82,12 @@
 
 			let html = [];
 			for (let source of tile_sources) {
-				let url = 'preview.html?name=' + source.name;
+				let url = 'preview.html?id=' + source.id;
 				let {container} = source;
 				html.push(...[
 					`<a href="${url}">`,
 					`<div class="box">`,
-					`<h2>${source.name}</h2>`,
+					`<h2>${source.id}</h2>`,
 					`<div class="row"><div>url:</div><div>${source.url}</div></div>`,
 					`<div class="row"><div>container:</div><div>${container.type}</div></div>`,
 					`<div class="row"><div>format:</div><div>${container.format}</div></div>`,
