@@ -54,7 +54,7 @@ async function make_map(meta_url) {
 			tiles: [tiles_url + '{z}/{x}/{y}'],
 			vector_layers: meta.vector_layers,
 		};
-		//console.log(meta);
+		
 		if (is_shortbread()) {
 			await addShortbreadStyle()
 		} else {
@@ -94,7 +94,6 @@ async function make_map(meta_url) {
 					format: 'hsla',
 					opacity: 0.6
 				});
-				console.log(color);
 
 				addLayer('Point', 'circle', { paint: { 'circle-color': color, 'circle-radius': 2 } });
 				addLayer('LineString', 'line', { layout: { 'line-join': 'round', 'line-cap': 'round' }, paint: { 'line-color': color } });

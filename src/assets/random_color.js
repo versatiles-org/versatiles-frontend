@@ -1,12 +1,6 @@
 let randomColor = (function () {
-	// Seed to get repeatable colors
 	let seed = null;
-
-	// Shared color dictionary
-	const colorDictionary = {};
-
-	// Populate the color dictionary
-	loadColorBounds();
+	const colorDictionary = loadColorBounds();
 
 	return randomColor;
 
@@ -17,8 +11,8 @@ let randomColor = (function () {
 		let H = pickHue(options);
 		let S = pickSaturation(H, options);
 		let B = pickBrightness(H, S, options);
-		let hslColor = HSVtoHSL([H, S, B]);
-		return `hsla(${hslColor[0]},${hslColor[1]}%,${hslColor[2]}%,${options.opacity || 1})`
+		let hsl = HSVtoHSL([H, S, B]).map(v => v.toFixed(0));
+		return `hsla(${hsl[0]},${hsl[1]}%,${hsl[2]}%,${options.opacity || 1})`
 	};
 
 	function pickHue(options) {
@@ -96,7 +90,7 @@ let randomColor = (function () {
 				return colorDictionary[colorName];
 			}
 		}
-		return 'Color not found';
+		throw Error('Color not found');
 	}
 
 	function randomWithin(range) {
@@ -108,21 +102,9 @@ let randomColor = (function () {
 		return Math.floor(min + rnd * (max - min));
 	}
 
-	function defineColor(name, hueRange, lowerBounds) {
-		var sMin = lowerBounds[0][0],
-			sMax = lowerBounds[lowerBounds.length - 1][0],
-			bMin = lowerBounds[lowerBounds.length - 1][1],
-			bMax = lowerBounds[0][1];
-
-		colorDictionary[name] = {
-			hueRange: hueRange,
-			lowerBounds: lowerBounds,
-			saturationRange: [sMin, sMax],
-			brightnessRange: [bMin, bMax],
-		};
-	}
-
 	function loadColorBounds() {
+		let dict = {};
+
 		defineColor('monochrome', null, [[0, 0], [100, 0]]);
 		defineColor('red', [-26, 18], [[20, 100], [30, 92], [40, 89], [50, 85], [60, 78], [70, 70], [80, 60], [90, 55], [100, 50]]);
 		defineColor('orange', [18, 46], [[20, 100], [30, 93], [40, 88], [50, 86], [60, 85], [70, 70], [100, 70]]);
@@ -131,23 +113,30 @@ let randomColor = (function () {
 		defineColor('blue', [178, 257], [[20, 100], [30, 86], [40, 80], [50, 74], [60, 60], [70, 52], [80, 44], [90, 39], [100, 35]]);
 		defineColor('purple', [257, 282], [[20, 100], [30, 87], [40, 79], [50, 70], [60, 65], [70, 59], [80, 52], [90, 45], [100, 42]]);
 		defineColor('pink', [282, 334], [[20, 100], [30, 90], [40, 86], [60, 84], [80, 80], [90, 75], [100, 73]]);
+
+		return dict;
+
+		function defineColor(name, hueRange, lowerBounds) {
+			let greyest = lowerBounds[0];
+			let colorful = lowerBounds[lowerBounds.length - 1];
+
+			dict[name] = {
+				hueRange: hueRange,
+				lowerBounds: lowerBounds,
+				saturationRange: [greyest[0], colorful[0]],
+				brightnessRange: [colorful[1], greyest[1]],
+			};
+		}
 	}
 
 	function HSVtoHSL(hsv) {
-		let h = hsv[0], s = hsv[1] / 100, v = hsv[2] / 100, k = (2 - s) * v;
-
-		return [
-			h,
-			Math.round(((s * v) / (k < 1 ? k : 2 - k)) * 10000) / 100,
-			(k / 2) * 100,
-		];
+		let s = hsv[1] / 100, v = hsv[2] / 100, k = (2 - s) * v;
+		return [hsv[0], 100 * s * v / (k < 1 ? k : 2 - k), 100 * k / 2];
 	}
 
-	function stringToInteger(string) {
-		let total = 0;
-		for (let i = 0; i < string.length; i++) {
-			total = (total * 257 + string.charCodeAt(i)) % 4294967296;
-		}
-		return total;
+	function stringToInteger(s) {
+		let i = 0;
+		for (let p = 0; p < s.length; p++) i = (i * 0x101 + s.charCodeAt(p)) % 0x100000000;
+		return i;
 	}
 })();
