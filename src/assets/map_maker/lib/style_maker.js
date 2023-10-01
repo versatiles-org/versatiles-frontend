@@ -13,9 +13,7 @@
 		.hideSymbols: false
 */
 
-const makeStyle = new StyleMaker();
-
-function StyleMaker() {
+export default function StyleMaker() {
 	const loadedStyles = {};
 
 	return getStyle;

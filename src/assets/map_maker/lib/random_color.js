@@ -1,4 +1,4 @@
-let randomColor = (function () {
+export default function RandomColor() {
 	let seed = null;
 	const colorDictionary = loadColorBounds();
 
@@ -139,4 +139,4 @@ let randomColor = (function () {
 		for (let p = 0; p < s.length; p++) i = (i * 0x101 + s.charCodeAt(p)) % 0x100000000;
 		return i;
 	}
-})();
+}

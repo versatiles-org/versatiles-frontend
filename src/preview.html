@@ -8,9 +8,7 @@
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 	<link rel="shortcut icon" sizes="16x16 24x24 32x32 48x48 64x64" href="/favicon.ico">
 	<script async src="assets/maplibre/maplibre-gl.js"></script>
-	<script async src="assets/map_maker.js"></script>
-	<script async src="assets/random_color.js"></script>
-	<script async src="assets/style_maker.js"></script>
+	<script async type="module" src="assets/main.js"></script>
 	<link href="assets/maplibre/maplibre-gl.css" rel="stylesheet" />
 	<link href="assets/maplibre-inspect/maplibre-gl-inspect.css" rel="stylesheet" />
 	<style>
@@ -43,18 +41,9 @@
 			width: 100px;
 		}
 	</style>
-
-	<script>
-		async function start() {
-			const id = (new URLSearchParams(window.location.search)).get('id');
-			if (!id) throw Error('id is not defined');
-
-			let map = make_map('/api/source/' + id);
-		}
-	</script>
 </head>
 
-<body onload="start()">
+<body>
 	<div id="map"></div>
 </body>
 

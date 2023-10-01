@@ -1,10 +1,15 @@
-async function make_map(meta_url) {
+import VersatilesControl from "./lib/versatiles_control.js";
+import RandomColor from "./lib/random_color.js";
+import StyleMaker from "./lib/style_maker.js";
+
+export default async function MapMaker(maplibregl, nodeId, meta_url) {
 	const info = await loadJSON(meta_url);
 
 	const source_name = 'data_source';
 
 	const tiles_url = window.location.origin + info.url;
 	const container = info.container;
+	const randomColor = new RandomColor();
 
 	const style = {
 		id: 'auto_generated',
@@ -14,27 +19,36 @@ async function make_map(meta_url) {
 		layers: []
 	};
 
+	style.sources[source_name] = {
+		scheme: 'xyz',
+		tiles: [tiles_url + '{z}/{x}/{y}'],
+		minzoom: container.zoom_min,
+		maxzoom: container.zoom_max,
+	};
+
 	switch (container.format) {
-		case 'pbf': await initVectorMap(); break;
-		case 'jpg': case 'jpeg': case 'png': await initRasterMap(); break;
+		case 'pbf': await addVectorMap(style); break;
+		case 'jpg': case 'jpeg': case 'png': await addRasterMap(style); break;
 		default:
 			throw Error('Unknown format ' + container.format);
 	}
 
-	addBoundingBox();
+	addBoundingBox(style);
 
 	let map = new maplibregl.Map({
-		container: 'map',
+		container: nodeId,
 		style,
 		bounds: info.container.bbox,
 		hash: true,
-		maxZoom: 18,
-		minZoom: 0,
+		minZoom: container.zoom_min - 0.4,
+		maxZoom: container.zoom_max + 0.4,
 	});
+
+	map.addControl(new VersatilesControl(info.container));
 
 	return map;
 
-	function addBoundingBox() {
+	function addBoundingBox(style) {
 		let [x0, y0, x1, y1] = container.bbox;
 		let coordinates = [[[x0, y0], [x1, y0], [x1, y1], [x0, y1], [x0, y0]]];
 		style.sources._bounding_box = {
@@ -46,14 +60,13 @@ async function make_map(meta_url) {
 		});
 	}
 
-	async function initVectorMap() {
+	async function addVectorMap(style) {
+
 		const meta = await loadJSON(tiles_url + 'meta.json');
-		style.sources[source_name] = {
-			scheme: 'xyz',
+		Object.assign(style.sources[source_name], {
 			type: 'vector',
-			tiles: [tiles_url + '{z}/{x}/{y}'],
 			vector_layers: meta.vector_layers,
-		};
+		});
 
 		if (is_shortbread()) {
 			await addShortbreadStyle()
@@ -127,15 +140,11 @@ async function make_map(meta_url) {
 		}
 	}
 
-	async function initRasterMap() {
-		style.sources[source_name] = {
-			scheme: 'xyz',
-			type: 'raster',
-			tiles: [tiles_url + '{z}/{x}/{y}'],
-		}
+	async function addRasterMap(style) {
+		style.sources[source_name].type = 'raster';
 
 		style.layers.push({
-			id: source_name+'_raster',
+			id: source_name + '_raster',
 			source: source_name,
 			type: 'raster',
 		});
