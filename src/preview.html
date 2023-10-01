@@ -55,21 +55,21 @@
 	<script>
 		start()
 
-		async function start() {
-			const id = (new URLSearchParams(window.location.search)).get('id');
-			if (!id) throw Error('name is not defined');
-
-			let map = new maplibregl.Map({
-				container: 'map',
-				minZoom: 0,
-				maxZoom: 18,
-				hash: true,
-				style: await getStyle(id)
-			});
+		function log(text) {
+			console.log(text);
 		}
 
-		async function getStyle(name) {
-			const info = await loadJSON('/api/source/' + name);
+		async function start() {
+			const id = (new URLSearchParams(window.location.search)).get('id');
+			if (!id) throw Error('id is not defined');
+
+			let map = getMap('/api/source/' + id);
+		}
+
+		async function getMap(meta_url) {
+			const info = await loadJSON(meta_url);
+
+
 			const tiles_url = window.location.origin + info.url;
 			const container = info.container;
 
@@ -89,9 +89,16 @@
 
 			addBoundingBox();
 
-			console.log(style);
+			let map = new maplibregl.Map({
+				container: 'map',
+				style,
+				bounds: info.container.bbox,
+				hash: true,
+				maxZoom: 18,
+				minZoom: 0,
+			});
 
-			return style;
+			return map;
 
 			function addBoundingBox() {
 				let [x0, y0, x1, y1] = container.bbox;
@@ -101,7 +108,7 @@
 				};
 				style.layers.push({
 					id: '_bounding_box', source: '_bounding_box', type: 'line',
-					paint: { 'line-color': '#c00', 'line-width': 1 }
+					paint: { 'line-color': '#000', 'line-opacity': 0.5, 'line-dasharray': [3, 3], 'line-width': 1 }
 				});
 			}
 
