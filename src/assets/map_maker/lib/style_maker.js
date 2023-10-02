@@ -70,10 +70,13 @@ export default async function StyleMaker(mainOptions = {}) {
 				return;
 			}
 
+			options.disableInspectorMode ??= !is_shortbread();
+
 			// we have to guess the layers
 			if (is_shortbread() && !options.inspectorMode) {
 				addShortbreadStyle()
 			} else {
+				options.inspectorMode ??= true;
 				addInspectorStyle()
 			}
 
