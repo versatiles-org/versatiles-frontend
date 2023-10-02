@@ -37,7 +37,7 @@ await parallel(
 	addMaplibreInspect(),
 )();
 
-notes.save(resolve(folders.dist, 'notes.txt'));
+notes.save(resolve(folders.dist, 'notes.md'));
 
 
 
