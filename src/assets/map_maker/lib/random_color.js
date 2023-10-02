@@ -28,6 +28,8 @@ export default function RandomColor() {
 		let saturationRange = getColorInfo(hue).saturationRange;
 		let sMin = saturationRange[0], sMax = saturationRange[1];
 
+		if (options.saturation === 'strong') return sMax;
+
 		switch (options.luminosity) {
 			case 'bright': sMin = 55; break;
 			case 'dark': sMin = sMax - 10; break;

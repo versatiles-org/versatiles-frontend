@@ -12,8 +12,8 @@ export default function MaplibreControl(controller, callback) {
 
 	const btnStylemaker = createButton('stylemaker', 'Stylemaker', e => map.zoomIn({}, { originalEvent: e }));
 	const btnInspector = createButton('inspector', 'Inspector', e => inspector.toggle());
-	const btnBackgroundMap = createButton('background-map', 'Background Map', () => { toggleBackgroundMap(); updateStyle() });
-	const btnBoundingBox = createButton('bounding-box', 'Add Boundingbox', () => { toggleBoundingBox(); updateStyle() });
+	const btnBackgroundMap = createButton('background-map', 'Add Background Map', () => { toggleBackgroundMap(); updateStyle() });
+	const btnBoundingBox = createButton('bounding-box', 'Add Bounding Box', () => { toggleBoundingBox(); updateStyle() });
 	const btnZoomIn = createButton('zoom-in', 'Zoom in', e => map.zoomIn({}, { originalEvent: e }));
 	const btnZoomOut = createButton('zoom-out', 'Zoom out', e => map.zoomOut({}, { originalEvent: e }));
 
@@ -23,13 +23,11 @@ export default function MaplibreControl(controller, callback) {
 	function toggleBackgroundMap(value) {
 		options.addBackgroundMap = value ?? !options.addBackgroundMap;
 		btnBackgroundMap.classList.toggle('depressed', options.addBackgroundMap);
-		console.log(options)
 	}
 
 	function toggleBoundingBox(value) {
 		options.addBoundingBox = value ?? !options.addBoundingBox;
 		btnBoundingBox.classList.toggle('depressed', options.addBoundingBox);
-		console.log(options)
 	}
 
 

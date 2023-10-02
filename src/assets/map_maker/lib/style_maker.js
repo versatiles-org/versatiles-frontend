@@ -4,8 +4,13 @@ import { loadJSON } from './utils.js';
 export default async function StyleMaker(mainOptions = {}) {
 	const source_name = 'data_source';
 	const randomColor = new RandomColor();
+	const background_style = await loadJSON('/assets/background-style.json');
 	const shortbread_style = await loadJSON('/assets/styles/colorful.json');
-	let meta = await loadJSON(mainOptions.metaUrl);
+	const meta = await loadJSON(mainOptions.metaUrl);
+
+	if (!background_style) throw Error('default background style not found');
+	if (!shortbread_style) throw Error('default shortbread style not found');
+	console.log({ background_style });
 
 	return makeStyle;
 
@@ -19,21 +24,18 @@ export default async function StyleMaker(mainOptions = {}) {
 			layers: []
 		};
 
-		style.sources[source_name] = {
-			scheme: 'xyz',
-			tiles: [mainOptions.tiles_url],
-			minzoom: mainOptions.zoom_min,
-			maxzoom: mainOptions.zoom_max,
-		};
+		if (options.addBackgroundMap) addVectorMap('versatiles-background', background_style);
 
 		switch (mainOptions.format) {
-			case 'pbf': addVectorMap(style); break;
-			case 'jpg': case 'jpeg': case 'png': addRasterMap(style); break;
+			case 'pbf': addVectorMap(source_name, { sources: { [source_name]: meta } }); break;
+			case 'jpg': case 'jpeg': case 'png': addRasterMap(source_name, style); break;
 			default:
 				throw Error('Unknown format ' + mainOptions.format);
 		}
 
 		if (options.addBoundingBox) addBoundingBox(style);
+
+		console.log(style);
 
 		return style;
 
@@ -46,16 +48,32 @@ export default async function StyleMaker(mainOptions = {}) {
 			};
 			style.layers.push({
 				id: '_bounding_box', source: '_bounding_box', type: 'line',
-				paint: { 'line-color': '#000', 'line-opacity': 0.5, 'line-dasharray': [3, 3], 'line-width': 1 }
+				paint: { 'line-color': '#c00', 'line-opacity': 0.5, 'line-dasharray': [3, 3], 'line-width': 1 }
 			});
 		}
 
-		function addVectorMap(style) {
-			Object.assign(style.sources[source_name], {
-				type: 'vector',
-				vector_layers: meta.vector_layers,
-			});
+		function addVectorMap(source_name, new_style) {
+			Object.entries(new_style.sources).forEach(([key, value]) => {
+				style.sources[key] = value;
+				value.scheme ??= 'xyz';
+				value.tilejson ??= '3.0.0';
+				value.tiles ??= [mainOptions.tiles_url];
+				value.minzoom ??= mainOptions.zoom_min;
+				value.maxzoom ??= mainOptions.zoom_max;
+				value.type ??= 'vector';
+				value.vector_layers ??= meta.vector_layers;
+			})
 
+			if (new_style.layers) {
+				new_style.layers.forEach(new_layer => {
+					new_layer = Object.assign({}, new_layer);
+					new_layer.id = source_name + '_' + new_layer.id;
+					style.layers.push(new_layer);
+				})
+				return;
+			}
+
+			// we have to guess the layers
 			if (is_shortbread()) {
 				addShortbreadStyle()
 			} else {
@@ -71,25 +89,30 @@ export default async function StyleMaker(mainOptions = {}) {
 
 			function addInspectorStyle() {
 				let new_layers = {
-					background: [{ 'id': 'background', 'type': 'background', 'paint': { 'background-color': '#fff' } }],
+					//background: [{ 'id': 'background', 'type': 'background', 'paint': { 'background-color': '#fff' } }],
 					circle: [], line: [], fill: []
 				}
 
 				meta.vector_layers.forEach(vector_layer => {
-					let luminosity = 'bright';
-					let hue = null;
+					let luminosity = 'bright', saturation, hue;
 
 					if (/water|ocean|lake|sea|river/.test(vector_layer.id)) hue = 'blue';
 					if (/state|country|place/.test(vector_layer.id)) hue = 'pink';
 					if (/road|highway|transport|streets/.test(vector_layer.id)) hue = 'orange';
-					if (/contour|building|point/.test(vector_layer.id)) hue = 'monochrome';
-					if (/building|point/.test(vector_layer.id)) luminosity = 'dark';
+					if (/contour|building/.test(vector_layer.id)) hue = 'monochrome';
+					if (/building/.test(vector_layer.id)) luminosity = 'dark';
 					if (/contour|landuse/.test(vector_layer.id)) hue = 'yellow';
 					if (/wood|forest|park|landcover|land/.test(vector_layer.id)) hue = 'green';
 
+					if (/point/.test(vector_layer.id)) {
+						saturation = 'strong';
+						luminosity = 'light'
+					}
+
 					const color = randomColor({
-						luminosity,
 						hue,
+						luminosity,
+						saturation,
 						seed: vector_layer.id,
 						format: 'hsla',
 						opacity: 0.6
@@ -110,7 +133,7 @@ export default async function StyleMaker(mainOptions = {}) {
 					}
 				})
 				style.layers = style.layers.concat(
-					new_layers.background,
+					//new_layers.background,
 					new_layers.fill,
 					new_layers.line,
 					new_layers.circle,
@@ -127,8 +150,14 @@ export default async function StyleMaker(mainOptions = {}) {
 			}
 		}
 
-		function addRasterMap(style) {
-			style.sources[source_name].type = 'raster';
+		function addRasterMap(source_name, style) {
+			style.sources[source_name] = {
+				scheme: 'xyz',
+				tiles: [mainOptions.tiles_url],
+				minzoom: mainOptions.zoom_min,
+				maxzoom: mainOptions.zoom_max,
+				type: 'raster',
+			};
 
 			style.layers.push({
 				id: source_name + '_raster',
