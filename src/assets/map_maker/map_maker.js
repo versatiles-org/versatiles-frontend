@@ -10,6 +10,7 @@ export default async function MapMaker(maplibregl, nodeId, meta_url) {
 	const options = {
 		addBoundingBox: true,
 		addBackgroundMap: false,
+		disableDesignMaker: true,
 	}
 
 	let makeStyle = await StyleMaker({
