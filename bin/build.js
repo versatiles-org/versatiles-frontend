@@ -131,16 +131,16 @@ function addMaplibre() {
 }
 
 function addMaplibreInspect() {
-	let setVersion = notes.add('[MapLibre GL Inspect](https://github.com/acalcutt/maplibre-gl-inspect)');
-	let s = progress.add('maplibre-inspect');
-	let folder = getAssetFolder('maplibre-inspect');
+	const setVersion = notes.add('[MapLibre GL Inspect](https://github.com/acalcutt/maplibre-gl-inspect)');
+	const s = progress.add('maplibre-inspect');
+	const folder = getAssetFolder('maplibre-inspect');
+	const baseUrl = 'https://github.com/acalcutt/maplibre-gl-inspect/releases/latest/download/';
+
 	return async () => {
-
-		await curl('https://github.com/acalcutt/maplibre-gl-inspect/releases/download/v1.4.6/maplibre-gl-inspect.min.js')
-			.save(resolve(folder, 'maplibre-gl-inspect.min.js'));
-
-		await curl('https://github.com/acalcutt/maplibre-gl-inspect/releases/download/v1.4.6/maplibre-gl-inspect.css')
-			.save(resolve(folder, 'maplibre-gl-inspect.css'));
+		await Promise.all([
+			curl(baseUrl + 'maplibre-gl-inspect.min.js').save(resolve(folder, 'maplibre-gl-inspect.min.js')),
+			curl(baseUrl + 'maplibre-gl-inspect.css').save(resolve(folder, 'maplibre-gl-inspect.css')),
+		])
 
 		setVersion(await curl('https://api.github.com/repos/acalcutt/maplibre-gl-inspect/tags').get_latest_git_tag());
 
