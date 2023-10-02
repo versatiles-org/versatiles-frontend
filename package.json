@@ -1,11 +1,11 @@
 {
   "name": "versatiles-frontend",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "",
   "scripts": {
     "build": "bin/build.js",
     "watch": "bin/build.js watch",
-    "dist": "bin/release.sh"
+    "release": "bin/build.js; bin/release.sh"
   },
   "type": "module",
   "author": "Michael Kreil <versatiles@michael-kreil.de>",
