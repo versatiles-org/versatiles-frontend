@@ -26,8 +26,14 @@ export default async function StyleMaker(mainOptions = {}) {
 		if (options.addBackgroundMap) addVectorMap('versatiles-background', background_style);
 
 		switch (mainOptions.format) {
-			case 'pbf': addVectorMap(source_name, { sources: { [source_name]: meta } }); break;
-			case 'jpg': case 'jpeg': case 'png': addRasterMap(source_name, style); break;
+			case 'pbf':
+				addVectorMap(source_name, { sources: { [source_name]: meta } });
+				break;
+			case 'jpg': case 'jpeg': case 'png':
+				options.disableInspectorMode = true;
+				options.inspectorMode = false;
+				addRasterMap(source_name, style);
+				break;
 			default:
 				throw Error('Unknown format ' + mainOptions.format);
 		}
