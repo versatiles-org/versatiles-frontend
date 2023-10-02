@@ -7,6 +7,10 @@ export default async function MapMaker(maplibregl, nodeId, meta_url) {
 	const tiles_url = window.location.origin + info.url;
 	const container = info.container;
 
+	const options = {
+		addBoundingBox: true,
+	}
+
 	let makeStyle = await StyleMaker({
 		tiles_url: tiles_url + '{z}/{x}/{y}',
 		zoom_min: container.zoom_min,
@@ -15,11 +19,10 @@ export default async function MapMaker(maplibregl, nodeId, meta_url) {
 		bbox: container.bbox,
 		metaUrl: tiles_url + 'meta.json',
 	})
-	console.log(makeStyle());
 
 	let map = new maplibregl.Map({
 		container: nodeId,
-		style: makeStyle(),
+		style: makeStyle(options),
 		bounds: info.container.bbox,
 		hash: true,
 		minZoom: container.zoom_min - 0.4,
@@ -27,7 +30,7 @@ export default async function MapMaker(maplibregl, nodeId, meta_url) {
 	});
 
 	map.addControl(new MaplibreControl(
-		{},
+		{ options },
 		options => map.setStyle(makeStyle(options))
 	));
 

@@ -1,8 +1,7 @@
 import RandomColor from './random_color.js';
 import { loadJSON } from './utils.js';
 
-export default async function StyleMaker(mainOptions) {
-	mainOptions ??= {};
+export default async function StyleMaker(mainOptions = {}) {
 	const source_name = 'data_source';
 	const randomColor = new RandomColor();
 	const shortbread_style = await loadJSON('/assets/styles/colorful.json');
@@ -10,7 +9,7 @@ export default async function StyleMaker(mainOptions) {
 
 	return makeStyle;
 
-	function makeStyle(options) {
+	function makeStyle(options = {}) {
 
 		const style = {
 			id: 'auto_generated',
@@ -34,7 +33,7 @@ export default async function StyleMaker(mainOptions) {
 				throw Error('Unknown format ' + mainOptions.format);
 		}
 
-		addBoundingBox(style);
+		if (options.addBoundingBox) addBoundingBox(style);
 
 		return style;
 
