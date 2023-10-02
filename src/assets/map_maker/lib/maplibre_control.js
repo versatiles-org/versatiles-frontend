@@ -1,4 +1,4 @@
-export default function VersatilesControl(opt) {
+export default function MaplibreControl(controller, callback) {
 	let map;
 
 	addIconStyles(
@@ -6,8 +6,6 @@ export default function VersatilesControl(opt) {
 		{ name: 'inspector', svg: "<svg width='23' height='23' fill='#fff' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'><path d='M10.5 1C8.02 1 6 3.02 6 5.5C6 6.56 6.38 7.52 7 8.29L2.02 13.27L2.73 13.98L7.70 9C8.48 9.62 9.44 10 10.5 10C12.98 10 15 7.98 15 5.5C15 3.02 12.98 1 10.5 1ZM10.5 2C12.44 2 14 3.56 14 5.5C14 7.44 12.44 9 10.5 9C8.56 9 7 7.44 7 5.5C7 3.56 8.56 2 10.5 2Z'/></svg>" },
 		{ name: 'background_map', svg: "<svg width='21' height='21' fill='#fff' viewBox='0 0 16 16' xmlns='http://www.w3.org/2000/svg'><path d='M15.817.113A.5.5 0 0 1 16 .5v14a.5.5 0 0 1-.402.49l-5 1a.502.502 0 0 1-.196 0L5.5 15.01l-4.902.98A.5.5 0 0 1 0 15.5v-14a.5.5 0 0 1 .402-.49l5-1a.5.5 0 0 1 .196 0L10.5.99l4.902-.98a.5.5 0 0 1 .415.103zM10 1.91l-4-.8v12.98l4 .8V1.91zm1 12.98 4-.8V1.11l-4 .8v12.98zm-6-.8V1.11l-4 .8v12.98l4-.8z' fill-rule='evenodd'/></svg>" },
 	)
-
-
 
 	const inspector = new Inspector();
 	const container = createDOM('div', 'maplibregl-ctrl maplibregl-ctrl-group');
