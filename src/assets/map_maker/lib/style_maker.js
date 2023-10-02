@@ -10,7 +10,6 @@ export default async function StyleMaker(mainOptions = {}) {
 
 	if (!background_style) throw Error('default background style not found');
 	if (!shortbread_style) throw Error('default shortbread style not found');
-	console.log({ background_style });
 
 	return makeStyle;
 
@@ -34,8 +33,6 @@ export default async function StyleMaker(mainOptions = {}) {
 		}
 
 		if (options.addBoundingBox) addBoundingBox(style);
-
-		console.log(style);
 
 		return style;
 
@@ -74,7 +71,7 @@ export default async function StyleMaker(mainOptions = {}) {
 			}
 
 			// we have to guess the layers
-			if (is_shortbread()) {
+			if (is_shortbread() && !options.inspectorMode) {
 				addShortbreadStyle()
 			} else {
 				addInspectorStyle()
