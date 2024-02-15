@@ -3,9 +3,9 @@
   "version": "1.2.0",
   "description": "",
   "scripts": {
-    "build": "bin/build.js",
-    "watch": "bin/build.js watch",
-    "release": "bin/build.js; bin/release.sh"
+    "build": "src/build.js",
+    "watch": "src/build.js watch",
+    "release": "src/build.js; src/release.sh"
   },
   "type": "module",
   "author": "Michael Kreil <versatiles@michael-kreil.de>",
