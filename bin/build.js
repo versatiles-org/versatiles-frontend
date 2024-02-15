@@ -111,8 +111,6 @@ function addStyles() {
 	return async () => {
 		await curl('https://github.com/versatiles-org/versatiles-styles/releases/latest/download/styles.tar.gz')
 			.ungzip_untar(folder);
-		let { process_styles } = await import('./process_styles.js');
-		await process_styles(folder, getAssetFolder('fonts'));
 		setVersion(await curl('https://api.github.com/repos/versatiles-org/versatiles-styles/tags').get_latest_git_tag());
 		s.close();
 	}
