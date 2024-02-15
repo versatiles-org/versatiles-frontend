@@ -30,7 +30,7 @@ let progress = new Progress();
 await parallel(
 	addFrontend(),
 	sequential(
-		addFonts('noto_sans'),
+		addFonts('fonts'),
 		addStyles(),
 	),
 	addMaplibre(),
