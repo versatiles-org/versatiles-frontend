@@ -16,8 +16,9 @@ import { Curl } from './lib/curl.js';
 const watchMode = process.argv[2] === 'watch';
 if (watchMode) console.log('Start in watch mode');
 
-const dstFolder = new URL('../dist', import.meta.url).pathname;
-const frontendsFolder = new URL('../frontends', import.meta.url).pathname;
+const projectFolder = new URL('..', import.meta.url).pathname;
+const dstFolder = resolve(projectFolder, 'dist');
+const frontendsFolder = resolve(projectFolder, 'frontends');
 const fileSystem = new FileSystem();
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access

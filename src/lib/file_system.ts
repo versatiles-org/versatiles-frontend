@@ -50,7 +50,7 @@ export class FileSystem {
 		}
 		for (const file of this.iterate()) {
 			if (file.bufferBr) continue;
-			
+
 			await file.compress();
 
 			if (callback) {

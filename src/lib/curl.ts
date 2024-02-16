@@ -1,13 +1,13 @@
 
 import { join } from 'node:path';
 import { createGunzip } from 'node:zlib';
-import { pipeline } from 'node:stream/promises';
+import { finished } from 'node:stream/promises';
 import tar from 'tar-stream';
 import unzipper from 'unzipper';
 import type { Entry } from 'unzipper';
 import type { FileSystem } from './file_system.js';
 import { streamAsBuffer } from './utils.js';
-import type { ReadableStream } from 'stream/web';
+import cache from './cache.js';
 
 export class Curl {
 	private readonly url: string;
@@ -33,7 +33,10 @@ export class Curl {
 				next();
 			});
 		});
-		await pipeline(await this.getStream(), createGunzip(), extract);
+		const streamIn = createGunzip();
+		streamIn.pipe(extract);
+		streamIn.end(await this.getBuffer());
+		await finished(extract);
 	}
 
 	public async save(filename: string): Promise<void> {
@@ -52,18 +55,18 @@ export class Curl {
 				entry.autodrain();
 			}
 		});
-		await pipeline(await this.getStream(), zip);
-	}
-
-	private async getStream(): Promise<ReadableStream> {
-		const response = await fetch(this.url, { redirect: 'follow' });
-		if (response.body == null) throw Error();
-		return response.body;
+		zip.end(await this.getBuffer());
+		await finished(zip);
 	}
 
 	private async getBuffer(): Promise<Buffer> {
-		const response = await fetch(this.url, { redirect: 'follow' });
-		const blob = await response.blob();
-		return Buffer.from(await blob.arrayBuffer());
+		return cache(
+			'getBuffer:' + this.url,
+			async () => {
+				const response = await fetch(this.url, { redirect: 'follow' });
+				const blob = await response.blob();
+				return Buffer.from(await blob.arrayBuffer());
+			},
+		);
 	}
 }

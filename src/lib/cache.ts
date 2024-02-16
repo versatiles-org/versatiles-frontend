@@ -1,20 +1,27 @@
 
 import { ClassicLevel } from 'classic-level';
 
-export class Cache {
-	private readonly db: ClassicLevel<string, Buffer>;
 
-	public constructor(folder: string) {
-		this.db = new ClassicLevel(folder, { keyEncoding: 'utf8', valueEncoding: 'buffer' });
+const folder = new URL('../../cache', import.meta.url).pathname;
+const db = new ClassicLevel<string, Buffer>(folder, { keyEncoding: 'utf8', valueEncoding: 'buffer' });
+
+async function cache(key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> {
+	let buffer: Buffer | false = false;
+	try {
+		buffer = await db.get(key);
+	} catch (err) {
+		console.log(err);
 	}
 
-	public async get(key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> {
-		try {
-			return await this.db.get(key);
-		} catch (err) {
-			const buffer = await cbBuffer();
-			await this.db.put(key, buffer);
-			return buffer;
-		}
+	if (buffer === false) {
+		buffer = await cbBuffer();
+		if (!(buffer instanceof Buffer)) throw Error();
+		await db.put(key, buffer);
+	} else {
+		if (!(buffer instanceof Buffer)) throw Error();
 	}
+
+	return buffer;
 }
+
+export default cache;
