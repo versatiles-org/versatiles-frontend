@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+	<meta charset="utf-8" />
+	<title>VersaTiles - Overview</title>
+	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+	<link rel="shortcut icon" sizes="16x16 24x24 32x32 48x48 64x64" href="/favicon.ico">
+	<script async src="assets/maplibre/maplibre-gl.js"></script>
+	<script async type="module" src="assets/main.js"></script>
+	<link href="assets/maplibre/maplibre-gl.css" rel="stylesheet" />
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+		}
+
+		#map {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 100%;
+		}
+
+		#csc_table,
+		#csc_table input,
+		#csc_table select {
+			font-size: 10px;
+			border-spacing: 0px;
+			line-height: 1.1em;
+		}
+
+		#csc_table td:first-child {
+			text-align: right;
+			padding-right: 3px;
+		}
+
+		#csc_table input[type="range"] {
+			width: 100px;
+		}
+	</style>
+</head>
+
+<body>
+	<div id="map"></div>
+</body>
+
+</html>
