@@ -1,33 +1,30 @@
 
 class Label {
-	public readonly name: string;
+	public label: string;
 
 	public closed = false;
 
-	public time: string;
-
 	private readonly progress: Progress;
 
-	public constructor(progress: Progress, name: string) {
-		this.name = name;
-		this.time = this.getTime();
+	public constructor(progress: Progress, label: string) {
+		this.label = label;
 		this.progress = progress;
+	}
+
+	public updateLabel(label: string): void {
+		if (this.label === label) return;
+		this.label = label;
+		this.progress.redraw();
 	}
 
 	public close(): void {
 		this.closed = true;
-		this.time = this.getTime();
 		this.progress.redraw();
 	}
 
 	public open(): void {
 		this.closed = false;
-		this.time = this.getTime();
 		this.progress.redraw();
-	}
-
-	private getTime(): string {
-		return new Date().toLocaleTimeString('de-DE');
 	}
 }
 
@@ -51,9 +48,8 @@ export default class Progress {
 	}
 
 	public redraw(): void {
-		this.labelList.sort((a, b) => a.name < b.name ? -1 : 1);
 		const status = '\u001b[u' + this.labelList.map(l =>
-			' - \u001b[' + (l.closed ? 32 : 31) + 'm' + l.name + '\u001b[39;2m ' + l.time + '\u001b[0m\n',
+			' - \u001b[' + (l.closed ? 32 : 31) + 'm' + l.label + '\u001b[0m\n',
 		).join('');
 		process.stderr.write(status);
 	}

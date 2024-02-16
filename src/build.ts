@@ -4,7 +4,7 @@ import { basename, resolve, join } from 'node:path';
 import { cleanupFolder, getLatestReleaseVersion } from './lib/utils.js';
 import Progress from './lib/progress.js';
 import notes from './lib/release_notes.js';
-import {  readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import type { PromiseFunction } from './lib/async.js';
 import { parallel, sequential } from './lib/async.js';
 import { FileSystem } from './lib/file_system.js';
@@ -30,24 +30,36 @@ await cleanupFolder(dstFolder);
 
 const progress = new Progress();
 
-await parallel(
-	addFonts('fonts'),
-	addStyles(),
-	addMaplibre(),
-	addMaplibreInspect(),
-)();
-
-await fileSystem.precompress();
-
 const frontendConfigs = JSON.parse(readFileSync(resolve(frontendsFolder, 'frontends.json'), 'utf8')) as unknown[];
-await parallel(
-	...frontendConfigs.map(frontendConfig => generateFrontend(frontendConfig)),
+
+await sequential(
+	parallel(
+		//addFonts('fonts'),
+		//addFonts('noto_sans'),
+		addStyles(),
+		//addMaplibre(),
+		addMaplibreInspect(),
+	),
+	compressFiles(),
+	parallel(
+		...frontendConfigs.map(frontendConfig => generateFrontend(frontendConfig)),
+	),
 )();
 
 notes.save(resolve(dstFolder, 'notes.md'));
 
+process.exit();
 
 
+function compressFiles(): PromiseFunction {
+	const s = progress.add('compress files');
+	return async () => {
+		await fileSystem.compress(status => {
+			s.updateLabel(`compress files: ${(100 * status).toFixed(0)}%`);
+		});
+		s.close();
+	};
+}
 
 function generateFrontend(config: unknown): PromiseFunction {
 	if (typeof config !== 'object') throw Error();
@@ -58,10 +70,10 @@ function generateFrontend(config: unknown): PromiseFunction {
 
 	const s = progress.add('generate frontend: ' + name);
 	return async () => {
-		const frontend = new Frontend(fileSystem, config);
+		const frontend = new Frontend(fileSystem, config, frontendsFolder);
 		await frontend.saveAsTarGz(dstFolder);
 		await frontend.saveAsBrTar(dstFolder);
-		
+
 		s.close();
 	};
 }

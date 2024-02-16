@@ -1,5 +1,5 @@
 
-import { resolve } from 'node:path';
+import { join } from 'node:path';
 import { createGunzip } from 'node:zlib';
 import { pipeline } from 'node:stream/promises';
 import tar from 'tar-stream';
@@ -27,7 +27,7 @@ export class Curl {
 				return;
 			}
 			if (header.type !== 'file') throw Error(String(header.type));
-			const filename = resolve(folder, header.name);
+			const filename = join(folder, header.name);
 			void streamAsBuffer(stream).then(buffer => {
 				this.fileSystem.addFile(filename, buffer);
 				next();

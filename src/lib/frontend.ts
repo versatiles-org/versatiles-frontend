@@ -49,7 +49,7 @@ export class Frontend {
 	}
 
 	public async saveAsBrTar(folder: string): Promise<void> {
-		await this.fileSystem.precompress();
+		await this.fileSystem.compress();
 		const pack = tar.pack();
 		for (const file of this.iterate()) {
 			pack.entry({ name: file.name }, file.bufferBr);

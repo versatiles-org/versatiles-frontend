@@ -2,22 +2,22 @@
 	{
 		"name": "frontend-full",
 		"include": [
-			"frontends/default",
-			"frontends/frontend-full"
+			"default",
+			"frontend-full"
 		]
 	},
 	{
 		"name": "frontend-rust",
 		"include": [
-			"frontends/default",
-			"frontends/frontend-rust"
+			"default",
+			"frontend-rust"
 		]
 	},
 	{
 		"name": "frontend-minimal",
 		"include": [
-			"frontends/default",
-			"frontends/frontend-minimal"
+			"default",
+			"frontend-minimal"
 		],
 		"ignore": [
 			"assets/fonts/",

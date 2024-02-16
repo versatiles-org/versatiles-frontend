@@ -39,8 +39,26 @@ export class FileSystem {
 		if (files) this.files = files;
 	}
 
-	public async precompress(): Promise<void> {
-		for (const file of this.files.values()) await file.compress();
+	public async compress(callback?: (status: number) => void): Promise<void> {
+		let sizeSum = 0;
+		let sizePos = 0;
+		if (callback) {
+			for (const file of this.iterate()) {
+				if (!file.bufferBr) sizeSum += file.bufferRaw.length;
+			}
+			callback(0);
+		}
+		for (const file of this.iterate()) {
+			if (file.bufferBr) continue;
+			
+			await file.compress();
+
+			if (callback) {
+				sizePos += file.bufferRaw.length;
+				callback(sizePos / sizeSum);
+			}
+		}
+		if (callback) callback(1);
 	}
 
 	public addFile(filename: string, buffer: Buffer): void {
