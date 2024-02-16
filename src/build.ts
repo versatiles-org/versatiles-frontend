@@ -69,11 +69,14 @@ function generateFrontend(config: unknown): PromiseFunction {
 	const name = String(config.name);
 
 	const s = progress.add('generate frontend: ' + name);
+	const sBr = progress.add('generate .br.tar', 1);
+	const sGz = progress.add('generate .tar.gz', 1);
 	return async () => {
 		const frontend = new Frontend(fileSystem, config, frontendsFolder);
-		await frontend.saveAsTarGz(dstFolder);
 		await frontend.saveAsBrTar(dstFolder);
-
+		sBr.close();
+		await frontend.saveAsTarGz(dstFolder);
+		sGz.close();
 		s.close();
 	};
 }
