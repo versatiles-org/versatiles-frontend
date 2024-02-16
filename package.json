@@ -4,11 +4,11 @@
   "private": true,
   "description": "",
   "scripts": {
-    "build": "tsx src/build.js",
+    "build": "tsx src/build.ts",
     "check": "npm run lint && npm run build && npm run test",
     "dev": "tsx src/dev.js",
     "lint": "eslint . --color",
-    "release": "src/build.js; src/release.sh",
+    "release": "npm run build",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "upgrade": "npm-check-updates -u && rm -f package-lock.json; rm -rf node_modules; npm i && npm update"
   },
@@ -26,6 +26,7 @@
     "@types/unzipper": "^0.10.9",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
-    "eslint": "^8.56.0"
+    "eslint": "^8.56.0",
+    "tsx": "^4.7.1"
   }
 }
