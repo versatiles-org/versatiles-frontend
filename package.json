@@ -16,6 +16,7 @@
   "author": "Michael Kreil <versatiles@michael-kreil.de>",
   "license": "MIT",
   "dependencies": {
+    "classic-level": "^1.4.1",
     "ignore": "^5.3.1",
     "tar-stream": "^3.1.7",
     "unzipper": "^0.10.14"

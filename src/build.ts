@@ -34,10 +34,9 @@ const frontendConfigs = JSON.parse(readFileSync(resolve(frontendsFolder, 'fronte
 
 await sequential(
 	parallel(
-		//addFonts('fonts'),
-		//addFonts('noto_sans'),
+		addFonts('fonts'),
 		addStyles(),
-		//addMaplibre(),
+		addMaplibre(),
 		addMaplibreInspect(),
 	),
 	compressFiles(),
