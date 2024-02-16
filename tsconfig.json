@@ -1,0 +1,20 @@
+{
+	"compilerOptions": {
+		"lib": [
+			"ESNext"
+		],
+		"module": "NodeNext",
+		"moduleResolution": "NodeNext",
+		"target": "ES2022",
+		"strict": true,
+		"esModuleInterop": true,
+		"skipLibCheck": true,
+		"declaration": true,
+		"allowJs": true,
+		"noEmit": true,
+		"forceConsistentCasingInFileNames": true,
+	},
+	"include": [
+		"src/**/*.ts",
+	]
+}

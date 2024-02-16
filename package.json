@@ -1,11 +1,16 @@
 {
   "name": "versatiles-frontend",
   "version": "1.2.0",
+  "private": true,
   "description": "",
   "scripts": {
-    "build": "src/build.js",
-    "watch": "src/build.js watch",
-    "release": "src/build.js; src/release.sh"
+    "build": "tsx src/build.js",
+    "check": "npm run lint && npm run build && npm run test",
+    "dev": "tsx src/dev.js",
+    "lint": "eslint . --color",
+    "release": "src/build.js; src/release.sh",
+    "test": "NODE_OPTIONS=--experimental-vm-modules jest",
+    "upgrade": "npm-check-updates -u && rm -f package-lock.json; rm -rf node_modules; npm i && npm update"
   },
   "type": "module",
   "author": "Michael Kreil <versatiles@michael-kreil.de>",
@@ -13,5 +18,13 @@
   "dependencies": {
     "tar-stream": "^3.1.6",
     "unzipper": "^0.10.14"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.19",
+    "@types/tar-stream": "^3.1.3",
+    "@types/unzipper": "^0.10.9",
+    "@typescript-eslint/eslint-plugin": "^7.0.1",
+    "@typescript-eslint/parser": "^7.0.1",
+    "eslint": "^8.56.0"
   }
 }
