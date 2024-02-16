@@ -28,9 +28,10 @@ export class Curl {
 			}
 			if (header.type !== 'file') throw Error(String(header.type));
 			const filename = join(folder, header.name);
-			void streamAsBuffer(stream).then(buffer => {
-				this.fileSystem.addFile(filename, buffer);
+			void streamAsBuffer(stream).then((buffer): void => {
+				this.fileSystem.addFile(filename, Number(header.mtime ?? Math.random()), buffer);
 				next();
+				return;
 			});
 		});
 		const streamIn = createGunzip();
@@ -40,7 +41,7 @@ export class Curl {
 	}
 
 	public async save(filename: string): Promise<void> {
-		this.fileSystem.addFile(filename, await this.getBuffer());
+		this.fileSystem.addFile(filename, Math.random(), await this.getBuffer());
 	}
 
 	public async unzip(cbFilter: (filename: string) => string | false): Promise<void> {
@@ -49,7 +50,7 @@ export class Curl {
 			const filename = cbFilter(entry.path);
 			if (filename != false) {
 				void entry.buffer().then(buffer => {
-					this.fileSystem.addFile(filename, buffer);
+					this.fileSystem.addFile(filename, entry.vars.lastModifiedTime, buffer);
 				});
 			} else {
 				entry.autodrain();

@@ -78,10 +78,15 @@ export class Frontend {
 		function addPathRec(path: string): void {
 			readdirSync(path).forEach(name => {
 				const fullname = resolve(path, name);
-				if (statSync(fullname).isDirectory()) {
+				const stat = statSync(fullname);
+				if (stat.isDirectory()) {
 					addPathRec(fullname);
 				} else {
-					fileSystem.addFile(relative(path0, fullname), readFileSync(fullname));
+					fileSystem.addFile(
+						relative(path0, fullname),
+						stat.mtimeMs,
+						readFileSync(fullname),
+					);
 				}
 			});
 		}

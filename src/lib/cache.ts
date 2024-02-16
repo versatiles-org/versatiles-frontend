@@ -10,7 +10,6 @@ async function cache(key: string, cbBuffer: () => Promise<Buffer>): Promise<Buff
 	try {
 		buffer = await db.get(key);
 	} catch (err) {
-		console.log(err);
 	}
 
 	if (buffer === false) {

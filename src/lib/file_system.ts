@@ -1,33 +1,38 @@
 import { brotliCompress, constants } from 'node:zlib';
+import cache from './cache.js';
 
 export class File {
 	public readonly name: string;
+
+	public readonly hash: string;
 
 	public readonly bufferRaw: Buffer;
 
 	public bufferBr?: Buffer;
 
-	public constructor(name: string, bufferRaw: Buffer) {
+	public constructor(name: string, modificationTime: number, bufferRaw: Buffer) {
 		this.name = name;
+		this.hash = name + ';' + modificationTime + ';' + bufferRaw.length;
 		this.bufferRaw = bufferRaw;
 	}
 
 	public async compress(): Promise<void> {
 		if (this.bufferBr) return;
-		await new Promise(res => {
-			brotliCompress(
-				this.bufferRaw,
-				{
-					params: {
-						[constants.BROTLI_PARAM_QUALITY]: 11,
-						[constants.BROTLI_PARAM_SIZE_HINT]: this.bufferRaw.length,
+		this.bufferBr = await cache('compress:' + this.hash, async () => {
+			return new Promise(res => {
+				brotliCompress(
+					this.bufferRaw,
+					{
+						params: {
+							[constants.BROTLI_PARAM_QUALITY]: 11,
+							[constants.BROTLI_PARAM_SIZE_HINT]: this.bufferRaw.length,
+						},
 					},
-				},
-				(error, buffer) => {
-					this.bufferBr = buffer;
-					res(null);
-				},
-			);
+					(error, buffer) => {
+						res(buffer);
+					},
+				);
+			});
 		});
 	}
 }
@@ -61,8 +66,8 @@ export class FileSystem {
 		if (callback) callback(1);
 	}
 
-	public addFile(filename: string, buffer: Buffer): void {
-		this.files.set(filename, new File(filename, buffer));
+	public addFile(filename: string, modificationTime: number, buffer: Buffer): void {
+		this.files.set(filename, new File(filename, modificationTime, buffer));
 	}
 
 	public clone(): FileSystem {
