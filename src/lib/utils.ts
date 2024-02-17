@@ -51,11 +51,14 @@ export async function getLatestReleaseVersion(owner: string, repo: string): Prom
 	const url = `https://api.github.com/repos/${owner}/${repo}/releases`;
 	const response = await fetch(url, { redirect: 'follow' });
 	const data = await response.json();
-	if (!Array.isArray(data)) throw Error();
+	if (!Array.isArray(data)) {
+		console.log({ data });
+		throw Error('wrong response');
+	}
 	for (const entry of data) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 		const name = String(entry.tag_name);
 		if (name.startsWith('v')) return name.slice(1);
 	}
-	return '';
+	throw Error(`Could not fetch the version of the latest release: https://github.com/${owner}/${repo}/releases`);
 }
