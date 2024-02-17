@@ -37,8 +37,22 @@ export class ProgressLabel {
 class Progress {
 	private readonly labelList: ProgressLabel[] = [];
 
+	private header?: string;
+
+	private finished = false;
+
 	public constructor() {
 		process.stderr.write('\x1b[2J\x1b[3J\x1b[H\x1b7');
+		this.redraw();
+	}
+
+	public setHeader(header: string): void {
+		this.header = header;
+		this.redraw();
+	}
+
+	public finish(): void {
+		this.finished = true;
 	}
 
 	public add(name: string, indent = 0): ProgressLabel {
@@ -50,19 +64,23 @@ class Progress {
 	}
 
 	public redraw(): void {
-		const status = '\x1b8' + this.labelList.map(l => {
-			let code = '0;39';
-			if (l.status === 'running') code = '1;39';
-			if (l.status === 'finished') code = '2;39';
-			return [
-				`\x1b[${code}m`,
-				'   '.repeat(l.indent),
-				' - ',
-				l.label,
-				'\x1b[0m\n',
-			].join('');
-		}).join('');
-		process.stderr.write(status);
+		process.stderr.write([
+			'\x1b8',
+			`\x1b[${this.finished ? 2 : 1}m${this.header ?? ''}\x1b[0m\n`,
+			...this.labelList.map(l => {
+				let code = '0';
+				if (l.status === 'running') code = '1';
+				if (l.status === 'finished') code = '2';
+				return [
+					`\x1b[${code}m`,
+					'   '.repeat(l.indent),
+					' - ',
+					l.label,
+					'\x1b[0m\n',
+				].join('');
+			}),
+			this.finished ? '\x1b[2mFinished\x1b[0m\n' : '',
+		].join(''));
 	}
 }
 

@@ -15,8 +15,8 @@ export async function build(): Promise<void> {
 	const projectFolder = new URL('..', import.meta.url).pathname;
 	const dstFolder = resolve(projectFolder, 'dist');
 	const fileSystem = new FileSystem();
-
-
+	progress.setHeader('Building Release');
+	
 	// create an empty folder
 	await cleanupFolder(dstFolder);
 
@@ -28,7 +28,7 @@ export async function build(): Promise<void> {
 
 	notes.save(resolve(dstFolder, 'notes.md'));
 
-	console.log('Finished');
+	progress.finish();
 
 	function compressFiles(): Pf {
 		let s: ProgressLabel;
