@@ -54,8 +54,9 @@ export default class PromiseFunction {
 				await pf.init();
 			},
 			async () => {
+				s.start();
 				await pf.run();
-				s.close();
+				s.end();
 			},
 		);
 	}
@@ -67,8 +68,9 @@ export default class PromiseFunction {
 				s = progress.add(message, indent);
 			},
 			async () => {
+				s.start();
 				await af();
-				s.close();
+				s.end();
 			},
 		);
 	}

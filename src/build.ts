@@ -40,6 +40,7 @@ await Pf.runSequential(
 
 notes.save(resolve(dstFolder, 'notes.md'));
 
+console.log('Finished');
 process.exit();
 
 
@@ -50,10 +51,11 @@ function compressFiles(): Pf {
 			s = progress.add('compress files');
 		},
 		async () => {
+			s.start();
 			await fileSystem.compress(status => {
 				s.updateLabel(`compress files: ${(100 * status).toFixed(0)}%`);
 			});
-			s.close();
+			s.end();
 		},
 	);
 }
@@ -81,12 +83,15 @@ function generateFrontends(): Pf {
 				sGz = progress.add('.tar.gz', 2);
 			},
 			async () => {
+				s.start();
+				sBr.start();
+				sGz.start();
 				const frontend = new Frontend(fileSystem, config, frontendsFolder);
 				await frontend.saveAsBrTar(dstFolder);
-				sBr.close();
+				sBr.end();
 				await frontend.saveAsTarGz(dstFolder);
-				sGz.close();
-				s.close();
+				sGz.end();
+				s.end();
 			},
 		);
 	}

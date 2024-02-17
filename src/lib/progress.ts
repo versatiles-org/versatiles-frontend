@@ -1,10 +1,12 @@
 
+type Status = 'finished' | 'new' | 'running';
+
 export class ProgressLabel {
 	public label: string;
 
 	public indent: number;
 
-	public closed = false;
+	public status: Status;
 
 	private readonly progress: Progress;
 
@@ -12,6 +14,7 @@ export class ProgressLabel {
 		this.progress = progress;
 		this.label = label;
 		this.indent = indent || 0;
+		this.status = 'new';
 	}
 
 	public updateLabel(label: string): void {
@@ -20,13 +23,13 @@ export class ProgressLabel {
 		this.progress.redraw();
 	}
 
-	public close(): void {
-		this.closed = true;
+	public start(): void {
+		this.status = 'running';
 		this.progress.redraw();
 	}
 
-	public open(): void {
-		this.closed = false;
+	public end(): void {
+		this.status = 'finished';
 		this.progress.redraw();
 	}
 }
@@ -35,7 +38,7 @@ class Progress {
 	private readonly labelList: ProgressLabel[] = [];
 
 	public constructor() {
-		process.stderr.write('\u001b[s');
+		process.stderr.write('\u001b7');
 	}
 
 	public add(name: string, indent = 0): ProgressLabel {
@@ -47,10 +50,14 @@ class Progress {
 	}
 
 	public redraw(): void {
-		const status = '\u001b[u' + this.labelList.map(l => {
+		const status = '\u001b8' + this.labelList.map(l => {
+			let code = '0;39';
+			if (l.status === 'running') code = '1;39';
+			if (l.status === 'finished') code = '2;39';
 			return [
+				`\u001b[${code}m`,
 				'   '.repeat(l.indent),
-				' - \u001b[', l.closed ? 32 : 31, 'm',
+				' - ',
 				l.label,
 				'\u001b[0m\n',
 			].join('');
