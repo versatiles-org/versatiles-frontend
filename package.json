@@ -3,12 +3,14 @@
   "version": "1.2.0",
   "private": true,
   "description": "",
+  "bin": {
+    "versatiles-frontend": "src/index.ts"
+  },
   "scripts": {
-    "build": "tsx src/build.ts",
-    "check": "npm run lint && npm run build && npm run test",
-    "dev": "tsx src/dev.js",
+    "start": "npm exec versatiles-frontend serve",
+    "check": "npm run lint && npm run test",
     "lint": "eslint . --color",
-    "release": "npm run build",
+    "build": "npm exec versatiles-frontend build",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "upgrade": "npm-check-updates -u && rm -f package-lock.json; rm -rf node_modules; npm i && npm update"
   },
@@ -17,9 +19,11 @@
   "license": "MIT",
   "dependencies": {
     "classic-level": "^1.4.1",
+    "commander": "^12.0.0",
     "ignore": "^5.3.1",
     "tar-stream": "^3.1.7",
-    "unzipper": "^0.10.14"
+    "unzipper": "^0.10.14",
+    "tsx": "^4.7.1"
   },
   "devDependencies": {
     "@types/node": "^20.11.19",
@@ -28,7 +32,6 @@
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
     "eslint": "^8.56.0",
-    "npm-check-updates": "^16.14.15",
-    "tsx": "^4.7.1"
+    "npm-check-updates": "^16.14.15"
   }
 }

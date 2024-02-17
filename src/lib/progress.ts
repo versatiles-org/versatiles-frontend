@@ -38,7 +38,7 @@ class Progress {
 	private readonly labelList: ProgressLabel[] = [];
 
 	public constructor() {
-		process.stderr.write('\u001b7');
+		process.stderr.write('\x1b[2J\x1b[3J\x1b[H\x1b7');
 	}
 
 	public add(name: string, indent = 0): ProgressLabel {
@@ -50,16 +50,16 @@ class Progress {
 	}
 
 	public redraw(): void {
-		const status = '\u001b8' + this.labelList.map(l => {
+		const status = '\x1b8' + this.labelList.map(l => {
 			let code = '0;39';
 			if (l.status === 'running') code = '1;39';
 			if (l.status === 'finished') code = '2;39';
 			return [
-				`\u001b[${code}m`,
+				`\x1b[${code}m`,
 				'   '.repeat(l.indent),
 				' - ',
 				l.label,
-				'\u001b[0m\n',
+				'\x1b[0m\n',
 			].join('');
 		}).join('');
 		process.stderr.write(status);
