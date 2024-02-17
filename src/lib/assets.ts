@@ -11,6 +11,7 @@ export function getAssets(fileSystem: FileSystem): Pf {
 		Pf.parallel(
 			addFont('fonts'),
 			addStyles(),
+			addSprites(),
 			addMaplibre(),
 			addMaplibreInspect(),
 		),
@@ -36,6 +37,17 @@ export function getAssets(fileSystem: FileSystem): Pf {
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-styles/releases/download/v${version}/styles.tar.gz`)
 				.ungzipUntar(folder);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-styles/releases/download/v${version}/versatiles-style.tar.gz`)
+				.ungzipUntar(folder);
+		});
+	}
+
+	function addSprites(): Pf {
+		const folder = 'assets/sprites';
+		const label = notes.add('[VersaTiles style](https://github.com/versatiles-org/versatiles-sprites)');
+		return Pf.wrapAsync('add sprites', 1, async () => {
+			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-sprites');
+			label.setVersion(version);
+			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-sprites/releases/download/v${version}/sprites.tar.gz`)
 				.ungzipUntar(folder);
 		});
 	}
