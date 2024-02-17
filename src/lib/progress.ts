@@ -31,7 +31,7 @@ class Label {
 	}
 }
 
-export default class Progress {
+class Progress {
 	private readonly labelList: Label[] = [];
 
 	public constructor() {
@@ -60,3 +60,7 @@ export default class Progress {
 		process.stderr.write(status);
 	}
 }
+
+
+const progress = new Progress();
+export default progress;
