@@ -35,6 +35,8 @@ export function getAssets(fileSystem: FileSystem): Pf {
 			label.setVersion(version);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-styles/releases/download/v${version}/styles.tar.gz`)
 				.ungzipUntar(folder);
+			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-styles/releases/download/v${version}/versatiles-style.tar.gz`)
+				.ungzipUntar(folder);
 		});
 	}
 
