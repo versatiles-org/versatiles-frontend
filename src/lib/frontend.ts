@@ -80,7 +80,6 @@ export class Frontend {
 			watch(fullPath, { recursive: true }, (event: WatchEventType, filename: string | null) => {
 				if (filename == null) return;
 				const fullname = resolve(fullPath, filename);
-				console.log({ fullname });
 				try {
 					this.addPath(fullname, fullPath);
 				} catch (error) {

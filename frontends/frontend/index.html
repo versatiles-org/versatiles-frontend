@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Versatiles</title>
+	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+
+	<script src="assets/maplibre-gl/maplibre-gl.js"></script>
+	<link href="assets/maplibre-gl/maplibre-gl.css" rel="stylesheet">
+
+	<script src="assets/switch/switch.js"></script>
+	<link href="assets/switch/switch.css" rel="stylesheet">
+
+	<script src="assets/maplibre-gl-inspect/maplibre-gl-inspect.min.js"></script>
+	<link href="assets/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet">
+
+	<script src="assets/switch/switch.js"></script>
+
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+		}
+
+		#map {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 100%;
+		}
+
+		#logo {
+			position: absolute;
+			top: 1em;
+			left: 1em;
+			z-index: 1;
+		}
+
+		#logo img {
+			width: 3em;
+		}
+	</style>
+</head>
+
+<body>
+	<a href="https://versatiles.org" id="logo"><img src="https://versatiles.org/assets/logo/versatiles.svg" alt="versatiles.org"></a>
+	<div id="map" class="maplibregl-compact"></div>
+	<script>
+		let map = new maplibregl.Map({
+			container: 'map',
+			bounds: [-180, -80, 180, 80],
+			style: new URL('/assets/styles/colorful.json', location.href).href,
+			zoom: 5,
+			maxZoom: 20,
+			hash: true,
+		});
+
+		// add style switcher
+		map.addControl(new MapLibreStyleSwitcherControl());
+
+		// add inspection
+		map.addControl(new MaplibreInspect());
+
+		// collapse attribution after a short time
+		setTimeout(function () {
+			attribution._container.setAttribute('open', '');
+			attribution._container.classList.remove('maplibregl-compact-show');
+			attribution._container.classList.remove('mapboxgl-compact-show');
+		}, 30000);
+
+		// add navigation
+		map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+		// add attribution
+		var attribution = new maplibregl.AttributionControl({ compact: true, customAttribution: 'Map Data &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap Contributors</a> available under <a href="https://opendatacommons.org/licenses/odbl/">ODbL</a>' });
+		map.addControl(attribution, 'bottom-right');
+
+	</script>
+</body>
+
+</html>

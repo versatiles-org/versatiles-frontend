@@ -39,7 +39,7 @@ export function getAssets(fileSystem: FileSystem): Pf {
 	}
 
 	function addMaplibre(): Pf {
-		const folder = 'assets/maplibre';
+		const folder = 'assets/maplibre-gl';
 		const label = notes.add('[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)');
 		return Pf.wrapAsync('add maplibre', 1, async () => {
 			const version = await getLatestReleaseVersion('maplibre', 'maplibre-gl-js');

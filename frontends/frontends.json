@@ -1,19 +1,19 @@
 {
-	"frontend-full": {
+	"frontend": {
 		"include": [
-			"default",
-			"frontend-full"
+			"all",
+			"frontend"
 		]
 	},
 	"frontend-rust": {
 		"include": [
-			"default",
+			"all",
 			"frontend-rust"
 		]
 	},
 	"frontend-minimal": {
 		"include": [
-			"default",
+			"all",
 			"frontend-minimal"
 		],
 		"ignore": [
