@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/require-await */
 import { relative, resolve } from 'node:path';
 import type { File, FileSystem } from './file_system.js';
 import type { Ignore } from 'ignore';
@@ -6,6 +7,10 @@ import { createWriteStream, existsSync, readFileSync, readdirSync, statSync } fr
 import { pipeline } from 'node:stream/promises';
 import tar from 'tar-stream';
 import { createGzip } from 'node:zlib';
+import Pf from './async.js';
+import notes from './release_notes.js';
+import type { ProgressLabel } from './progress.js';
+import progress from './progress.js';
 
 export class Frontend {
 	private readonly name: string;
@@ -90,5 +95,50 @@ export class Frontend {
 				}
 			});
 		}
+	}
+}
+
+export function generateFrontends(fileSystem: FileSystem, projectFolder: string, dstFolder: string): Pf {
+	const frontendsFolder = resolve(projectFolder, 'frontends');
+
+	const frontendConfigs = JSON.parse(readFileSync(resolve(frontendsFolder, 'frontends.json'), 'utf8')) as unknown[];
+
+	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+	const frontendVersion = String(JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')).version);
+	notes.setVersion(frontendVersion);
+
+	return Pf.wrapProgress('generate frontends',
+		Pf.parallel(
+			...frontendConfigs.map(frontendConfig => generateFrontend(frontendConfig)),
+		),
+	);
+
+	function generateFrontend(config: unknown): Pf {
+		if (typeof config !== 'object') throw Error();
+		if (config == null) throw Error();
+
+		if (!('name' in config)) throw Error();
+		const name = String(config.name);
+
+		let s: ProgressLabel, sBr: ProgressLabel, sGz: ProgressLabel;
+
+		return Pf.single(
+			async () => {
+				s = progress.add(name, 1);
+				sBr = progress.add('.br.tar', 2);
+				sGz = progress.add('.tar.gz', 2);
+			},
+			async () => {
+				s.start();
+				sBr.start();
+				sGz.start();
+				const frontend = new Frontend(fileSystem, config, frontendsFolder);
+				await frontend.saveAsBrTar(dstFolder);
+				sBr.end();
+				await frontend.saveAsTarGz(dstFolder);
+				sGz.end();
+				s.end();
+			},
+		);
 	}
 }
