@@ -33,18 +33,18 @@ const progress = new Progress();
 
 const frontendConfigs = JSON.parse(readFileSync(resolve(frontendsFolder, 'frontends.json'), 'utf8')) as unknown[];
 
-await sequential(
-	parallel(
+await sequential([
+	parallel([
 		addFonts('fonts'),
 		addStyles(),
 		addMaplibre(),
 		addMaplibreInspect(),
-	),
+	]),
 	compressFiles(),
 	parallel(
-		...frontendConfigs.map(frontendConfig => generateFrontend(frontendConfig)),
+		frontendConfigs.map(frontendConfig => generateFrontend(frontendConfig)),
 	),
-)();
+])();
 
 notes.save(resolve(dstFolder, 'notes.md'));
 
@@ -85,12 +85,12 @@ function addFonts(...fontNames: string[]): PromiseFunction {
 	const label = notes.add('[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)');
 	const folder = 'assets/fonts';
 	let version: string;
-	return sequential(
-		async () => {
+	return sequential([
+		async (): Promise<void> => {
 			version = await getLatestReleaseVersion('versatiles-org', 'versatiles-fonts');
 			label.setVersion(version);
 		},
-		parallel(...fontNames.map(fontName => {
+		parallel(fontNames.map(fontName => {
 			const s = progress.add('add font: ' + fontName);
 			return async () => {
 				await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/${fontName}.tar.gz`)
@@ -98,7 +98,7 @@ function addFonts(...fontNames: string[]): PromiseFunction {
 				s.close();
 			};
 		})),
-	);
+	]);
 }
 
 function addStyles(): PromiseFunction {
