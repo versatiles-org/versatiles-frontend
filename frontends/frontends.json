@@ -1,20 +1,17 @@
-[
-	{
-		"name": "frontend-full",
+{
+	"frontend-full": {
 		"include": [
 			"default",
 			"frontend-full"
 		]
 	},
-	{
-		"name": "frontend-rust",
+	"frontend-rust": {
 		"include": [
 			"default",
 			"frontend-rust"
 		]
 	},
-	{
-		"name": "frontend-minimal",
+	"frontend-minimal": {
 		"include": [
 			"default",
 			"frontend-minimal"
@@ -24,4 +21,4 @@
 			"!assets/fonts/noto*"
 		]
 	}
-]
+}

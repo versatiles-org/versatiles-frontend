@@ -67,7 +67,12 @@ export class FileSystem {
 	}
 
 	public addFile(filename: string, modificationTime: number, buffer: Buffer): void {
+		console.log('addFile', filename);
 		this.files.set(filename, new File(filename, modificationTime, buffer));
+	}
+
+	public getFile(filename: string): Buffer | undefined {
+		return this.files.get(filename)?.bufferRaw;
 	}
 
 	public clone(): FileSystem {

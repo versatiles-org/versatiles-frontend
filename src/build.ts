@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 /* eslint-disable @typescript-eslint/require-await */
 
 import { resolve } from 'node:path';

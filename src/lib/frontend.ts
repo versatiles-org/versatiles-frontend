@@ -3,7 +3,8 @@ import { relative, resolve } from 'node:path';
 import type { File, FileSystem } from './file_system.js';
 import type { Ignore } from 'ignore';
 import ignore from 'ignore';
-import { createWriteStream, existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
+import type { WatchEventType } from 'node:fs';
+import { createWriteStream, existsSync, readFileSync, readdirSync, statSync, watch } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import tar from 'tar-stream';
 import { createGzip } from 'node:zlib';
@@ -12,31 +13,36 @@ import notes from './release_notes.js';
 import type { ProgressLabel } from './progress.js';
 import progress from './progress.js';
 
+interface FrontendConfig {
+	name: string;
+	include: string[];
+	ignore?: string[];
+}
+
 export class Frontend {
 	private readonly name: string;
+
+	private readonly include: string[];
+
+	private readonly frontendsPath: string;
 
 	private readonly ignore: Ignore;
 
 	private readonly fileSystem: FileSystem;
 
-	public constructor(fileSystem: FileSystem, config: object, frontendsFolder: string) {
+	public constructor(fileSystem: FileSystem, config: FrontendConfig, frontendsPath: string) {
 		this.fileSystem = fileSystem.clone();
 		this.ignore = (ignore as unknown as () => Ignore)();
+		this.name = config.name;
+		this.frontendsPath = frontendsPath;
+		this.include = config.include;
 
-		if (!('name' in config)) throw Error();
-		this.name = String(config.name);
-
-		if (!('include' in config)) throw Error();
-		if (!Array.isArray(config.include)) throw Error('"include" must be an array');
-		config.include.forEach(path => {
-			if (typeof path !== 'string') throw Error('paths in "include" must be strings');
-			this.addPath(resolve(frontendsFolder, path));
+		this.include.forEach(include => {
+			const fullPath = resolve(this.frontendsPath, include);
+			this.addPath(fullPath, fullPath);
 		});
 
-		if ('ignore' in config) {
-			if (!Array.isArray(config.ignore)) throw Error('"ignore" must be an array');
-			this.ignore.add(config.ignore);
-		}
+		if (config.ignore) this.ignore.add(config.ignore);
 	}
 
 	public async saveAsTarGz(folder: string): Promise<void> {
@@ -68,6 +74,18 @@ export class Frontend {
 		);
 	}
 
+	public enterWatchMode(): void {
+		this.include.forEach(include => {
+			const fullPath = resolve(this.frontendsPath, include);
+			watch(this.frontendsPath, { recursive: true }, (event: WatchEventType, fullname: string | null) => {
+				if (fullname == null) return;
+				console.log({ fullname });
+				this.addPath(fullname, fullPath);
+			});
+		});
+
+	}
+
 	private *iterate(): IterableIterator<File> {
 		const filter = this.ignore.createFilter();
 		for (const file of this.fileSystem.iterate()) {
@@ -75,51 +93,65 @@ export class Frontend {
 		}
 	}
 
-	private addPath(path0: string): void {
-		if (!existsSync(path0)) throw Error(`path "${path0}" does not exist`);
-		const { fileSystem } = this;
-		addPathRec(path0);
-
-		function addPathRec(path: string): void {
+	private addPath(path: string, dir: string): void {
+		if (!existsSync(path)) throw Error(`path "${path}" does not exist`);
+		const stat = statSync(path);
+		if (stat.isDirectory()) {
 			readdirSync(path).forEach(name => {
-				const fullname = resolve(path, name);
-				const stat = statSync(fullname);
-				if (stat.isDirectory()) {
-					addPathRec(fullname);
-				} else {
-					fileSystem.addFile(
-						relative(path0, fullname),
-						stat.mtimeMs,
-						readFileSync(fullname),
-					);
-				}
+				this.addPath(resolve(path, name), dir);
 			});
+		} else {
+			this.fileSystem.addFile(
+				relative(dir, path),
+				stat.mtimeMs,
+				readFileSync(path),
+			);
 		}
 	}
+}
+
+export function loadFrontendConfigs(frontendsFolder: string): FrontendConfig[] {
+	const configs = JSON.parse(readFileSync(resolve(frontendsFolder, 'frontends.json'), 'utf8')) as unknown;
+	if (typeof configs !== 'object') throw Error();
+	if (configs == null) throw Error();
+
+	return Object.entries(configs).map(([name, configDef]: [string, unknown]) => {
+		if (typeof configDef !== 'object') throw Error();
+		if (configDef == null) throw Error();
+
+		if (!('include' in configDef)) throw Error();
+		if (!Array.isArray(configDef.include)) throw Error();
+		if (!configDef.include.every(e => typeof e === 'string')) throw Error();
+		const include = configDef.include as string[];
+
+		const config: FrontendConfig = { name, include };
+
+		if ('ignore' in configDef) {
+			if (!Array.isArray(configDef.ignore)) throw Error();
+			if (!configDef.ignore.every(e => typeof e === 'string')) throw Error();
+			config.ignore = configDef.ignore as string[];
+		}
+
+		return config;
+	});
 }
 
 export function generateFrontends(fileSystem: FileSystem, projectFolder: string, dstFolder: string): Pf {
 	const frontendsFolder = resolve(projectFolder, 'frontends');
 
-	const frontendConfigs = JSON.parse(readFileSync(resolve(frontendsFolder, 'frontends.json'), 'utf8')) as unknown[];
-
+	const frontendConfigs = loadFrontendConfigs(frontendsFolder);
 	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
 	const frontendVersion = String(JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')).version);
 	notes.setVersion(frontendVersion);
 
 	return Pf.wrapProgress('generate frontends',
 		Pf.parallel(
-			...frontendConfigs.map(frontendConfig => generateFrontend(frontendConfig)),
+			...frontendConfigs.map(config => generateFrontend(config)),
 		),
 	);
 
-	function generateFrontend(config: unknown): Pf {
-		if (typeof config !== 'object') throw Error();
-		if (config == null) throw Error();
-
-		if (!('name' in config)) throw Error();
-		const name = String(config.name);
-
+	function generateFrontend(config: FrontendConfig): Pf {
+		const { name } = config;
 		let s: ProgressLabel, sBr: ProgressLabel, sGz: ProgressLabel;
 
 		return Pf.single(

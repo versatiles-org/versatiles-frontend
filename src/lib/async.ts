@@ -46,6 +46,11 @@ export default class PromiseFunction {
 		for (const pf of pfs) await pf.run();
 	}
 
+	public static async run(pf: PromiseFunction): Promise<void> {
+		await pf.init();
+		await pf.run();
+	}
+
 	public static wrapProgress(message: string, pf: PromiseFunction): PromiseFunction {
 		let s: ProgressLabel;
 		return new PromiseFunction(
