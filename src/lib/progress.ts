@@ -1,5 +1,5 @@
 
-class Label {
+export class ProgressLabel {
 	public label: string;
 
 	public indent: number;
@@ -32,14 +32,14 @@ class Label {
 }
 
 class Progress {
-	private readonly labelList: Label[] = [];
+	private readonly labelList: ProgressLabel[] = [];
 
 	public constructor() {
 		process.stderr.write('\u001b[s');
 	}
 
-	public add(name: string, indent = 0): Label {
-		const label = new Label(this, name, indent);
+	public add(name: string, indent = 0): ProgressLabel {
+		const label = new ProgressLabel(this, name, indent);
 		this.labelList.push(label);
 		this.redraw();
 
@@ -50,9 +50,7 @@ class Progress {
 		const status = '\u001b[u' + this.labelList.map(l => {
 			return [
 				'   '.repeat(l.indent),
-				' - \u001b[',
-				l.closed ? 32 : 31,
-				'm',
+				' - \u001b[', l.closed ? 32 : 31, 'm',
 				l.label,
 				'\u001b[0m\n',
 			].join('');
@@ -60,7 +58,6 @@ class Progress {
 		process.stderr.write(status);
 	}
 }
-
 
 const progress = new Progress();
 export default progress;

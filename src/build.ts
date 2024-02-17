@@ -1,14 +1,15 @@
 #!/usr/bin/env node
+/* eslint-disable @typescript-eslint/require-await */
 
 import { resolve } from 'node:path';
 import { cleanupFolder } from './lib/utils.js';
 import notes from './lib/release_notes.js';
 import { readFileSync } from 'node:fs';
-import type { PromiseFunction } from './lib/async.js';
-import { parallel, sequential } from './lib/async.js';
+import Pf from './lib/async.js';
 import { FileSystem } from './lib/file_system.js';
 import { Frontend } from './lib/frontend.js';
 import { getAssets } from './lib/assets.js';
+import type { ProgressLabel } from './lib/progress.js';
 import progress from './lib/progress.js';
 
 
@@ -31,45 +32,62 @@ await cleanupFolder(dstFolder);
 
 const frontendConfigs = JSON.parse(readFileSync(resolve(frontendsFolder, 'frontends.json'), 'utf8')) as unknown[];
 
-await sequential(
+await Pf.runSequential(
 	getAssets(fileSystem),
 	compressFiles(),
-	parallel(
-		...frontendConfigs.map(frontendConfig => generateFrontend(frontendConfig)),
-	),
-)();
+	generateFrontends(),
+);
 
 notes.save(resolve(dstFolder, 'notes.md'));
 
 process.exit();
 
 
-function compressFiles(): PromiseFunction {
-	const s = progress.add('compress files');
-	return async () => {
-		await fileSystem.compress(status => {
-			s.updateLabel(`compress files: ${(100 * status).toFixed(0)}%`);
-		});
-		s.close();
-	};
+function compressFiles(): Pf {
+	let s: ProgressLabel;
+	return Pf.single(
+		async () => {
+			s = progress.add('compress files');
+		},
+		async () => {
+			await fileSystem.compress(status => {
+				s.updateLabel(`compress files: ${(100 * status).toFixed(0)}%`);
+			});
+			s.close();
+		},
+	);
 }
 
-function generateFrontend(config: unknown): PromiseFunction {
-	if (typeof config !== 'object') throw Error();
-	if (config == null) throw Error();
+function generateFrontends(): Pf {
+	return Pf.wrapProgress('generate frontends',
+		Pf.parallel(
+			...frontendConfigs.map(frontendConfig => generateFrontend(frontendConfig)),
+		),
+	);
 
-	if (!('name' in config)) throw Error();
-	const name = String(config.name);
+	function generateFrontend(config: unknown): Pf {
+		if (typeof config !== 'object') throw Error();
+		if (config == null) throw Error();
 
-	const s = progress.add('generate frontend: ' + name);
-	const sBr = progress.add('generate .br.tar', 1);
-	const sGz = progress.add('generate .tar.gz', 1);
-	return async () => {
-		const frontend = new Frontend(fileSystem, config, frontendsFolder);
-		await frontend.saveAsBrTar(dstFolder);
-		sBr.close();
-		await frontend.saveAsTarGz(dstFolder);
-		sGz.close();
-		s.close();
-	};
+		if (!('name' in config)) throw Error();
+		const name = String(config.name);
+
+		let s: ProgressLabel, sBr: ProgressLabel, sGz: ProgressLabel;
+
+		return Pf.single(
+			async () => {
+				s = progress.add(name, 1);
+				sBr = progress.add('.br.tar', 2);
+				sGz = progress.add('.tar.gz', 2);
+			},
+			async () => {
+				const frontend = new Frontend(fileSystem, config, frontendsFolder);
+				await frontend.saveAsBrTar(dstFolder);
+				sBr.close();
+				await frontend.saveAsTarGz(dstFolder);
+				sGz.close();
+				s.close();
+			},
+		);
+	}
 }
