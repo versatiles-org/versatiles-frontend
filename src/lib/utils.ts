@@ -49,11 +49,15 @@ export async function streamAsBuffer(stream: Readable): Promise<Buffer> {
 
 export async function getLatestReleaseVersion(owner: string, repo: string): Promise<string> {
 	const url = `https://api.github.com/repos/${owner}/${repo}/releases`;
-	const response = await fetch(url, { redirect: 'follow' });
+
+	const headers = new Headers();
+	if (process.env.GITHUB_TOKEN != null) headers.append('Authorization', 'Bearer ' + process.env.GITHUB_TOKEN);
+
+	const response = await fetch(url, { headers, redirect: 'follow' });
 	const data = await response.json();
 	if (!Array.isArray(data)) {
 		console.log({ data });
-		throw Error('wrong response');
+		throw Error('wrong response, maybe set environment variable "GITHUB_TOKEN"?');
 	}
 	for (const entry of data) {
 		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
