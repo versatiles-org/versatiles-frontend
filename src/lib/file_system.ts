@@ -67,7 +67,6 @@ export class FileSystem {
 	}
 
 	public addFile(filename: string, modificationTime: number, buffer: Buffer): void {
-		console.log('addFile', filename);
 		this.files.set(filename, new File(filename, modificationTime, buffer));
 	}
 

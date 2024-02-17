@@ -20,7 +20,7 @@ export function getAssets(fileSystem: FileSystem): Pf {
 		const folder = 'assets/fonts';
 		const label = notes.add('[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)');
 		return Pf.wrapAsync('add fonts', 1, async () => {
-			const version: string = await getLatestReleaseVersion('versatiles-org', 'versatiles-fonts');
+			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-fonts');
 			label.setVersion(version);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/${fontName}.tar.gz`)
 				.ungzipUntar(folder);

@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/require-await */
-import { relative, resolve } from 'node:path';
+import { basename, relative, resolve } from 'node:path';
 import type { File, FileSystem } from './file_system.js';
 import type { Ignore } from 'ignore';
 import ignore from 'ignore';
@@ -20,6 +20,8 @@ interface FrontendConfig {
 }
 
 export class Frontend {
+	public readonly fileSystem: FileSystem;
+
 	private readonly name: string;
 
 	private readonly include: string[];
@@ -27,8 +29,6 @@ export class Frontend {
 	private readonly frontendsPath: string;
 
 	private readonly ignore: Ignore;
-
-	private readonly fileSystem: FileSystem;
 
 	public constructor(fileSystem: FileSystem, config: FrontendConfig, frontendsPath: string) {
 		this.fileSystem = fileSystem.clone();
@@ -77,10 +77,15 @@ export class Frontend {
 	public enterWatchMode(): void {
 		this.include.forEach(include => {
 			const fullPath = resolve(this.frontendsPath, include);
-			watch(this.frontendsPath, { recursive: true }, (event: WatchEventType, fullname: string | null) => {
-				if (fullname == null) return;
+			watch(fullPath, { recursive: true }, (event: WatchEventType, filename: string | null) => {
+				if (filename == null) return;
+				const fullname = resolve(fullPath, filename);
 				console.log({ fullname });
-				this.addPath(fullname, fullPath);
+				try {
+					this.addPath(fullname, fullPath);
+				} catch (error) {
+
+				}
 			});
 		});
 
@@ -95,6 +100,8 @@ export class Frontend {
 
 	private addPath(path: string, dir: string): void {
 		if (!existsSync(path)) throw Error(`path "${path}" does not exist`);
+		if (basename(path).startsWith('.')) return;
+
 		const stat = statSync(path);
 		if (stat.isDirectory()) {
 			readdirSync(path).forEach(name => {

@@ -13,6 +13,7 @@
 		"allowJs": true,
 		"noEmit": true,
 		"forceConsistentCasingInFileNames": true,
+		"sourceMap": true
 	},
 	"include": [
 		"src/**/*.ts",
