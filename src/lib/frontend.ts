@@ -125,8 +125,8 @@ export function generateFrontends(fileSystem: FileSystem, projectFolder: string,
 		return Pf.single(
 			async () => {
 				s = progress.add(name, 1);
-				sBr = progress.add('.br.tar', 2);
-				sGz = progress.add('.tar.gz', 2);
+				sBr = progress.add(name + '.br.tar', 2);
+				sGz = progress.add(name + '.tar.gz', 2);
 			},
 			async () => {
 				s.start();
