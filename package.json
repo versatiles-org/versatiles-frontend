@@ -28,6 +28,7 @@
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
     "eslint": "^8.56.0",
+    "npm-check-updates": "^16.14.15",
     "tsx": "^4.7.1"
   }
 }
