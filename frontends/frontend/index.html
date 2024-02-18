@@ -9,8 +9,8 @@
 	<script src="assets/maplibre-gl/maplibre-gl.js"></script>
 	<link href="assets/maplibre-gl/maplibre-gl.css" rel="stylesheet">
 
-	<script src="assets/switch/switch.js"></script>
-	<link href="assets/switch/switch.css" rel="stylesheet">
+	<script src="assets/mapdesigner/mapdesigner-control.js"></script>
+	<link href="assets/mapdesigner/mapdesigner-control.css" rel="stylesheet">
 
 	<script src="assets/maplibre-gl-inspect/maplibre-gl-inspect.min.js"></script>
 	<link href="assets/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet">
@@ -47,26 +47,21 @@
 	<a href="https://versatiles.org" id="logo"><img src="https://versatiles.org/assets/logo/versatiles.svg" alt="versatiles.org"></a>
 	<div id="map" class="maplibregl-compact"></div>
 	<script>
-		const style = VersaTilesStyle.styles.colorful({
-			tiles: ['tiles/osm/{z}/{x}/{y}'],
-			sprite: 'assets/sprites/sprites',
-			glyphs: 'assets/fonts/{fontstack}/{range}.pbf',
-			languageSuffix: '_de',
-			colors: { label: '#222' },
-			recolor: { gamma: 0.5 }
-		});
-		console.log(style);
 		const map = new maplibregl.Map({
 			container: 'map',
 			bounds: [-180, -80, 180, 80],
-			style,
 			zoom: 5,
 			maxZoom: 20,
 			hash: true,
 		});
 
-		map.addControl(new MaplibreInspect());
 		map.addControl(new maplibregl.NavigationControl(), 'top-right');
+		map.addControl(new MaplibreInspect());
+		map.addControl(new MapDesignerControl({
+			tiles: ['tiles/osm/{z}/{x}/{y}'],
+			sprite: 'assets/sprites/sprites',
+			glyphs: 'assets/fonts/{fontstack}/{range}.pbf',
+		}));
 
 		// collapse attribution control
 		document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');

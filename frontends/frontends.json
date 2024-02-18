@@ -2,7 +2,8 @@
 	"frontend": {
 		"include": [
 			"all",
-			"frontend"
+			"frontend",
+			"mapdesigner"
 		],
 		"dev": {
 			"proxy": [
@@ -16,7 +17,8 @@
 	"frontend-rust": {
 		"include": [
 			"all",
-			"frontend-rust"
+			"frontend-rust",
+			"mapdesigner"
 		]
 	},
 	"frontend-minimal": {
