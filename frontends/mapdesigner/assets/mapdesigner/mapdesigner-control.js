@@ -39,24 +39,17 @@ class MapDesignerControl {
 		this.map = map;
 
 		// Create control container
-		this.controlContainer = document.createElement('div');
-		this.controlContainer.classList.add('maplibregl-ctrl', 'maplibregl-ctrl-group');
+		this.controlContainer = createElementFromHTML('<div class="maplibregl-ctrl maplibregl-ctrl-group"></div>');
 
 		// Create style selector container
-		this.mapStyleContainer = document.createElement('div');
-		this.mapStyleContainer.classList.add('maplibregl-style-list');
+		this.mapStyleContainer = createElementFromHTML('<div class="maplibregl-style-list"></div>');
 
 		// Create style toggle button
-		this.styleButton = document.createElement('button');
-		this.styleButton.type = 'button';
-		this.styleButton.classList.add('maplibregl-ctrl-icon', 'maplibregl-style-switcher');
+		this.styleButton = createElementFromHTML('<button type="button" class="maplibregl-ctrl-icon maplibregl-style-switcher"></button>');
 
 		// Populate style options
 		Object.entries(this.styles).forEach(([name, style]) => {
-			const styleElement = document.createElement('button');
-			styleElement.type = 'button';
-			styleElement.innerText = name;
-			styleElement.classList.add(name.replace(/[^a-z0-9-]/gi, '_'));
+			const styleElement = createElementFromHTML(`<button type="button" class="${name.replace(/[^a-z0-9-]/gi, '_')}">${name}</button>`);
 			styleElement.dataset.uri = JSON.stringify(style.uri);
 
 			// Style selection event
@@ -124,4 +117,10 @@ class MapDesignerControl {
 			this.styleButton.style.display = 'block';
 		}
 	}
+}
+
+function createElementFromHTML(htmlString) {
+	const parser = new DOMParser();
+	const doc = parser.parseFromString(htmlString, 'text/html');
+	return doc.body.firstChild; // Returns the first element
 }
