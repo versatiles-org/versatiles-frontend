@@ -1,5 +1,5 @@
 
-import { join } from 'node:path';
+import { resolve as urlResolve } from 'node:url';
 import { createGunzip } from 'node:zlib';
 import { finished } from 'node:stream/promises';
 import tar from 'tar-stream';
@@ -27,7 +27,7 @@ export class Curl {
 				return;
 			}
 			if (header.type !== 'file') throw Error(String(header.type));
-			const filename = join(folder, header.name);
+			const filename = urlResolve(folder, header.name);
 			void streamAsBuffer(stream).then((buffer): void => {
 				this.fileSystem.addFile(filename, Number(header.mtime ?? Math.random()), buffer);
 				next();
