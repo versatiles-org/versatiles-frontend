@@ -1,4 +1,4 @@
-import { program } from 'commander';
+//import { program } from 'commander';
 import { jest } from '@jest/globals';
 
 // Mocking readFileSync and imported modules
@@ -15,8 +15,8 @@ jest.unstable_mockModule('./watch.js', () => ({
 }));
 
 
-const buildModule = await import('./build.js');
-const watchModule = await import('./watch.js');
+//const buildModule = await import('./build.js');
+//const watchModule = await import('./watch.js');
 const fs = await import('fs');
 
 describe('versatiles-frontend CLI', () => {
