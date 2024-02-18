@@ -65,8 +65,7 @@ export class Curl {
 			'getBuffer:' + this.url,
 			async () => {
 				const response = await fetch(this.url, { redirect: 'follow' });
-				const blob = await response.blob();
-				return Buffer.from(await blob.arrayBuffer());
+				return Buffer.from(await response.arrayBuffer());
 			},
 		);
 	}

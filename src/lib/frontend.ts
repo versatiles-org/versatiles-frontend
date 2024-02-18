@@ -12,12 +12,13 @@ import Pf from './async.js';
 import notes from './release_notes.js';
 import type { ProgressLabel } from './progress.js';
 import progress from './progress.js';
+import { parseDevConfig, type DevConfig } from './server.js';
 
 interface FrontendConfig {
 	name: string;
 	include: string[];
 	ignore?: string[];
-	dev?: { proxy?: [{ from: string; to: string }] };
+	dev?: DevConfig;
 }
 
 export class Frontend {
@@ -117,53 +118,42 @@ export class Frontend {
 	}
 }
 
+
+
 export function loadFrontendConfigs(frontendsFolder: string): FrontendConfig[] {
 	const configs = JSON.parse(readFileSync(resolve(frontendsFolder, 'frontends.json'), 'utf8')) as unknown;
 	if (typeof configs !== 'object' || configs == null) throw new Error('Invalid configuration object');
 
-	return Object.entries(configs).map(([name, configDef]: [string, unknown]) => {
-		if (typeof configDef !== 'object' || configDef == null) throw new Error('Invalid configuration definition');
+	return Object.entries(configs)
+		.map(([name, configDef]: [string, unknown]) => parseFrontendConfig(name, configDef));
+}
 
-		// check 'include'
-		if (!('include' in configDef)) throw new Error('Missing \'include\' property');
-		if (!Array.isArray(configDef.include) || !configDef.include.every(e => typeof e === 'string')) {
-			throw new Error('Invalid \'include\' property, must be an array of strings');
+function parseFrontendConfig(name: string, configDef: unknown): FrontendConfig {
+	if (typeof configDef !== 'object' || configDef == null) throw new Error('Invalid configuration definition');
+
+	// check 'include'
+	if (!('include' in configDef)) throw new Error('Missing \'include\' property');
+	if (!Array.isArray(configDef.include) || !configDef.include.every(e => typeof e === 'string')) {
+		throw new Error('Invalid \'include\' property, must be an array of strings');
+	}
+	const include = configDef.include as string[];
+
+	const config: FrontendConfig = { name, include };
+
+	// check 'ignore'
+	if ('ignore' in configDef) {
+		if (!Array.isArray(configDef.ignore) || !configDef.ignore.every(e => typeof e === 'string')) {
+			throw new Error('Invalid \'ignore\' property, must be an array of strings');
 		}
-		const include = configDef.include as string[];
+		config.ignore = configDef.ignore as string[];
+	}
 
-		const config: FrontendConfig = { name, include };
+	// check 'dev'
+	if ('dev' in configDef) {
+		config.dev = parseDevConfig(configDef.dev);
+	}
 
-		// check 'ignore'
-		if ('ignore' in configDef) {
-			if (!Array.isArray(configDef.ignore) || !configDef.ignore.every(e => typeof e === 'string')) {
-				throw new Error('Invalid \'ignore\' property, must be an array of strings');
-			}
-			config.ignore = configDef.ignore as string[];
-		}
-
-		// check 'dev'
-		if ('dev' in configDef) {
-			const { dev } = configDef;
-			if (typeof dev !== 'object' || dev == null) throw new Error('Invalid \'dev\' property, must be an object');
-
-			// check 'dev.proxy'
-			if ('proxy' in dev) {
-				const { proxy } = dev;
-				if (!Array.isArray(proxy) || !proxy.every((p: unknown) => {
-					if (typeof p !== 'object' || p == null) return false;
-					if (!('from' in p) || !('to' in p)) return false;
-					if (typeof p.from !== 'string' || typeof p.to !== 'string') return false;
-					return true;
-				})) {
-					throw new Error('Invalid \'proxy\' configuration, each proxy must be an object with \'from\' and \'to\' string properties');
-				}
-				
-				config.dev = { proxy: proxy as [{ from: string; to: string }] };
-			}
-		}
-
-		return config;
-	});
+	return config;
 }
 
 export function generateFrontends(fileSystem: FileSystem, projectFolder: string, dstFolder: string): Pf {

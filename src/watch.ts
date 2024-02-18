@@ -25,6 +25,6 @@ export async function watch(frontendName: string): Promise<void> {
 	const frontend = new Frontend(fileSystem, frontendConfig, frontendsFolder);
 	frontend.enterWatchMode();
 
-	const server = new Server(frontend.fileSystem);
+	const server = new Server(frontend.fileSystem, frontendConfig.dev);
 	await server.start();
 }
