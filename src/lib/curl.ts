@@ -35,6 +35,10 @@ export class Curl {
 			});
 		});
 		const streamIn = createGunzip();
+		streamIn.on('error', error => {
+			console.log('gunzip error for: ' + this.url);
+			throw error;
+		});
 		streamIn.pipe(extract);
 		streamIn.end(await this.getBuffer());
 		await finished(extract);
