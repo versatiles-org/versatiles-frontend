@@ -4,6 +4,7 @@ import express from 'express';
 import type { FileSystem } from './file_system.js';
 import type { Express } from 'express';
 import { resolve } from 'node:url';
+import cache from './cache.js';
 
 
 export interface DevConfig {
@@ -58,16 +59,20 @@ export class Server {
 			async function tryProxy(path: string): Promise<boolean> {
 				if (!config) return false;
 				if (!config.proxy) return false;
-				for (const proxy of config.proxy) {
-					if (path.startsWith(proxy.from)) {
-						const url = proxy.to + path.slice(proxy.from.length);
-						const response = await fetch(url);
-						const buffer = Buffer.from(await response.arrayBuffer());
-						res.status(200).end(buffer);
-						return true;
-					}
-				}
-				return false;
+
+				const proxy = config.proxy.find(p => path.startsWith(p.from));
+				if (!proxy) return false;
+
+				const url = proxy.to + path.slice(proxy.from.length);
+
+				const buffer = await cache('fetch:' + url, async (): Promise<Buffer> => {
+					return Buffer.from(await (await fetch(url)).arrayBuffer());
+				});
+				if (buffer.length === 0) return false;
+				
+				res.status(200).end(buffer);
+				return true;
+
 			}
 		});
 	}
