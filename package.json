@@ -7,10 +7,11 @@
     "versatiles-frontend": "src/index.ts"
   },
   "scripts": {
-    "dev": "npm exec versatiles-frontend serve",
-    "check": "npm run lint && npm run test",
-    "lint": "eslint . --color",
     "build": "npm exec versatiles-frontend build",
+    "check": "npm run lint && npm run test",
+    "dev": "npm exec versatiles-frontend serve",
+    "lint": "eslint . --color",
+    "release": "vrt release-npm",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "upgrade": "npm-check-updates -u && rm -f package-lock.json; rm -rf node_modules; npm i && npm update"
   },
@@ -34,6 +35,7 @@
     "@types/unzipper": "^0.10.9",
     "@typescript-eslint/eslint-plugin": "^7.0.1",
     "@typescript-eslint/parser": "^7.0.1",
+    "@versatiles/release-tool": "^1.2.2",
     "eslint": "^8.56.0",
     "npm-check-updates": "^16.14.15"
   }
