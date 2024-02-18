@@ -81,4 +81,11 @@ export class FileSystem {
 	public iterate(): IterableIterator<File> {
 		return this.files.values();
 	}
+
+	public forEachFile(prefix: string, cb: ((filename: string, buffer: Buffer) => void)): void {
+		for (const [name, file] of this.files.entries()) {
+			if (!name.startsWith(prefix)) continue;
+			cb(name, file.bufferRaw);
+		}
+	}
 }
