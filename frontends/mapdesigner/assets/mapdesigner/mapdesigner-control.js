@@ -42,14 +42,16 @@ class MapDesignerControl {
 		this.controlContainer = createElementFromHTML('<div class="maplibregl-ctrl maplibregl-ctrl-group"></div>');
 
 		// Create style selector container
-		this.mapStyleContainer = createElementFromHTML('<div class="maplibregl-style-list"></div>');
+		this.listContainer = createElementFromHTML('<div class="maplibregl-style-list"></div>');
+		this.controlContainer.appendChild(this.listContainer);
 
 		// Create style toggle button
-		this.styleButton = createElementFromHTML('<button type="button" class="maplibregl-ctrl-icon maplibregl-style-switcher"></button>');
+		this.controlButton = createElementFromHTML('<button type="button" class="maplibregl-ctrl-icon maplibregl-style-switcher"></button>');
+		this.controlContainer.appendChild(this.controlButton);
 
 		// Populate style options
 		Object.entries(this.styles).forEach(([name, style]) => {
-			const styleElement = createElementFromHTML(`<button type="button" class="${name.replace(/[^a-z0-9-]/gi, '_')}">${name}</button>`);
+			const styleElement = createElementFromHTML(`<button type="button">${name}</button>`);
 			styleElement.dataset.uri = JSON.stringify(style.uri);
 
 			// Style selection event
@@ -57,9 +59,9 @@ class MapDesignerControl {
 				const target = event.target;
 				if (target.classList.contains('active')) return;
 
-				this.mapStyleContainer.style.display = 'none';
-				this.styleButton.style.display = 'block';
-				this.mapStyleContainer.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
+				this.listContainer.style.display = 'none';
+				this.controlButton.style.display = 'block';
+				this.listContainer.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
 				target.classList.add('active');
 
 				this.currentStyle = style;
@@ -69,20 +71,16 @@ class MapDesignerControl {
 			if (style === this.currentStyle) {
 				styleElement.classList.add('active');
 			}
-			this.mapStyleContainer.appendChild(styleElement);
+			this.listContainer.appendChild(styleElement);
 		});
 
 		// Toggle style list display
-		this.styleButton.addEventListener('click', () => {
-			this.styleButton.style.display = 'none';
-			this.mapStyleContainer.style.display = 'block';
+		this.controlButton.addEventListener('click', () => {
+			this.controlButton.style.display = 'none';
+			this.listContainer.style.display = 'block';
 		});
 
 		document.addEventListener('click', this.onDocumentClick);
-
-		// Assemble control
-		this.controlContainer.appendChild(this.styleButton);
-		this.controlContainer.appendChild(this.mapStyleContainer);
 
 		// Set initial map style
 		this._updateStyle();
@@ -98,7 +96,7 @@ class MapDesignerControl {
 			return;
 		}
 
-		this.styleButton.removeEventListener('click', this.onDocumentClick);
+		this.controlButton.removeEventListener('click', this.onDocumentClick);
 		this.controlContainer.remove();
 		document.removeEventListener('click', this.onDocumentClick);
 
@@ -113,8 +111,8 @@ class MapDesignerControl {
 	 */
 	onDocumentClick(event) {
 		if (!this.controlContainer.contains(event.target)) {
-			this.mapStyleContainer.style.display = 'none';
-			this.styleButton.style.display = 'block';
+			this.listContainer.style.display = 'none';
+			this.controlButton.style.display = 'block';
 		}
 	}
 }
