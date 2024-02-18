@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<title>Versatiles</title>
+	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
+
+	<script src="assets/maplibre-gl/maplibre-gl.js"></script>
+	<link href="assets/maplibre-gl/maplibre-gl.css" rel="stylesheet">
+
+	<script src="assets/mapdesigner/mapdesigner-control.js"></script>
+	<link href="assets/mapdesigner/mapdesigner-control.css" rel="stylesheet">
+
+	<script src="assets/maplibre-gl-inspect/maplibre-gl-inspect.min.js"></script>
+	<link href="assets/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet">
+
+	<script src="assets/styles/versatiles-style.js"></script>
+
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+		}
+
+		#map {
+			position: absolute;
+			top: 0;
+			bottom: 0;
+			width: 100%;
+		}
+
+		#logo {
+			position: absolute;
+			top: 1em;
+			left: 1em;
+			z-index: 1;
+		}
+
+		#logo img {
+			width: 3em;
+		}
+	</style>
+</head>
+
+<body>
+	<a href="https://versatiles.org" id="logo"><img src="https://versatiles.org/assets/logo/versatiles.svg" alt="versatiles.org"></a>
+	<div id="map" class="maplibregl-compact"></div>
+	<script>
+		const map = new maplibregl.Map({
+			container: 'map',
+			bounds: [-180, -80, 180, 80],
+			zoom: 5,
+			maxZoom: 20,
+			hash: true,
+		});
+
+		map.addControl(new maplibregl.NavigationControl(), 'top-right');
+		map.addControl(new MaplibreInspect());
+		map.addControl(new MapDesignerControl({
+			tiles: ['tiles/osm/{z}/{x}/{y}'],
+			sprite: 'assets/sprites/sprites',
+			glyphs: 'assets/fonts/{fontstack}/{range}.pbf',
+		}));
+
+		// collapse attribution control
+		document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');
+
+	</script>
+</body>
+
+</html>
