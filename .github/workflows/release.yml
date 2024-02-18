@@ -1,4 +1,4 @@
-name: Release frontend
+name: Release
 on:
   workflow_dispatch:
   repository_dispatch:
@@ -18,7 +18,7 @@ jobs:
         run: 'echo "RELEASE_TAG=v$(jq -r ''.version'' package.json)" >> $GITHUB_ENV'
 
       - run: npm install
-      - run: npm run release
+      - run: npm run build
 
       - name: create release if needed
         run: gh release view $RELEASE_TAG || gh release create $RELEASE_TAG
