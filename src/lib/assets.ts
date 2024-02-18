@@ -4,9 +4,14 @@ import { getLatestReleaseVersion } from './utils.js';
 import Pf from './async.js';
 import notes from './release_notes.js';
 import type { FileSystem } from './file_system.js';
+import { resolve as urlResolve } from 'node:url';
+
+
+const folderStyle = 'assets/styles/';
+const folderFonts = 'assets/fonts/';
+const folderSprites = 'assets/sprites/';
 
 export function getAssets(fileSystem: FileSystem): Pf {
-
 	return Pf.wrapProgress('load assets',
 		Pf.parallel(
 			addFont('fonts'),
@@ -18,37 +23,34 @@ export function getAssets(fileSystem: FileSystem): Pf {
 	);
 
 	function addFont(fontName: string): Pf {
-		const folder = 'assets/fonts';
 		const label = notes.add('[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)');
 		return Pf.wrapAsync('add fonts', 1, async () => {
 			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-fonts');
 			label.setVersion(version);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/${fontName}.tar.gz`)
-				.ungzipUntar(folder);
+				.ungzipUntar(folderFonts);
 		});
 	}
 
 	function addStyles(): Pf {
-		const folder = 'assets/styles';
 		const label = notes.add('[VersaTiles style](https://github.com/versatiles-org/versatiles-styles)');
 		return Pf.wrapAsync('add styles', 1, async () => {
 			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-styles');
 			label.setVersion(version);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-styles/releases/download/v${version}/styles.tar.gz`)
-				.ungzipUntar(folder);
+				.ungzipUntar(folderStyle);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-styles/releases/download/v${version}/versatiles-style.tar.gz`)
-				.ungzipUntar(folder);
+				.ungzipUntar(folderStyle);
 		});
 	}
 
 	function addSprites(): Pf {
-		const folder = 'assets/sprites';
 		const label = notes.add('[VersaTiles style](https://github.com/versatiles-org/versatiles-sprites)');
 		return Pf.wrapAsync('add sprites', 1, async () => {
 			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-sprites');
 			label.setVersion(version);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-sprites/releases/download/v${version}/sprites.tar.gz`)
-				.ungzipUntar(folder);
+				.ungzipUntar(folderSprites);
 		});
 	}
 
