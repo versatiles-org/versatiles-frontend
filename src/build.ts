@@ -6,7 +6,7 @@ import notes from './lib/release_notes.js';
 import Pf from './lib/async.js';
 import { FileSystem } from './lib/file_system.js';
 import { generateFrontends } from './lib/frontend.js';
-import { getAssets } from './lib/assets.js';
+import { checkAssets, getAssets } from './lib/assets.js';
 import type { ProgressLabel } from './lib/progress.js';
 import progress from './lib/progress.js';
 
@@ -21,6 +21,7 @@ export async function build(): Promise<void> {
 
 	await Pf.runSequential(
 		getAssets(fileSystem),
+		checkAssets(fileSystem),
 		compressFiles(),
 		generateFrontends(fileSystem, projectFolder, dstFolder),
 	);

@@ -3,7 +3,7 @@ import { resolve } from 'node:path';
 import Pf from './lib/async.js';
 import { FileSystem } from './lib/file_system.js';
 import { Frontend, loadFrontendConfigs } from './lib/frontend.js';
-import { getAssets } from './lib/assets.js';
+import { checkAssets, getAssets } from './lib/assets.js';
 import progress from './lib/progress.js';
 import { Server } from './lib/server.js';
 
@@ -12,7 +12,10 @@ export async function watch(frontendName: string): Promise<void> {
 	const fileSystem = new FileSystem();
 	progress.setHeader('Preparing Server');
 
-	await Pf.run(getAssets(fileSystem));
+	await Pf.runSequential(
+		getAssets(fileSystem),
+		checkAssets(fileSystem),
+	);
 
 	progress.finish();
 

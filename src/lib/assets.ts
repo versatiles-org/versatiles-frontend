@@ -79,3 +79,91 @@ export function getAssets(fileSystem: FileSystem): Pf {
 		});
 	}
 }
+
+export function checkAssets(fileSystem: FileSystem): Pf {
+	// eslint-disable-next-line @typescript-eslint/require-await
+	return Pf.wrapAsync('check assets', 0, async (): Promise<void> => {
+		checkStyleSprites();
+	});
+
+	function checkStyleSprites(): void {
+		const missingIcons = new Map<string, Set<string>>();
+		const iconSet = getIcons();
+
+		fileSystem.forEachFile(folderStyle, (filename: string, buffer: Buffer): void => {
+			if (!filename.endsWith('.json')) return;
+
+			const style: unknown = JSON.parse(buffer.toString());
+			if (typeof style !== 'object') throw Error();
+			if (style == null) throw Error();
+
+			if (!('layers' in style)) throw Error();
+			const { layers } = style;
+			if (!Array.isArray(layers)) throw Error();
+
+			layers.forEach((layer: unknown) => {
+				if (typeof layer !== 'object') throw Error();
+				if (layer == null) throw Error();
+
+				if (!('layout' in layer)) return;
+				const { layout } = layer;
+				if (typeof layout !== 'object') throw Error();
+				if (layout == null) throw Error();
+
+				if (!('icon-image' in layout)) return;
+				for (const iconName of extractIconNames(layout['icon-image'])) {
+					if (!iconSet.has(iconName)) {
+						if (missingIcons.has(iconName)) {
+							missingIcons.get(iconName)?.add(filename);
+						} else {
+							missingIcons.set(iconName, new Set([filename]));
+						}
+					}
+				}
+			});
+		});
+
+		if (missingIcons.size > 0) {
+			const iconList = Array.from(missingIcons.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+			iconList.forEach(([iconName, styleSet]) => {
+				const styleList = Array.from(styleSet.values()).sort();
+				console.error(`icon "${iconName}" is missing in: ${styleList.map(styleName => `"${styleName}"`).join(', ')}`);
+			});
+			throw Error();
+		}
+
+		function getIcons(): Set<string> {
+			const url = urlResolve(folderSprites, 'sprites.json');
+
+			const buffer = fileSystem.getFile(url);
+			if (buffer == null) throw Error();
+
+			const sprites: unknown = JSON.parse(buffer.toString());
+			if (typeof sprites !== 'object') throw Error();
+			if (sprites == null) throw Error();
+
+			const spriteList = Object.keys(sprites);
+
+			return new Set(spriteList);
+		}
+
+		function* extractIconNames(def: unknown): Generator<string, void, void> {
+			if (typeof def === 'string') {
+				yield def;
+				return;
+			}
+
+			if (!Array.isArray(def)) throw Error();
+
+			switch (def[0]) {
+				case 'match':
+					for (let i = 3; i < def.length; i += 2) yield* extractIconNames(def[i]);
+					yield* extractIconNames(def[def.length - 1]);
+					return;
+			}
+
+			console.log(def);
+			throw Error();
+		}
+	}
+}
