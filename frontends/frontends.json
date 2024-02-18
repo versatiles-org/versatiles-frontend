@@ -3,7 +3,15 @@
 		"include": [
 			"all",
 			"frontend"
-		]
+		],
+		"dev": {
+			"proxy": [
+				{
+					"from": "/tiles/",
+					"to": "https://tiles.versatiles.org/tiles/"
+				}
+			]
+		}
 	},
 	"frontend-rust": {
 		"include": [
