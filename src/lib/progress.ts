@@ -110,6 +110,8 @@ class Progress {
 
 	#useAnsi: boolean; // Flag for using ANSI color codes in output.
 
+	#disabled = false; // Flag for disabling any output.
+
 	/**
 	 * Constructs a Progress instance, determining if ANSI colors are supported.
 	 */
@@ -129,11 +131,18 @@ class Progress {
 	}
 
 	/**
+	 * Disables any output.
+	 */
+	public disable(): void {
+		this.#disabled = true;
+	}
+
+	/**
 	 * Sets the header text for the progress display and triggers a redraw.
 	 * 
 	 * @param header - The header text to set.
 	 */
-	public setHeader(header: string): void {
+	public setHeader(header: string): void {		
 		if (this.#useAnsi) {
 			this.header = header;
 			this.redraw();
@@ -173,6 +182,7 @@ class Progress {
 	 * Redraws the entire progress display, updating the terminal output.
 	 */
 	public redraw(): void {
+		if (this.#disabled) return;
 		if (!this.#useAnsi) return;
 
 		if (!this.started) {
@@ -196,6 +206,7 @@ class Progress {
 	 * @param line - The line of text to write.
 	 */
 	public write(line: string): void {
+		if (this.#disabled) return;
 		process.stdout.write(line + '\n');
 	}
 }

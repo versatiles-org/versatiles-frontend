@@ -1,4 +1,5 @@
 
 cache/
-release/
+coverage/
 node_modules/
+release/

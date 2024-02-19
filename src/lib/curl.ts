@@ -13,9 +13,9 @@ import cache from './cache.js';
  * decompression (gunzip), and extraction (untar and unzip).
  */
 export class Curl {
-	private readonly url: string;
+	readonly #url: string;
 	
-	private readonly fileSystem: FileSystem;
+	readonly #fileSystem: FileSystem;
 
 	/**
 	 * Constructs an instance of the Curl class.
@@ -24,8 +24,8 @@ export class Curl {
 	 * @param url - The URL of the resource to fetch.
 	 */
 	public constructor(fileSystem: FileSystem, url: string) {
-		this.url = url;
-		this.fileSystem = fileSystem;
+		this.#url = url;
+		this.#fileSystem = fileSystem;
 	}
 
 	/**
@@ -45,7 +45,7 @@ export class Curl {
 			if (header.type !== 'file') throw Error(String(header.type));
 			const filename = urlResolve(folder, header.name);
 			void streamAsBuffer(stream).then((buffer): void => {
-				this.fileSystem.addFile(filename, Number(header.mtime ?? Math.random()), buffer);
+				this.#fileSystem.addFile(filename, Number(header.mtime ?? Math.random()), buffer);
 				next();
 				return;
 			});
@@ -53,7 +53,7 @@ export class Curl {
 
 		const streamIn = createGunzip();
 		streamIn.on('error', error => {
-			console.log('gunzip error for: ' + this.url);
+			console.log('gunzip error for: ' + this.#url);
 			throw error;
 		});
 		streamIn.pipe(extract);
@@ -67,7 +67,7 @@ export class Curl {
 	 * @param filename - The name of the file where the resource will be saved.
 	 */
 	public async save(filename: string): Promise<void> {
-		this.fileSystem.addFile(filename, Math.random(), await this.getBuffer());
+		this.#fileSystem.addFile(filename, Math.random(), await this.getBuffer());
 	}
 
 	/**
@@ -82,7 +82,7 @@ export class Curl {
 			const filename = cbFilter(entry.path);
 			if (filename != false) {
 				void entry.buffer().then(buffer => {
-					this.fileSystem.addFile(filename, entry.vars.lastModifiedTime, buffer);
+					this.#fileSystem.addFile(filename, entry.vars.lastModifiedTime, buffer);
 				});
 			} else {
 				entry.autodrain();
@@ -98,11 +98,11 @@ export class Curl {
 	 * 
 	 * @returns A Promise resolving to the Buffer containing the fetched resource.
 	 */
-	private async getBuffer(): Promise<Buffer> {
+	public async getBuffer(): Promise<Buffer> {
 		return cache(
-			'getBuffer:' + this.url,
+			'getBuffer:' + this.#url,
 			async () => {
-				const response = await fetch(this.url, { redirect: 'follow' });
+				const response = await fetch(this.#url, { redirect: 'follow' });
 				return Buffer.from(await response.arrayBuffer());
 			},
 		);
