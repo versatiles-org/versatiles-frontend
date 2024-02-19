@@ -40,6 +40,12 @@ This will:
 
 ## Content
 
+cache: used for caching request, file compression etc.
+frontends: contains static files (html, css and javascript) that can be used in the different frontends
+release: used for finished release files
+src: contains TypeScript code that generates the frontends, and optionally serves them locally
+
+
 - HTML and scripts from `src` folder
 - fonts from [github.com/…/versatiles-fonts](https://github.com/versatiles-org/versatiles-fonts)
 - styles from [github.com/…/versatiles-style](https://github.com/versatiles-org/versatiles-style)

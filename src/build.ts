@@ -12,7 +12,7 @@ import progress from './lib/progress.js';
 
 
 const projectFolder = new URL('..', import.meta.url).pathname;
-const dstFolder = resolve(projectFolder, 'dist');
+const dstFolder = resolve(projectFolder, 'release');
 const fileSystem = new FileSystem();
 progress.setHeader('Building Release');
 
