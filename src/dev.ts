@@ -11,7 +11,8 @@ progress.disableAnsi();
 
 const frontendName = process.argv[2] as string | undefined;
 if (frontendName == null) {
-	throw Error('set a frontend name as first argument, e.g. "frontend"');
+	console.error('set a frontend name as first argument, e.g. "frontend"');
+	process.exit(1);
 }
 
 const projectFolder = new URL('..', import.meta.url).pathname;
@@ -26,7 +27,10 @@ const frontendsFolder = resolve(projectFolder, 'frontends');
 const frontendConfigs = loadFrontendConfigs(frontendsFolder);
 
 const frontendConfig = frontendConfigs.find(config => config.name === frontendName);
-if (!frontendConfig) throw Error(`unknown frontend "${frontendName}"`);
+if (!frontendConfig) {
+	console.error(`unknown frontend "${frontendName}"`);
+	process.exit(1);
+}
 
 const frontend = new Frontend(fileSystem, frontendConfig, frontendsFolder);
 frontend.enterWatchMode();
