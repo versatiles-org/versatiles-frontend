@@ -27,21 +27,19 @@ export class ProgressLabel {
 
 	public start(): void {
 		this.status = 'running';
-		if (this.progress.enabled) {
+		if (this.progress.useAnsi) {
 			this.progress.redraw();
 		} else {
 			this.progress.write(this.getOutputText());
-
 		}
 	}
 
 	public end(): void {
 		this.status = 'finished';
-		if (this.progress.enabled) {
+		if (this.progress.useAnsi) {
 			this.progress.redraw();
 		} else {
 			this.progress.write(this.getOutputText());
-
 		}
 	}
 
@@ -68,7 +66,6 @@ export class ProgressLabel {
 }
 
 class Progress {
-	public readonly enabled: boolean;
 
 	private readonly labelList: ProgressLabel[] = [];
 
@@ -76,16 +73,24 @@ class Progress {
 
 	private finished = false;
 
+	private started = false;
+
+	#useAnsi: boolean;
+
 	public constructor() {
-		this.enabled = Boolean(supportsColor.stdout);
-		if (this.enabled) {
-			process.stdout.write('\x1b[2J\x1b[3J\x1b[H\x1b7');
-			this.redraw();
-		}
+		this.#useAnsi = Boolean(supportsColor.stdout);
+	}
+
+	public get useAnsi(): boolean {
+		return this.#useAnsi;
+	}
+
+	public disableAnsi(): void {
+		this.#useAnsi = false;
 	}
 
 	public setHeader(header: string): void {
-		if (this.enabled) {
+		if (this.#useAnsi) {
 			this.header = header;
 			this.redraw();
 		} else {
@@ -94,7 +99,7 @@ class Progress {
 	}
 
 	public finish(): void {
-		if (this.enabled) {
+		if (this.#useAnsi) {
 			this.finished = true;
 			this.redraw();
 		} else {
@@ -111,7 +116,13 @@ class Progress {
 	}
 
 	public redraw(): void {
-		if (!this.enabled) return;
+		if (!this.#useAnsi) return;
+
+		if (!this.started) {
+			process.stdout.write('\x1b[2J\x1b[3J\x1b[H\x1b7');
+			this.started = true;
+		}
+
 		process.stdout.write([
 			'\x1b8',
 			`\x1b[${this.finished ? 2 : 1}m${this.header ?? ''}\x1b[0m\n`,
