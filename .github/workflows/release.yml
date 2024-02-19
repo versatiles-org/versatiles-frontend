@@ -25,7 +25,7 @@ jobs:
         run: gh release view $RELEASE_TAG || gh release create $RELEASE_TAG
 
       - name: add files to release
-        run: gh release upload $RELEASE_TAG --clobber dist/*.tar.gz dist/*.br.tar
+        run: gh release upload $RELEASE_TAG --clobber release/*.tar.gz release/*.br.tar
 
       - name: update release
-        run: gh release edit $RELEASE_TAG --draft=false --latest --prerelease=false --notes-file=dist/notes.md
+        run: gh release edit $RELEASE_TAG --draft=false --latest --prerelease=false --notes-file=release/notes.md
