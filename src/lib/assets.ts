@@ -15,7 +15,6 @@ export function getAssets(fileSystem: FileSystem): Pf {
 		Pf.parallel(
 			addFont('fonts'),
 			addStyles(),
-			addSprites(),
 			addMaplibre(),
 			addMaplibreInspect(),
 		),
@@ -32,23 +31,15 @@ export function getAssets(fileSystem: FileSystem): Pf {
 	}
 
 	function addStyles(): Pf {
-		const label = notes.add('[VersaTiles style](https://github.com/versatiles-org/versatiles-styles)');
+		const label = notes.add('[VersaTiles style](https://github.com/versatiles-org/versatiles-style)');
 		return Pf.wrapAsync('add styles', 1, async () => {
-			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-styles');
+			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-style');
 			label.setVersion(version);
-			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-styles/releases/download/v${version}/styles.tar.gz`)
+			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/styles.tar.gz`)
 				.ungzipUntar(folderStyle);
-			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-styles/releases/download/v${version}/versatiles-style.tar.gz`)
+			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/versatiles-style.tar.gz`)
 				.ungzipUntar(folderStyle);
-		});
-	}
-
-	function addSprites(): Pf {
-		const label = notes.add('[VersaTiles style](https://github.com/versatiles-org/versatiles-sprites)');
-		return Pf.wrapAsync('add sprites', 1, async () => {
-			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-sprites');
-			label.setVersion(version);
-			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-sprites/releases/download/v${version}/sprites.tar.gz`)
+			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/sprites.tar.gz`)
 				.ungzipUntar(folderSprites);
 		});
 	}
