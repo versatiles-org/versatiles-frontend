@@ -3,9 +3,11 @@ import { jest } from '@jest/globals';
 import { resolve } from 'path';
 import type { File as FileType } from './file_system.js';
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const { default: cache } = await import('./__mocks__/cache.js');
 const { createWriteStream } = (await import('./__mocks__/node_fs.js')).default;
-const { Frontend, loadFrontendConfigs, generateFrontends } = await import('./frontend.js');
 const { File, FileSystem } = await import('./file_system.js');
+const { Frontend, loadFrontendConfigs, generateFrontends } = await import('./frontend.js');
 const { default: progress } = await import('./progress.js');
 const { default: PromiseFunction } = await import('./async.js');
 progress.disable();

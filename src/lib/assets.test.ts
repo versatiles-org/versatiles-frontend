@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/naming-convention */
+import { jest } from '@jest/globals';
 
-import { Curl } from './__mocks__/curl.js';
-import { } from './__mocks__/progress.js';
-import { getLatestReleaseVersion } from './__mocks__/utils.js';
-
-// Import the module and additional dependencies for testing
-
-const { FileSystem } = await import('./file_system.js');
+await import('./__mocks__/progress.js');
 const { default: PromiseFunction } = await import('./async.js');
+const { Curl } = await import('./__mocks__/curl.js');
+const { FileSystem } = await import('./file_system.js');
+const { getLatestReleaseVersion } = await import('./__mocks__/utils.js');
 const { getAssets } = await import('./assets.js');
+
 
 describe('getAssets', () => {
 	it('successfully downloads and processes assets', async () => {

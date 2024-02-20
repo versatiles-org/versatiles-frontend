@@ -1,4 +1,3 @@
-
 import { jest } from '@jest/globals';
 
 const originalFs = await import('node:fs');

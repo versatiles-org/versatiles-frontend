@@ -1,10 +1,11 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Curl as CurlType } from '../curl.js';
 import type { FileSystem } from '../file_system.js';
+import { jest } from '@jest/globals';
 
 export type CurlInstance = InstanceType<typeof CurlType> & { url: string; fileSystem: FileSystem };
 
-jest.mock('./curl.js', () => ({
+jest.unstable_mockModule('./curl.js', () => ({
 	Curl: jest.fn((fileSystem: FileSystem, url: string) => ({
 		url: url,
 		fileSystem: fileSystem,
