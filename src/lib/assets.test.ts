@@ -1,12 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { jest } from '@jest/globals';
 
-await import('./__mocks__/progress.js');
-const { default: PromiseFunction } = await import('./async.js');
-const { Curl } = await import('./__mocks__/curl.js');
-const { FileSystem } = await import('./file_system.js');
-const { getLatestReleaseVersion } = await import('./__mocks__/utils.js');
-const { getAssets } = await import('./assets.js');
+await import('./__mocks__/progress');
+const { default: PromiseFunction } = await import('./async');
+const { Curl } = await import('./__mocks__/curl');
+const { FileSystem } = await import('./file_system');
+const { getLatestReleaseVersion } = await import('./__mocks__/utils');
+const { getAssets } = await import('./assets');
 
 
 describe('getAssets', () => {

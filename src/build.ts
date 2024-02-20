@@ -1,14 +1,14 @@
 /* eslint-disable @typescript-eslint/require-await */
 
 import { resolve } from 'node:path';
-import { cleanupFolder } from './lib/utils.js';
-import notes from './lib/release_notes.js';
-import Pf from './lib/async.js';
-import { FileSystem } from './lib/file_system.js';
-import { generateFrontends } from './lib/frontend.js';
-import { getAssets } from './lib/assets.js';
-import type { ProgressLabel } from './lib/progress.js';
-import progress from './lib/progress.js';
+import { cleanupFolder } from './lib/utils';
+import notes from './lib/release_notes';
+import Pf from './lib/async';
+import { FileSystem } from './lib/file_system';
+import { generateFrontends } from './lib/frontend';
+import { getAssets } from './lib/assets';
+import type { ProgressLabel } from './lib/progress';
+import progress from './lib/progress';
 
 // Define the project and destination folders using relative and absolute paths.
 const projectFolder = new URL('..', import.meta.url).pathname;

@@ -1,8 +1,8 @@
 import express from 'express';
-import type { FileSystem } from './file_system.js';
+import type { FileSystem } from './file_system';
 import type { Express } from 'express';
 import { resolve } from 'node:url';
-import cache from './cache.js';
+import cache from './cache';
 
 /**
  * Defines the structure for development server configurations,

@@ -3,16 +3,16 @@
 import { basename, relative, resolve } from 'node:path';
 import { createGzip } from 'node:zlib';
 import { createWriteStream, existsSync, readFileSync, readdirSync, statSync, watch } from 'node:fs';
-import { parseDevConfig, type DevConfig } from './server.js';
+import { parseDevConfig, type DevConfig } from './server';
 import { pipeline } from 'node:stream/promises';
 import ignore from 'ignore';
-import notes from './release_notes.js';
-import Pf from './async.js';
-import progress from './progress.js';
+import notes from './release_notes';
+import Pf from './async';
+import progress from './progress';
 import tar from 'tar-stream';
-import type { File, FileSystem } from './file_system.js';
+import type { File, FileSystem } from './file_system';
 import type { Ignore } from 'ignore';
-import type { ProgressLabel } from './progress.js';
+import type { ProgressLabel } from './progress';
 import type { WatchEventType } from 'node:fs';
 
 /**

@@ -1,3 +1,3 @@
-import progress from '../progress.js';
+import progress from '../progress';
 
 progress.disable();

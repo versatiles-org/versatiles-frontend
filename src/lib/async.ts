@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/require-await */
 
-import type { ProgressLabel } from './progress.js';
-import progress from './progress.js';
+import type { ProgressLabel } from './progress';
+import progress from './progress';
 
 type AsyncFunction = () => Promise<void>;
 

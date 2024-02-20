@@ -1,9 +1,9 @@
-import { Curl } from './curl.js';
+import { Curl } from './curl';
 import { basename, join } from 'node:path';
-import { getLatestReleaseVersion } from './utils.js';
-import Pf from './async.js';
-import notes from './release_notes.js';
-import type { FileSystem } from './file_system.js';
+import { getLatestReleaseVersion } from './utils';
+import Pf from './async';
+import notes from './release_notes';
+import type { FileSystem } from './file_system';
 
 // Define constants for asset directories.
 const folderStyle = 'assets/styles/';
