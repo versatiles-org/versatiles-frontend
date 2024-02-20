@@ -37,7 +37,7 @@ describe('Frontend class', () => {
 		await frontend.saveAsTarGz(projectFolder);
 
 		expect(createWriteStream).toHaveBeenCalledTimes(1);
-		expect(createWriteStream).toHaveBeenCalledWith('/Users/michaelkreil/Projekte/versatiles/versatiles-frontend/frontend.tar.gz');
+		expect(createWriteStream.mock.calls[0][0]).toMatch(/\/versatiles-frontend\/frontend\.tar\.gz$/);
 	});
 
 	it('should create brotli tarball', async () => {
@@ -46,7 +46,7 @@ describe('Frontend class', () => {
 		await frontend.saveAsBrTar(projectFolder);
 
 		expect(createWriteStream).toHaveBeenCalledTimes(1);
-		expect(createWriteStream).toHaveBeenCalledWith('/Users/michaelkreil/Projekte/versatiles/versatiles-frontend/frontend.br.tar');
+		expect(createWriteStream.mock.calls[0][0]).toMatch(/\/versatiles-frontend\/frontend\.br\.tar$/);
 	});
 
 	it('loads frontend configurations correctly', () => {
