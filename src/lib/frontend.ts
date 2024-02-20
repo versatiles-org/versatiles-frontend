@@ -1,19 +1,19 @@
 /* eslint-disable @typescript-eslint/require-await */
 
 import { basename, relative, resolve } from 'node:path';
+import { createGzip } from 'node:zlib';
+import { createWriteStream, existsSync, readFileSync, readdirSync, statSync, watch } from 'node:fs';
+import { parseDevConfig, type DevConfig } from './server.js';
+import { pipeline } from 'node:stream/promises';
+import ignore from 'ignore';
+import notes from './release_notes.js';
+import Pf from './async.js';
+import progress from './progress.js';
+import tar from 'tar-stream';
 import type { File, FileSystem } from './file_system.js';
 import type { Ignore } from 'ignore';
-import ignore from 'ignore';
-import type { WatchEventType } from 'node:fs';
-import { createWriteStream, existsSync, readFileSync, readdirSync, statSync, watch } from 'node:fs';
-import { pipeline } from 'node:stream/promises';
-import tar from 'tar-stream';
-import { createGzip } from 'node:zlib';
-import Pf from './async.js';
-import notes from './release_notes.js';
 import type { ProgressLabel } from './progress.js';
-import progress from './progress.js';
-import { parseDevConfig, type DevConfig } from './server.js';
+import type { WatchEventType } from 'node:fs';
 
 /**
  * Configuration for a frontend, detailing included and ignored paths, and development settings.
@@ -56,6 +56,7 @@ export class Frontend {
 		// Add files and directories to file system based on include paths.
 		this.include.forEach(include => {
 			const fullPath = resolve(this.frontendsPath, include);
+			if (!statSync(fullPath).isDirectory()) throw Error(`included directory "${include}" is not a directory`);
 			this.addPath(fullPath, fullPath);
 		});
 

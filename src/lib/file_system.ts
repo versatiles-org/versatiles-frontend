@@ -102,6 +102,7 @@ export class FileSystem {
 	 * @param buffer - The raw buffer content of the file.
 	 */
 	public addFile(filename: string, modificationTime: number, buffer: Buffer): void {
+		if (!filename) throw Error('filename is empty');
 		this.files.set(filename, new File(filename, modificationTime, buffer));
 	}
 
