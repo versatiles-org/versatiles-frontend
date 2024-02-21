@@ -1,3 +1,6 @@
+[![Code Coverage](https://codecov.io/gh/versatiles-org/versatiles-frontend/branch/main/graph/badge.svg?token=IDHAI13M0K)](https://codecov.io/gh/versatiles-org/versatiles-frontend)
+[![GitHub Workflow Status)](https://img.shields.io/github/actions/workflow/status/versatiles-org/versatiles-frontend/ci.yml)](https://github.com/versatiles-org/versatiles-frontend/actions/workflows/ci.yml)
+
 # VersaTiles Frontend
 
 VersaTiles Frontend is a dynamic, customizable frontend framework designed for interactive map and tile-based applications. It generates tar archives containing frontends that can directly used with e.g. `versatiles-rs` or `node-versatiles-server`.
