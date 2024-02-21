@@ -98,7 +98,6 @@ export class Frontend {
 
 		await pipeline(
 			pack,
-			createGzip({ level: 9 }),
 			createWriteStream(resolve(folder, this.name + '.br.tar')),
 		);
 	}

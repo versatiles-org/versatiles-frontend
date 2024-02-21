@@ -35,19 +35,19 @@ describe('Frontend class', () => {
 	it('should create gzip-compressed tarball', async () => {
 		const frontend = new Frontend(mockFileSystem, testConfig, frontendsPath);
 
-		await frontend.saveAsTarGz(projectFolder);
+		await frontend.saveAsTarGz('/tmp/');
 
 		expect(createWriteStream).toHaveBeenCalledTimes(1);
-		expect(createWriteStream.mock.calls[0][0]).toMatch(/\/versatiles-frontend\/frontend\.tar\.gz$/);
+		expect(createWriteStream).toHaveBeenCalledWith('/tmp/frontend.tar.gz');
 	});
 
 	it('should create brotli tarball', async () => {
 		const frontend = new Frontend(mockFileSystem, testConfig, frontendsPath);
 
-		await frontend.saveAsBrTar(projectFolder);
+		await frontend.saveAsBrTar('/tmp/');
 
 		expect(createWriteStream).toHaveBeenCalledTimes(1);
-		expect(createWriteStream.mock.calls[0][0]).toMatch(/\/versatiles-frontend\/frontend\.br\.tar$/);
+		expect(createWriteStream).toHaveBeenCalledWith('/tmp/frontend.br.tar');
 	});
 
 	it('loads frontend configurations correctly', () => {
@@ -60,9 +60,10 @@ describe('Frontend class', () => {
 
 	it('generates frontends', async () => {
 		await PromiseFunction.run(generateFrontends(mockFileSystem, projectFolder, '/tmp'));
+
 		expect(createWriteStream).toHaveBeenCalledTimes(6);
-		const calledFilenames = createWriteStream.mock.calls.map(call => call[0] as string);
-		calledFilenames.sort();
+
+		const calledFilenames = createWriteStream.mock.calls.map(call => call[0] as string).sort();
 		expect(calledFilenames).toStrictEqual([
 			'/tmp/frontend-minimal.br.tar',
 			'/tmp/frontend-minimal.tar.gz',

@@ -1,14 +1,16 @@
 import { jest } from '@jest/globals';
+import { tmpdir } from 'node:os';
+import { resolve } from 'node:path';
 
 const originalFs = await import('node:fs');
 
 const instance = {
 	...originalFs.default,
 	createReadStream: jest.fn(originalFs.default.createReadStream),
-	createWriteStream: jest.fn().mockReturnValue({
-		on: jest.fn().mockReturnThis(),
-		end: jest.fn().mockReturnThis(),
-		close: jest.fn(),
+	createWriteStream: jest.fn(() => {
+		const filename = resolve(tmpdir(), Math.random().toString(36) + '.tmp');
+		const stream = originalFs.createWriteStream(filename);
+		return stream;
 	}),
 	existsSync: jest.fn(originalFs.default.existsSync),
 	mkdirSync: jest.fn().mockReturnValue(undefined),
