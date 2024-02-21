@@ -8,6 +8,6 @@ jest.unstable_mockModule('./cache', () => ({
 
 const { cache } = await import('../cache');
 
-const cache = (await import('../cache')).default;
+if (!jest.isMockFunction(cache)) throw Error();
 
 export { cache };

@@ -11,4 +11,10 @@ jest.unstable_mockModule('./utils', () => ({
 
 const { cleanupFolder, copyRecursive, ensureFolder, streamAsBuffer, getLatestReleaseVersion } = await import('../utils');
 
+if (!jest.isMockFunction(cleanupFolder)) throw Error();
+if (!jest.isMockFunction(copyRecursive)) throw Error();
+if (!jest.isMockFunction(ensureFolder)) throw Error();
+if (!jest.isMockFunction(streamAsBuffer)) throw Error();
+if (!jest.isMockFunction(getLatestReleaseVersion)) throw Error();
+
 export { cleanupFolder, copyRecursive, ensureFolder, streamAsBuffer, getLatestReleaseVersion };
