@@ -6,7 +6,7 @@ import unzipper from 'unzipper';
 import type { Entry } from 'unzipper';
 import type { FileSystem } from './file_system';
 import { streamAsBuffer } from './utils';
-import cache from './cache';
+import { cache } from './cache';
 
 /**
  * Provides utilities for fetching resources over HTTP(s), with support for caching,
@@ -14,7 +14,7 @@ import cache from './cache';
  */
 export class Curl {
 	readonly #url: string;
-	
+
 	readonly #fileSystem: FileSystem;
 
 	/**

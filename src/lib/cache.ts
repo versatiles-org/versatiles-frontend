@@ -14,7 +14,7 @@ const db = new ClassicLevel<string, Buffer>(folder, { keyEncoding: 'utf8', value
  *                   if the key is not already present in the cache.
  * @returns A Promise resolving to the Buffer associated with the key, either retrieved from cache or newly cached.
  */
-async function cache(key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> {
+export async function cache(key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> {
 	let buffer: Buffer | false = false;
 	try {
 		// Attempt to retrieve the cached value.
@@ -35,5 +35,3 @@ async function cache(key: string, cbBuffer: () => Promise<Buffer>): Promise<Buff
 
 	return buffer;
 }
-
-export default cache;

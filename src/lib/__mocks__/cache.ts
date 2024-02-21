@@ -1,11 +1,13 @@
 import { jest } from '@jest/globals';
 
 jest.unstable_mockModule('./cache', () => ({
-	'default': async (key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> => {
+	cache: jest.fn(async (key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> => {
 		return cbBuffer();
-	},
+	}),
 }));
+
+const { cache } = await import('../cache');
 
 const cache = (await import('../cache')).default;
 
-export default cache;
+export { cache };
