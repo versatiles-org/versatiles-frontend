@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { jest } from '@jest/globals';
-
+import { mockFetchResponse } from './__mocks__/global_fetch';
 
 const { cache } = await import('./__mocks__/cache');
 const { Curl } = await import('./curl');
@@ -26,7 +26,7 @@ describe('Curl', () => {
 	});
 
 	it('should fetch and ungzip/untar a resource', async () => {
-		setFetchResponse(testGzipTar);
+		mockFetchResponse(testGzipTar);
 		await curl.ungzipUntar(testFolder);
 
 		expect(cache).toHaveBeenCalledTimes(1);
@@ -46,7 +46,7 @@ describe('Curl', () => {
 	});
 
 	it('should fetch, unzip, and save contents based on filter callback', async () => {
-		setFetchResponse(testZip);
+		mockFetchResponse(testZip);
 
 		await curl.unzip(filename => filename.endsWith('.txt') ? `/unzipped/${filename}` : false);
 
@@ -59,7 +59,7 @@ describe('Curl', () => {
 	});
 
 	it('should return a buffer from getBuffer method', async () => {
-		setFetchResponse('mocked response');
+		mockFetchResponse('mocked response');
 		const buffer = await curl.getBuffer();
 
 		expect(buffer).toBeInstanceOf(Buffer);
@@ -70,11 +70,3 @@ describe('Curl', () => {
 
 	// Add more tests as needed for other scenarios and edge cases
 });
-
-function setFetchResponse(data: Buffer | string): void {
-	if (typeof data === 'string') {
-		data = Buffer.from(data);
-	}
-	// @ts-expect-error too lazy
-	global.fetch = jest.fn(async () => Promise.resolve({ arrayBuffer: async () => Promise.resolve(data) }));
-}

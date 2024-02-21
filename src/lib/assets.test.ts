@@ -2,7 +2,7 @@
 import { jest } from '@jest/globals';
 
 await import('./__mocks__/progress');
-const { default: PromiseFunction } = await import('./async');
+const PromiseFunction = (await import('./async')).default;
 const { Curl } = await import('./__mocks__/curl');
 const { FileSystem } = await import('./file_system');
 const { getLatestReleaseVersion } = await import('./__mocks__/utils');

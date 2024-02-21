@@ -3,13 +3,13 @@ import { jest } from '@jest/globals';
 import { resolve } from 'path';
 import type { File as FileType } from './file_system';
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-const { cache } = await import('./__mocks__/cache');
+const { } = await import('./__mocks__/cache');
 const { createWriteStream } = (await import('./__mocks__/node_fs')).default;
 const { File, FileSystem } = await import('./file_system');
 const { Frontend, loadFrontendConfigs, generateFrontends } = await import('./frontend');
 const progress = (await import('./progress')).default;
 const PromiseFunction = (await import('./async')).default;
+
 progress.disable();
 
 if (!jest.isMockFunction(createWriteStream)) throw Error();
