@@ -19,7 +19,7 @@ const fileSystem = new FileSystem();
 progress.setHeader('Building Release');
 
 // Clean up the destination folder before starting the build.
-await cleanupFolder(dstFolder);
+cleanupFolder(dstFolder);
 
 // Run the main build tasks sequentially: fetch assets, compress files, and generate frontends.
 await Pf.runSequential(
