@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { jest } from '@jest/globals';
 import { resolve } from 'path';
-import type { File as FileType } from './file_system';
+import type { FileSystem as FileSystemType, File as FileType } from './file_system';
 
 const { } = await import('./__mocks__/cache');
 const { createWriteStream } = (await import('./__mocks__/node_fs')).default;
@@ -17,9 +17,7 @@ if (!jest.isMockFunction(createWriteStream)) throw Error();
 const projectFolder = new URL('../../', import.meta.url).pathname;
 
 describe('Frontend class', () => {
-	const mockFileSystem = new FileSystem(new Map<string, FileType>([
-		['nothing.js', new File('nothing.js', 12, Buffer.from('empty'))],
-	]));
+	let mockFileSystem: FileSystemType;
 	const testConfig = {
 		name: 'frontend',
 		include: ['all', 'frontend'],
@@ -29,6 +27,9 @@ describe('Frontend class', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks(); // Clear mocks before each test
+		mockFileSystem = new FileSystem(new Map<string, FileType>([
+			['nothing.js', new File('nothing.js', 12, Buffer.from('empty'))],
+		]));
 	});
 
 	it('should create gzip-compressed tarball', async () => {
@@ -57,7 +58,18 @@ describe('Frontend class', () => {
 		));
 	});
 
-	it('calls getLatestReleaseVersion with correct arguments for assets', async () => {
+	it('generates frontends', async () => {
 		await PromiseFunction.run(generateFrontends(mockFileSystem, projectFolder, '/tmp'));
+		expect(createWriteStream).toHaveBeenCalledTimes(6);
+		const calledFilenames = createWriteStream.mock.calls.map(call => call[0] as string);
+		calledFilenames.sort();
+		expect(calledFilenames).toStrictEqual([
+			'/tmp/frontend-minimal.br.tar',
+			'/tmp/frontend-minimal.tar.gz',
+			'/tmp/frontend-rust.br.tar',
+			'/tmp/frontend-rust.tar.gz',
+			'/tmp/frontend.br.tar',
+			'/tmp/frontend.tar.gz',
+		]);
 	});
 });
