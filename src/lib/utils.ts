@@ -1,7 +1,5 @@
-import { readdir, rm, stat } from 'node:fs/promises';
-import { createReadStream, createWriteStream, existsSync, mkdirSync } from 'node:fs';
-import { dirname, join, resolve } from 'node:path';
-import { pipeline } from 'node:stream/promises';
+import { existsSync, mkdirSync, rmSync } from 'node:fs';
+import { dirname } from 'node:path';
 import type { Readable } from 'node:stream';
 
 /**
@@ -9,44 +7,13 @@ import type { Readable } from 'node:stream';
  * 
  * @param path - The path to the folder to clean up.
  */
-export async function cleanupFolder(path: string): Promise<void> {
+export function cleanupFolder(path: string): void {
 	if (existsSync(path)) {
 		// If the folder exists, remove it and all its contents.
-		await rm(path, { recursive: true, maxRetries: 3, retryDelay: 100 });
+		rmSync(path, { recursive: true, maxRetries: 3, retryDelay: 100 });
 	}
 	// Recreate the folder after deletion.
 	ensureFolder(path);
-}
-
-/**
- * Copies files and directories recursively from a source to a destination path.
- * 
- * @param pathSrc - The source path.
- * @param pathDst - The destination path.
- */
-export async function copyRecursive(pathSrc: string, pathDst: string): Promise<void> {
-	await copy('');
-
-	async function copy(fol: string): Promise<void> {
-		const folSrc = resolve(pathSrc, fol);
-		const folDst = resolve(pathDst, fol);
-		if ((await stat(folSrc)).isDirectory()) {
-			// If the source is a directory, ensure the destination directory exists.
-			ensureFolder(folDst);
-			for (const entry of await readdir(folSrc)) {
-				// Skip hidden files and directories.
-				if (entry.startsWith('.')) continue;
-				// Recursively copy each entry.
-				await copy(join(fol, entry));
-			}
-		} else {
-			// If the source is a file, copy it to the destination.
-			await pipeline(
-				createReadStream(folSrc),
-				createWriteStream(folDst),
-			);
-		}
-	}
 }
 
 /**
