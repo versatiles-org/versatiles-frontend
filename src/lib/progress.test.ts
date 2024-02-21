@@ -1,6 +1,15 @@
+/* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable @typescript-eslint/unbound-method */
-import { Progress } from './progress';
+
 import { jest } from '@jest/globals';
+
+jest.unstable_mockModule('supports-color', () => ({
+	default: { stdout: true },
+}));
+const { Progress } = await import('./progress');
+
+
+
 
 describe('Progress', () => {
 	let originalStdoutWrite: typeof process.stdout.write;
