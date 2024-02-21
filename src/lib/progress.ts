@@ -99,7 +99,7 @@ export class ProgressLabel {
 /**
  * Manages a collection of ProgressLabel instances and handles the overall progress display.
  */
-class Progress {
+export class Progress {
 	private readonly labelList: ProgressLabel[] = []; // List of all progress labels.
 
 	private header?: string; // Optional header text for the progress display.
