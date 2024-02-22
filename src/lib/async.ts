@@ -71,16 +71,6 @@ export default class PromiseFunction {
 	}
 
 	/**
-	 * Executes multiple PromiseFunctions sequentially.
-	 * 
-	 * @param pfs - An array of PromiseFunction instances to execute.
-	 */
-	public static async runSequential(...pfs: PromiseFunction[]): Promise<void> {
-		for (const pf of pfs) await pf.init();
-		for (const pf of pfs) await pf.run();
-	}
-
-	/**
 	 * Initializes and then runs a given PromiseFunction.
 	 * 
 	 * @param pf - The PromiseFunction to execute.

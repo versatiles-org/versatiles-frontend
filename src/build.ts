@@ -22,11 +22,11 @@ progress.setHeader('Building Release');
 cleanupFolder(dstFolder);
 
 // Run the main build tasks sequentially: fetch assets, compress files, and generate frontends.
-await Pf.runSequential(
+await Pf.run(Pf.sequential(
 	getAssets(fileSystem),
 	compressFiles(),
 	generateFrontends(fileSystem, projectFolder, dstFolder),
-);
+));
 
 // Save release notes in the destination folder.
 notes.save(resolve(dstFolder, 'notes.md'));

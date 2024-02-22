@@ -39,6 +39,7 @@
     "@versatiles/release-tool": "^1.2.2",
     "eslint": "^8.56.0",
     "jest": "^29.7.0",
+    "jest-extended": "^4.0.2",
     "npm-check-updates": "^16.14.15",
     "ts-jest": "^29.1.2",
     "ts-node": "^10.9.2"
