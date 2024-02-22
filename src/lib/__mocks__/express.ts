@@ -1,7 +1,6 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-import { jest } from '@jest/globals';
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 
-const originalExpress = await import('express');
+import { jest } from '@jest/globals';
 
 const instance = {
 	get: jest.fn(),
@@ -10,14 +9,6 @@ const instance = {
 	}),
 };
 
-jest.unstable_mockModule('express', () => ({
+export const mockExpress = {
 	default: jest.fn(() => instance),
-}));
-
-const express = (await import('express')) as jest.Mocked<typeof originalExpress>;
-
-if (!jest.isMockFunction(express.default)) throw Error();
-if (!jest.isMockFunction(express.default().get)) throw Error();
-if (!jest.isMockFunction(express.default().listen)) throw Error();
-
-export default express.default;
+} as unknown as jest.Mocked<typeof import('express')>;

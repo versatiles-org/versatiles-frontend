@@ -1,13 +1,9 @@
+/* eslint-disable @typescript-eslint/consistent-type-imports */
+
 import { jest } from '@jest/globals';
 
-jest.unstable_mockModule('./cache', () => ({
+export const mockCache: jest.Mocked<typeof import('../cache')> = {
 	cache: jest.fn(async (key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> => {
 		return cbBuffer();
 	}),
-}));
-
-const { cache } = await import('../cache');
-
-if (!jest.isMockFunction(cache)) throw Error();
-
-export { cache };
+};

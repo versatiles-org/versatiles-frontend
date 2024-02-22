@@ -6,8 +6,14 @@ import type { File as FileType, FileSystem as FileSystemType } from './file_syst
 import type { IncomingMessage, ServerResponse } from 'http';
 
 
-const express = (await import('./__mocks__/express')).default;
-const { } = await import('./__mocks__/cache');
+const { mockExpress } = await import('./__mocks__/express');
+jest.unstable_mockModule('express', () => mockExpress);
+const express = (await import('express')).default;
+
+const { mockCache } = await import('./__mocks__/cache');
+jest.unstable_mockModule('./cache', () => mockCache);
+const { } = await import('./cache');
+
 const { File, FileSystem } = await import('./file_system');
 const { Server } = await import('./server');
 

@@ -1,7 +1,9 @@
 import { jest } from '@jest/globals';
 import { mockFetchResponse } from './__mocks__/global_fetch';
 
-const { existsSync, mkdirSync, rmSync } = await import('./__mocks__/node_fs');
+const { mockFs } = await import('./__mocks__/node_fs');
+jest.unstable_mockModule('node:fs', () => mockFs);
+const { existsSync, mkdirSync, rmSync } = await import('node:fs');
 
 const utils = await import('./utils');
 
@@ -10,7 +12,7 @@ describe('cleanupFolder', () => {
 	it('should remove and recreate the folder', () => {
 		jest.clearAllMocks();
 
-		existsSync
+		jest.mocked(existsSync)
 			.mockReturnValueOnce(true)
 			.mockReturnValueOnce(false)
 			.mockReturnValueOnce(true);
@@ -32,7 +34,7 @@ describe('ensureFolder', () => {
 	it('should create the folder if it does not exist', () => {
 		jest.clearAllMocks();
 
-		existsSync
+		jest.mocked(existsSync)
 			.mockReturnValueOnce(false)
 			.mockReturnValueOnce(true);
 

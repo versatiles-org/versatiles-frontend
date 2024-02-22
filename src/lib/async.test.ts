@@ -4,7 +4,10 @@ import { toHaveBeenCalledBefore } from 'jest-extended';
 import type { ProgressLabel } from './progress';
 expect.extend({ toHaveBeenCalledBefore });
 
-const progress = (await import('./__mocks__/progress')).default;
+const { mockProgress } = await import('./__mocks__/progress');
+jest.unstable_mockModule('./progress', () => mockProgress);
+const progress = (await import('./progress')).default;
+
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const PromiseFunctions = (await import('./async')).default;
 

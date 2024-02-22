@@ -3,11 +3,8 @@
 
 import { jest } from '@jest/globals';
 
-jest.unstable_mockModule('supports-color', () => ({
-	default: { stdout: true },
-}));
+jest.unstable_mockModule('supports-color', () => ({ default: { stdout: true } }));
 const { Progress } = await import('./progress');
-
 
 
 

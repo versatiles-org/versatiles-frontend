@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/consistent-type-imports */
 /* eslint-disable @typescript-eslint/naming-convention */
 import { jest } from '@jest/globals';
 import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../progress';
@@ -14,40 +15,33 @@ function mockProgressLabel(progressLabel: ProgressLabelType): ProgressLabelType 
 	return progressLabel;
 }
 
-jest.unstable_mockModule('./progress', () => {
-	const ProgressLabel = jest.fn((progress: ProgressType, label: string, indent: number) => {
-		return mockProgressLabel(new originalModule.ProgressLabel(progress, label, indent));
-	});
-
-	const Progress = jest.fn(() => {
-		const progress = new originalModule.Progress();
-		jest.spyOn(progress, 'disableAnsi');
-		jest.spyOn(progress, 'disable');
-		jest.spyOn(progress, 'setHeader');
-		jest.spyOn(progress, 'finish');
-		jest.spyOn(progress, 'redraw');
-		jest.spyOn(progress, 'write');
-
-		// @ts-expect-error too lazy
-		// eslint-disable-next-line @typescript-eslint/unbound-method
-		progress._add = progress.add;
-		jest.spyOn(progress, 'add').mockImplementation((name: string, indent = 0): ProgressLabelType => {
-			// @ts-expect-error too lazy
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
-			return mockProgressLabel(progress._add(name, indent));
-		});
-		return progress;
-	});
-
-	const progress = new Progress();
-	progress.disable();
-
-	return { ProgressLabel, Progress, default: progress };
+const ProgressLabel = jest.fn((progress: ProgressType, label: string, indent: number) => {
+	return mockProgressLabel(new originalModule.ProgressLabel(progress, label, indent));
 });
 
+const Progress = jest.fn(() => {
+	const progress = new originalModule.Progress();
+	jest.spyOn(progress, 'disableAnsi');
+	jest.spyOn(progress, 'disable');
+	jest.spyOn(progress, 'setHeader');
+	jest.spyOn(progress, 'finish');
+	jest.spyOn(progress, 'redraw');
+	jest.spyOn(progress, 'write');
 
-const { default: progress, ProgressLabel, Progress } = await import('../progress');
+	// @ts-expect-error too lazy
+	// eslint-disable-next-line @typescript-eslint/unbound-method
+	progress._add = progress.add;
+	jest.spyOn(progress, 'add').mockImplementation((name: string, indent = 0): ProgressLabelType => {
+		// @ts-expect-error too lazy
+		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
+		return mockProgressLabel(progress._add(name, indent));
+	});
+	return progress;
+});
 
+const progress = new Progress();
+progress.disable();
 
-export default progress;
-export { ProgressLabel, Progress };
+export const mockProgress = {
+	ProgressLabel, Progress, default: progress,
+} as unknown as jest.Mocked<typeof import('../progress')>;
