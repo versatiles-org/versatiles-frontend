@@ -1,7 +1,7 @@
 import { Curl } from './curl';
 import { basename, join } from 'node:path';
 import { getLatestReleaseVersion } from './utils';
-import Pf from './async';
+import PromiseFunction from './async';
 import notes from './release_notes';
 import type { FileSystem } from './file_system';
 
@@ -15,11 +15,11 @@ const folderSprites = 'assets/sprites/';
  * This includes fonts, styles, and MapLibre-related assets.
  * 
  * @param {FileSystem} fileSystem - The file system interface to use for file operations.
- * @returns {Pf} - A parallelized promise for loading all assets, wrapped with progress tracking.
+ * @returns {PromiseFunction} - A parallelized promise for loading all assets, wrapped with progress tracking.
  */
-export function getAssets(fileSystem: FileSystem): Pf {
-	return Pf.wrapProgress('load assets',
-		Pf.parallel(
+export function getAssets(fileSystem: FileSystem): PromiseFunction {
+	return PromiseFunction.wrapProgress('load assets',
+		PromiseFunction.parallel(
 			addFont('fonts'),
 			addStyles(),
 			addMaplibre(),
@@ -31,11 +31,11 @@ export function getAssets(fileSystem: FileSystem): Pf {
 	 * Adds fonts to the project by downloading and extracting them from the specified release.
 	 * 
 	 * @param {string} fontName - The name of the font to add.
-	 * @returns {Pf} - An async operation wrapped in a progress-tracking object.
+	 * @returns {PromiseFunction} - An async operation wrapped in a progress-tracking object.
 	 */
-	function addFont(fontName: string): Pf {
+	function addFont(fontName: string): PromiseFunction {
 		const label = notes.add('[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)');
-		return Pf.wrapAsync('add fonts', 1, async () => {
+		return PromiseFunction.wrapAsync('add fonts', 1, async () => {
 			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-fonts');
 			label.setVersion(version);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/${fontName}.tar.gz`)
@@ -46,11 +46,11 @@ export function getAssets(fileSystem: FileSystem): Pf {
 	/**
 	 * Adds styles and sprites to the project by downloading and extracting them from the specified releases.
 	 * 
-	 * @returns {Pf} - An async operation wrapped in a progress-tracking object.
+	 * @returns {PromiseFunction} - An async operation wrapped in a progress-tracking object.
 	 */
-	function addStyles(): Pf {
+	function addStyles(): PromiseFunction {
 		const label = notes.add('[VersaTiles style](https://github.com/versatiles-org/versatiles-style)');
-		return Pf.wrapAsync('add styles', 1, async () => {
+		return PromiseFunction.wrapAsync('add styles', 1, async () => {
 			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-style');
 			label.setVersion(version);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/styles.tar.gz`)
@@ -65,12 +65,12 @@ export function getAssets(fileSystem: FileSystem): Pf {
 	/**
 	 * Adds MapLibre GL JS to the project by downloading and extracting the distribution files from the specified release.
 	 * 
-	 * @returns {Pf} - An async operation wrapped in a progress-tracking object.
+	 * @returns {PromiseFunction} - An async operation wrapped in a progress-tracking object.
 	 */
-	function addMaplibre(): Pf {
+	function addMaplibre(): PromiseFunction {
 		const folder = 'assets/maplibre-gl';
 		const label = notes.add('[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)');
-		return Pf.wrapAsync('add maplibre', 1, async () => {
+		return PromiseFunction.wrapAsync('add maplibre', 1, async () => {
 			const version = await getLatestReleaseVersion('maplibre', 'maplibre-gl-js');
 			label.setVersion(version);
 			await new Curl(fileSystem, `https://github.com/maplibre/maplibre-gl-js/releases/download/v${version}/dist.zip`)
@@ -81,12 +81,12 @@ export function getAssets(fileSystem: FileSystem): Pf {
 	/**
 	 * Adds MapLibre GL Inspect plugin to the project by downloading and saving the necessary JavaScript and CSS files.
 	 * 
-	 * @returns {Pf} - An async operation wrapped in a progress-tracking object.
+	 * @returns {PromiseFunction} - An async operation wrapped in a progress-tracking object.
 	 */
-	function addMaplibreInspect(): Pf {
+	function addMaplibreInspect(): PromiseFunction {
 		const folder = 'assets/maplibre-gl-inspect';
 		const label = notes.add('[MapLibre GL Inspect](https://github.com/acalcutt/maplibre-gl-inspect)');
-		return Pf.wrapAsync('add maplibre-gl-inspect', 1, async () => {
+		return PromiseFunction.wrapAsync('add maplibre-gl-inspect', 1, async () => {
 			const version = await getLatestReleaseVersion('acalcutt', 'maplibre-gl-inspect');
 			label.setVersion(version);
 			const baseUrl = `https://github.com/acalcutt/maplibre-gl-inspect/releases/download/v${version}/`;

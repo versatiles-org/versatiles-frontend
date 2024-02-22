@@ -18,7 +18,7 @@ import type { WatchEventType } from 'node:fs';
 /**
  * Configuration for a frontend, detailing included and ignored paths, and development settings.
  */
-interface FrontendConfig {
+export interface FrontendConfig {
 	name: string;
 	include: string[];
 	ignore?: string[];
