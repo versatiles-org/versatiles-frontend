@@ -6,7 +6,7 @@ expect.extend({ toHaveBeenCalledBefore });
 
 const progress = (await import('./__mocks__/progress')).default;
 // eslint-disable-next-line @typescript-eslint/naming-convention
-const Pf = (await import('./async')).default;
+const PromiseFunctions = (await import('./async')).default;
 
 function getAsyncMock(): jest.Mock<() => Promise<void>> {
 
@@ -21,7 +21,7 @@ describe('PromiseFunction', () => {
 			const mockInit = getAsyncMock();
 			const mockRun = getAsyncMock();
 
-			await Pf.run(Pf.single(mockInit, mockRun));
+			await PromiseFunctions.run(PromiseFunctions.single(mockInit, mockRun));
 
 			// Verify, that every function was executed once
 			expect(mockInit).toHaveBeenCalledTimes(1);
@@ -39,9 +39,9 @@ describe('PromiseFunction', () => {
 			const mockInit2 = getAsyncMock();
 			const mockRun2 = getAsyncMock();
 
-			await Pf.run(Pf.parallel(
-				Pf.single(mockInit1, mockRun1),
-				Pf.single(mockInit2, mockRun2),
+			await PromiseFunctions.run(PromiseFunctions.parallel(
+				PromiseFunctions.single(mockInit1, mockRun1),
+				PromiseFunctions.single(mockInit2, mockRun2),
 			));
 
 			// Verify, that every function was executed once
@@ -64,9 +64,9 @@ describe('PromiseFunction', () => {
 			const mockInit2 = getAsyncMock();
 			const mockRun2 = getAsyncMock();
 
-			await Pf.run(Pf.sequential(
-				Pf.single(mockInit1, mockRun1),
-				Pf.single(mockInit2, mockRun2),
+			await PromiseFunctions.run(PromiseFunctions.sequential(
+				PromiseFunctions.single(mockInit1, mockRun1),
+				PromiseFunctions.single(mockInit2, mockRun2),
 			));
 
 			// Verify, that every function was executed once
@@ -89,7 +89,7 @@ describe('PromiseFunction', () => {
 			const mockInit = getAsyncMock();
 			const mockRun = getAsyncMock();
 
-			await Pf.run(Pf.wrapProgress('Test Progress', Pf.single(mockInit, mockRun)));
+			await PromiseFunctions.run(PromiseFunctions.wrapProgress('Test Progress', PromiseFunctions.single(mockInit, mockRun)));
 
 			const progressLabel = jest.mocked(progress.add).mock.results[0].value as ProgressLabel;
 
@@ -114,7 +114,7 @@ describe('PromiseFunction', () => {
 
 			const mockAsync = getAsyncMock();
 
-			await Pf.run(Pf.wrapAsync('Test Progress', 3, mockAsync));
+			await PromiseFunctions.run(PromiseFunctions.wrapAsync('Test Progress', 3, mockAsync));
 
 			const progressLabel = jest.mocked(progress.add).mock.results[0].value as ProgressLabel;
 
