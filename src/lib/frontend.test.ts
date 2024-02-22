@@ -28,7 +28,7 @@ describe('Frontend class', () => {
 	beforeEach(() => {
 		jest.clearAllMocks(); // Clear mocks before each test
 		mockFileSystem = new FileSystem(new Map<string, FileType>([
-			['nothing.js', new File('nothing.js', 12, Buffer.from('empty'))],
+			['nothing.js', new File('nothing.js', 12, Buffer.from('file content'))],
 		]));
 	});
 

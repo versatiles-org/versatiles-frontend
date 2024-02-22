@@ -63,8 +63,10 @@ export class Server {
 		this.app.get('*', (req, res) => {
 			// Attempt to serve the request from the file system.
 			if (tryFileSystem(req.path)) return;
+
 			// Attempt to serve an index.html file if the request is for a directory.
 			if (tryFileSystem(resolve(req.path + '/', 'index.html'))) return;
+			
 			// Attempt to proxy the request based on configuration.
 			void tryProxy(req.path).then(value => {
 				if (value) return;
