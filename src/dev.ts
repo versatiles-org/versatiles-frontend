@@ -1,10 +1,10 @@
 import { resolve } from 'node:path';
-import Pf from './lib/async';
+import Pf from './utils/async';
 import { FileSystem } from './lib/file_system';
 import { Frontend, loadFrontendConfigs } from './lib/frontend';
 import { getAssets } from './lib/assets';
-import progress from './lib/progress';
-import { Server } from './lib/server';
+import progress from './utils/progress';
+import { Server } from './server/server';
 
 // Disables ANSI color codes in progress output for simplicity in development environments.
 progress.disableAnsi();

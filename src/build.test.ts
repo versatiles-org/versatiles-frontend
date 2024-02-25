@@ -6,17 +6,17 @@ const { mockReleaseNotes } = await import('./lib/__mocks__/release_notes');
 jest.unstable_mockModule('./lib/release_notes', () => mockReleaseNotes);
 const { default: notes } = await import('./lib/release_notes');
 
-const { mockCache } = await import('./lib/__mocks__/cache');
-jest.unstable_mockModule('./lib/cache', () => mockCache);
-const { } = await import('./lib/cache');
+const { mockCache } = await import('./utils/__mocks__/cache');
+jest.unstable_mockModule('./utils/cache', () => mockCache);
+const { } = await import('./utils/cache');
 
-const { mockProgress } = await import('./lib/__mocks__/progress');
-jest.unstable_mockModule('./lib/progress', () => mockProgress);
-const { default: progress } = await import('./lib/progress');
+const { mockProgress } = await import('./utils/__mocks__/progress');
+jest.unstable_mockModule('./utils/progress', () => mockProgress);
+const { default: progress } = await import('./utils/progress');
 
-const { mockUtils } = await import('./lib/__mocks__/utils');
-jest.unstable_mockModule('./lib/utils', () => mockUtils);
-const { cleanupFolder } = await import('./lib/utils');
+const { mockUtils } = await import('./utils/__mocks__/utils');
+jest.unstable_mockModule('./utils/utils', () => mockUtils);
+const { cleanupFolder } = await import('./utils/utils');
 
 const { mockAssets } = await import('./lib/__mocks__/assets');
 jest.unstable_mockModule('./lib/assets', () => mockAssets);

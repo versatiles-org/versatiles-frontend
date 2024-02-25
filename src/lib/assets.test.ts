@@ -1,21 +1,29 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { jest } from '@jest/globals';
 
-const { mockProgress } = await import('./__mocks__/progress');
-jest.unstable_mockModule('./progress', () => mockProgress);
-await import('./progress');
+// Mock progress
+const { mockProgress } = await import('../utils/__mocks__/progress');
+jest.unstable_mockModule('../utils/progress', () => mockProgress);
+await import('../utils/progress');
 
-const PromiseFunction = (await import('./async')).default;
+const PromiseFunction = (await import('../utils/async')).default;
 
+// Mock curl
 const { mockCurl } = await import('./__mocks__/curl');
 jest.unstable_mockModule('./curl', () => mockCurl);
 const { Curl } = await import('./curl');
 
 const { FileSystem } = await import('./file_system');
 
-const { mockUtils } = await import('./__mocks__/utils');
-jest.unstable_mockModule('./utils', () => mockUtils);
-const { getLatestReleaseVersion } = await import('./utils');
+// Mock utils
+const { mockUtils } = await import('../utils/__mocks__/utils');
+jest.unstable_mockModule('../utils/utils', () => mockUtils);
+
+// Mock release_version
+const { mockReleaseVersion } = await import('./__mocks__/release_version');
+jest.unstable_mockModule('./release_version', () => mockReleaseVersion);
+const { getLatestReleaseVersion } = await import('./release_version');
+
 
 const { getAssets } = await import('./assets');
 

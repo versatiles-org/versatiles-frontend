@@ -1,5 +1,4 @@
 import { jest } from '@jest/globals';
-import { mockFetchResponse } from './__mocks__/global_fetch';
 
 const { mockFs } = await import('./__mocks__/node_fs');
 jest.unstable_mockModule('node:fs', () => mockFs);
@@ -56,20 +55,5 @@ describe('streamAsBuffer', () => {
 		const result = await utils.streamAsBuffer(mockStream);
 
 		expect(result.toString()).toBe('hello world');
-	});
-});
-
-describe('getLatestReleaseVersion', () => {
-	it('fetches the latest release version', async () => {
-		const owner = 'exampleOrg';
-		const repo = 'exampleRepo';
-
-		// eslint-disable-next-line @typescript-eslint/naming-convention
-		mockFetchResponse([{ tag_name: 'v12.7.3' }]);
-
-		const version = await utils.getLatestReleaseVersion(owner, repo);
-
-		expect(version).toBe('12.7.3');
-		expect(global.fetch).toHaveBeenCalledWith(`https://api.github.com/repos/${owner}/${repo}/releases`, expect.anything());
 	});
 });

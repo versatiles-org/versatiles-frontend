@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
 
 import { jest } from '@jest/globals';
-import PromiseFunction from '../async';
+import PromiseFunction from '../../utils/async';
 import type { FileSystem } from '../file_system';
 
 export const mockAssets: jest.Mocked<typeof import('../assets')> = {

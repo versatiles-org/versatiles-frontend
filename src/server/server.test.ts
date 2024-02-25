@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import { jest } from '@jest/globals';
-import { mockFetchResponse } from './__mocks__/global_fetch';
+import { mockFetchResponse } from '../lib/__mocks__/global_fetch';
 import type { Server as ServerType } from './server';
-import type { File as FileType, FileSystem as FileSystemType } from './file_system';
+import type { File as FileType, FileSystem as FileSystemType } from '../lib/file_system';
 import type { IncomingMessage, ServerResponse } from 'http';
 
 
-const { mockExpress } = await import('./__mocks__/express');
+const { mockExpress } = await import('../lib/__mocks__/express');
 jest.unstable_mockModule('express', () => mockExpress);
 const express = (await import('express')).default;
 
-const { mockCache } = await import('./__mocks__/cache');
-jest.unstable_mockModule('./cache', () => mockCache);
-const { } = await import('./cache');
+const { mockCache } = await import('../utils/__mocks__/cache');
+jest.unstable_mockModule('../utils/cache', () => mockCache);
+const { } = await import('../utils/cache');
 
-const { File, FileSystem } = await import('./file_system');
+const { File, FileSystem } = await import('../lib/file_system');
 const { Server } = await import('./server');
 
 describe('Server', () => {

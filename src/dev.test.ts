@@ -10,13 +10,13 @@ console.error = jest.fn().mockReturnValue(undefined);
 // Import all necessary mocks
 const { File, FileSystem } = await import('./lib/file_system');
 
-const { mockProgress } = await import('./lib/__mocks__/progress');
-jest.unstable_mockModule('./lib/progress', () => mockProgress);
-const progress = (await import('./lib/progress')).default;
+const { mockProgress } = await import('./utils/__mocks__/progress');
+jest.unstable_mockModule('./utils/progress', () => mockProgress);
+const progress = (await import('./utils/progress')).default;
 
-const { mockServer } = await import('./lib/__mocks__/server');
-jest.unstable_mockModule('./lib/server', () => mockServer);
-const { Server } = await import('./lib/server');
+const { mockServer } = await import('./server/__mocks__/server');
+jest.unstable_mockModule('./server/server', () => mockServer);
+const { Server } = await import('./server/server');
 
 const { mockFrontend } = await import('./lib/__mocks__/frontend');
 jest.unstable_mockModule('./lib/frontend', () => mockFrontend);

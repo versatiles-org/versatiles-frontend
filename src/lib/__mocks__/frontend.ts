@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 
 import { jest } from '@jest/globals';
-import PromiseFunction from '../async';
+import PromiseFunction from '../../utils/async';
 
 const originalModule = await import('../frontend');
 

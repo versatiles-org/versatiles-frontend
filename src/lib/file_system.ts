@@ -1,5 +1,5 @@
 import { brotliCompress, constants } from 'node:zlib';
-import { cache } from './cache';
+import { cache } from '../utils/cache';
 
 /**
  * Represents a file with utilities for compression.

@@ -5,6 +5,7 @@ export function mockFetchResponse(data: unknown): void {
 	global.fetch = jest.fn(async () => Promise.resolve({
 		arrayBuffer: async () => Promise.resolve(getAsBuffer()),
 		json: async () => Promise.resolve(getAsJSON()),
+		status: 200,
 	}));
 
 	function getAsBuffer(): Buffer {
