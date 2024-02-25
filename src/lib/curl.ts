@@ -103,6 +103,7 @@ export class Curl {
 			'getBuffer:' + this.#url,
 			async () => {
 				const response = await fetch(this.#url, { redirect: 'follow' });
+				if (response.status !== 200) throw Error(`url "${this.#url}" returned error ${response.status}`);
 				return Buffer.from(await response.arrayBuffer());
 			},
 		);
