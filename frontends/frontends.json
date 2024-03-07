@@ -19,7 +19,19 @@
 			"all",
 			"frontend-rust",
 			"mapdesigner"
-		]
+		],
+		"dev": {
+			"proxy": [
+				{
+					"from": "/tiles/",
+					"to": "https://tiles.datenhub.net/tiles/"
+				},
+				{
+					"from": "/api/",
+					"to": "https://tiles.datenhub.net/api/"
+				}
+			]
+		}
 	},
 	"frontend-minimal": {
 		"include": [
