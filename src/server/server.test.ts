@@ -24,12 +24,15 @@ describe('Server', () => {
 	let getFunction: (req: IncomingMessage, res: ServerResponse) => void;
 
 	async function fakeRequest(path: string): Promise<{
+		header: jest.Mock<(key: string, value: string) => void>;
 		status: jest.Mock<(status: number) => void>;
 		end: jest.Mock<(data: Buffer | string) => void>;
 	}> {
 		return new Promise(resolve => {
 			const response = {
-				status: jest.fn().mockReturnThis(), end: jest.fn(() => {
+				status: jest.fn().mockReturnThis(),
+				header: jest.fn().mockReturnThis(),
+				end: jest.fn(() => {
 					resolve(response);
 				}),
 			};
@@ -63,14 +66,25 @@ describe('Server', () => {
 	it('should serve files from the file system', async () => {
 		const res = await fakeRequest('/existingFile.txt');
 
+		expect(res.header).toHaveBeenCalledTimes(1);
+		expect(res.header).toHaveBeenCalledWith('content-type', 'text/plain');
+
+		expect(res.status).toHaveBeenCalledTimes(1);
 		expect(res.status).toHaveBeenCalledWith(200);
+
+		expect(res.end).toHaveBeenCalledTimes(1);
 		expect(res.end).toHaveBeenCalledWith(Buffer.from('file content'));
 	});
 
 	it('should return 404 for non-existing files', async () => {
 		const res = await fakeRequest('/nonExistingFile.txt');
 
+		expect(res.header).toHaveBeenCalledTimes(0);
+
+		expect(res.status).toHaveBeenCalledTimes(1);
 		expect(res.status).toHaveBeenCalledWith(404);
+
+		expect(res.end).toHaveBeenCalledTimes(1);
 		expect(res.end).toHaveBeenCalledWith(expect.stringContaining('not found'));
 	});
 
@@ -78,7 +92,14 @@ describe('Server', () => {
 		const res = await fakeRequest('/api/data');
 
 		expect(fetch).toHaveBeenCalledWith('http://example.com/api/data');
+
+		expect(res.header).toHaveBeenCalledTimes(1);
+		expect(res.header).toHaveBeenCalledWith('content-type', 'text/plain');
+
+		expect(res.status).toHaveBeenCalledTimes(1);
 		expect(res.status).toHaveBeenCalledWith(200);
+
+		expect(res.end).toHaveBeenCalledTimes(1);
 		expect(res.end).toHaveBeenCalledWith(Buffer.from('response'));
 	});
 });

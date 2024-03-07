@@ -4,6 +4,8 @@ export function mockFetchResponse(data: unknown): void {
 	// @ts-expect-error too lazy
 	global.fetch = jest.fn(async () => Promise.resolve({
 		arrayBuffer: async () => Promise.resolve(getAsBuffer()),
+		// eslint-disable-next-line @typescript-eslint/naming-convention
+		headers: new Headers({ 'content-type': 'text/plain' }),
 		json: async () => Promise.resolve(getAsJSON()),
 		status: 200,
 	}));
