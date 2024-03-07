@@ -3,6 +3,7 @@ import type { FileSystem } from '../lib/file_system';
 import type { Express } from 'express';
 import { resolve } from 'node:url';
 import { cache } from '../utils/cache';
+import { lookup } from 'mrmime';
 
 /**
  * Defines the structure for development server configurations,
@@ -66,7 +67,7 @@ export class Server {
 
 			// Attempt to serve an index.html file if the request is for a directory.
 			if (tryFileSystem(resolve(req.path + '/', 'index.html'))) return;
-			
+
 			// Attempt to proxy the request based on configuration.
 			void tryProxy(req.path).then(value => {
 				if (value) return;
@@ -84,7 +85,10 @@ export class Server {
 				path = path.replace(/^\/+/, ''); // Remove leading slashes for file system lookup.
 				const buffer = fileSystem.getFile(path);
 				if (buffer == null) return false;
-				res.status(200).end(buffer);
+				res
+					.header('content-type', lookup(path) ?? 'application/octet-stream')
+					.status(200)
+					.end(buffer);
 				return true;
 			}
 
@@ -103,12 +107,21 @@ export class Server {
 				const url = proxy.to + path.slice(proxy.from.length);
 
 				// Fetch the proxied URL, using the cache to avoid repeated requests.
+				const contentType = await cache('fetchType:' + url, async (): Promise<Buffer> => {
+					const { headers } = await fetch(url);
+					return Buffer.from(headers.get('content-type') ?? lookup(url) ?? 'application/octet-stream');
+				});
+
+				// Fetch the proxied URL, using the cache to avoid repeated requests.
 				const buffer = await cache('fetch:' + url, async (): Promise<Buffer> => {
 					return Buffer.from(await (await fetch(url)).arrayBuffer());
 				});
 				if (buffer.length === 0) return false;
 
-				res.status(200).end(buffer);
+				res
+					.header('content-type', contentType.toString())
+					.status(200)
+					.end(buffer);
 				return true;
 			}
 		});
