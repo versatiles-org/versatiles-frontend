@@ -92,7 +92,7 @@ export class Frontend {
 		await this.fileSystem.compress();
 		const pack = tar.pack();
 		for (const file of this.iterate()) {
-			pack.entry({ name: file.name }, file.bufferBr);
+			pack.entry({ name: file.name + '.br' }, file.bufferBr);
 		}
 		pack.finalize();
 
