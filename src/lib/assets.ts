@@ -85,8 +85,9 @@ export function getAssets(fileSystem: FileSystem): PromiseFunction {
 	 */
 	function addMaplibreInspect(): PromiseFunction {
 		const folder = 'assets/maplibre-gl-inspect';
+		notes.add('[MapLibre GL Inspect](https://github.com/maplibre/maplibre-gl-inspect)');
 		return PromiseFunction.wrapAsync('add maplibre-gl-inspect', 1, async () => {
-			const baseUrl = `https://unpkg.com/@maplibre/maplibre-gl-inspect@latest/dist/`;
+			const baseUrl = 'https://unpkg.com/@maplibre/maplibre-gl-inspect@latest/dist/';
 			await Promise.all([
 				new Curl(fileSystem, baseUrl + 'maplibre-gl-inspect.js').save(join(folder, 'maplibre-gl-inspect.js')),
 				new Curl(fileSystem, baseUrl + 'maplibre-gl-inspect.css').save(join(folder, 'maplibre-gl-inspect.css')),
