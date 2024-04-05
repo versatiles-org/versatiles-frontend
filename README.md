@@ -66,6 +66,6 @@ VersaTiles Frontend utilizes several external resources and libraries, including
 - Fonts from [VersaTiles Fonts](https://github.com/versatiles-org/versatiles-fonts)
 - Styles and sprites from [VersaTiles Style](https://github.com/versatiles-org/versatiles-style)
 - MapLibre GL JS from [MapLibre GL JS GitHub](https://github.com/maplibre/maplibre-gl-js)
-- MapLibre GL Inspect from [MapLibre GL Inspect GitHub](https://github.com/acalcutt/maplibre-gl-inspect)
+- MapLibre GL Inspect from [MapLibre GL Inspect GitHub](https://github.com/maplibre/maplibre-gl-inspect)
 
 Note: Some external dependencies may require separate installations or configurations.
