@@ -82,10 +82,7 @@ class ReleaseNotes {
 			`## VersaTiles Frontend ${this.version}`,
 			'',
 			'contains:',
-			...this.labelList.map(l => {
-				if (!l.version) throw Error(`No version specified for ${l.name}`);
-				return `- ${l.name}: ${l.version}`;
-			}),
+			...this.labelList.map(l => `- ${l.name}: ${l.version || '?.?.?'}`),
 		].join('\n');
 
 		// Write the compiled release notes to the specified file.
