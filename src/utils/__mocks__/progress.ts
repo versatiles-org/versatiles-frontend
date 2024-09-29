@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/consistent-type-imports */
-/* eslint-disable @typescript-eslint/naming-convention */
+ 
+ 
 import { jest } from '@jest/globals';
 import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../progress';
 
@@ -29,11 +29,11 @@ const Progress = jest.fn(() => {
 	jest.spyOn(progress, 'write');
 
 	// @ts-expect-error too lazy
-	// eslint-disable-next-line @typescript-eslint/unbound-method
+	 
 	progress._add = progress.add;
 	jest.spyOn(progress, 'add').mockImplementation((name: string, indent = 0): ProgressLabelType => {
 		// @ts-expect-error too lazy
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call
+		 
 		return mockProgressLabel(progress._add(name, indent));
 	});
 	return progress;

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+ 
 import { jest } from '@jest/globals';
 import { mockFetchResponse } from '../lib/__mocks__/global_fetch';
 import type { Server as ServerType } from './server';
@@ -12,7 +12,7 @@ const express = (await import('express')).default;
 
 const { mockCache } = await import('../utils/__mocks__/cache');
 jest.unstable_mockModule('../utils/cache', () => mockCache);
-const { } = await import('../utils/cache');
+await import('../utils/cache');
 
 const { File, FileSystem } = await import('../lib/file_system');
 const { Server } = await import('./server');
@@ -59,7 +59,7 @@ describe('Server', () => {
 		});
 
 		const app = express();
-		// eslint-disable-next-line @typescript-eslint/prefer-destructuring
+		 
 		getFunction = jest.mocked(app.get).mock.calls[0][1];
 	});
 

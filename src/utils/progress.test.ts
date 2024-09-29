@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/naming-convention */
-/* eslint-disable @typescript-eslint/unbound-method */
+ 
+ 
 
 import { jest } from '@jest/globals';
 

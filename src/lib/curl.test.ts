@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/naming-convention */
+ 
+ 
 
 import { jest } from '@jest/globals';
 import { mockFetchResponse } from './__mocks__/global_fetch';

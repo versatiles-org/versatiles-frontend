@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/unbound-method */
+ 
 import { jest } from '@jest/globals';
 import { toHaveBeenCalledBefore } from 'jest-extended';
 import type { ProgressLabel } from './progress';
@@ -8,7 +8,7 @@ const { mockProgress } = await import('./__mocks__/progress');
 jest.unstable_mockModule('./progress', () => mockProgress);
 const progress = (await import('./progress')).default;
 
-// eslint-disable-next-line @typescript-eslint/naming-convention
+ 
 const PromiseFunctions = (await import('./async')).default;
 
 function getAsyncMock(): jest.Mock<() => Promise<void>> {

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/require-await */
+ 
 
 import { basename, relative, resolve } from 'node:path';
 import { createGzip } from 'node:zlib';
@@ -113,7 +113,7 @@ export class Frontend {
 				const fullname = resolve(fullPath, filename);
 				try {
 					this.addPath(fullname, fullPath);
-				} catch (error) {
+				} catch (_) {
 					// Handle errors, e.g., logging or notifications.
 				}
 			});
@@ -221,7 +221,7 @@ export function generateFrontends(fileSystem: FileSystem, projectFolder: string,
 	// Load frontend configurations from the specified folder.
 	const frontendConfigs = loadFrontendConfigs(frontendsFolder);
 	// Read the project version from package.json to use in release notes.
-	// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+	 
 	const frontendVersion = String(JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')).version);
 	notes.setVersion(frontendVersion);
 

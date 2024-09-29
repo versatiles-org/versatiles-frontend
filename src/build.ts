@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/require-await */
+ 
 
 import { resolve } from 'node:path';
 import { cleanupFolder } from './utils/utils';

@@ -1,11 +1,11 @@
-/* eslint-disable @typescript-eslint/naming-convention */
+ 
 import { jest } from '@jest/globals';
 import { resolve } from 'path';
 import type { FileSystem as FileSystemType, File as FileType } from './file_system';
 
 const { mockCache } = await import('../utils/__mocks__/cache');
 jest.unstable_mockModule('../utils/cache', () => mockCache);
-const { } = await import('../utils/cache');
+await import('../utils/cache');
 
 const { mockFs } = await import('../utils/__mocks__/node_fs');
 jest.unstable_mockModule('node:fs', () => mockFs);
@@ -59,7 +59,7 @@ describe('Frontend class', () => {
 	it('loads frontend configurations correctly', () => {
 		const configs = loadFrontendConfigs(frontendsPath);
 		expect(configs).toContainEqual(expect.objectContaining(
-			// eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+			 
 			{ name: expect.any(String), include: expect.any(Array) },
 		));
 	});

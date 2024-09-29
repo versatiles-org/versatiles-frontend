@@ -19,7 +19,7 @@ export async function cache(key: string, cbBuffer: () => Promise<Buffer>): Promi
 	try {
 		// Attempt to retrieve the cached value.
 		buffer = await db.get(key);
-	} catch (err) {
+	} catch (_) {
 		// An error is thrown if the key doesn't exist, indicating the value is not in cache.
 	}
 

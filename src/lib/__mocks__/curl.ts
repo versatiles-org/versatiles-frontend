@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/consistent-type-imports */
-/* eslint-disable @typescript-eslint/naming-convention */
+ 
+ 
 
 import type { Curl as CurlType } from '../curl';
 import type { FileSystem } from '../file_system';

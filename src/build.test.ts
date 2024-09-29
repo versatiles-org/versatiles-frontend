@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/unbound-method */
+ 
 import { jest } from '@jest/globals';
 
 
@@ -8,7 +8,7 @@ const { default: notes } = await import('./lib/release_notes');
 
 const { mockCache } = await import('./utils/__mocks__/cache');
 jest.unstable_mockModule('./utils/cache', () => mockCache);
-const { } = await import('./utils/cache');
+await import('./utils/cache');
 
 const { mockProgress } = await import('./utils/__mocks__/progress');
 jest.unstable_mockModule('./utils/progress', () => mockProgress);

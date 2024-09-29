@@ -8,7 +8,7 @@ describe('getLatestReleaseVersion', () => {
 		const owner = 'exampleOrg';
 		const repo = 'exampleRepo';
 
-		// eslint-disable-next-line @typescript-eslint/naming-convention
+		 
 		mockFetchResponse([{ tag_name: 'v12.7.3' }]);
 
 		const version = await getLatestReleaseVersion(owner, repo);

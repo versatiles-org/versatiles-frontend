@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/naming-convention */
+ 
+ 
 import { jest } from '@jest/globals';
 
 jest.spyOn(process, 'exit').mockImplementationOnce(() => {

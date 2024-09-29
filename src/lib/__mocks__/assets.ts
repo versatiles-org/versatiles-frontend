@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/consistent-type-imports */
-/* eslint-disable @typescript-eslint/require-await */
-/* eslint-disable @typescript-eslint/no-empty-function */
+ 
+ 
+ 
 
 import { jest } from '@jest/globals';
 import PromiseFunction from '../../utils/async';

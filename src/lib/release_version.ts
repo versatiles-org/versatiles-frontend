@@ -22,7 +22,7 @@ export async function getLatestReleaseVersion(owner: string, repo: string): Prom
 	}
 	// Extract and return the latest version, ignoring the 'v' prefix.
 	for (const entry of data) {
-		// eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+		 
 		const name = String(entry.tag_name);
 		if (name.startsWith('v')) return name.slice(1);
 	}

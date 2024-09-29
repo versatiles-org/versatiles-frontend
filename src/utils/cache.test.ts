@@ -1,5 +1,5 @@
-/* eslint-disable @typescript-eslint/unbound-method */
-/* eslint-disable @typescript-eslint/naming-convention */
+ 
+ 
 import { jest } from '@jest/globals';
 
 const { mockClassicLevel } = await import('./__mocks__/classic-level');
