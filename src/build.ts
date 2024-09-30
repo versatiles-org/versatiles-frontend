@@ -3,7 +3,7 @@
 import { resolve } from 'node:path';
 import { cleanupFolder } from './utils/utils';
 import notes from './lib/release_notes';
-import Pf from './utils/async';
+import PromiseFunction from './utils/async';
 import { FileSystem } from './lib/file_system';
 import { generateFrontends } from './lib/frontend';
 import { getAssets } from './lib/assets';
@@ -22,7 +22,7 @@ progress.setHeader('Building Release');
 cleanupFolder(dstFolder);
 
 // Run the main build tasks sequentially: fetch assets, compress files, and generate frontends.
-await Pf.run(Pf.sequential(
+await PromiseFunction.run(PromiseFunction.sequential(
 	getAssets(fileSystem),
 	compressFiles(),
 	generateFrontends(fileSystem, projectFolder, dstFolder),
@@ -40,9 +40,9 @@ progress.finish();
  * 
  * @returns A PromiseFunction (Pf) instance representing the compression task.
  */
-function compressFiles(): Pf {
+function compressFiles(): PromiseFunction {
 	let s: ProgressLabel;
-	return Pf.single(
+	return PromiseFunction.single(
 		async () => {
 			// Add a progress label for file compression.
 			s = progress.add('compress files');
