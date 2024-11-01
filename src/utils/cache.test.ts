@@ -21,7 +21,6 @@ describe('cache', () => {
 		const testKey = 'testKey';
 		const testValue = Buffer.from('testValue');
 
-		// @ts-expect-error too lazy
 		jest.mocked(mockedDB.get).mockReturnValue(Promise.resolve(testValue));
 
 		const result = await cache(testKey, async () => Promise.resolve(Buffer.from('newValue')));
@@ -35,7 +34,6 @@ describe('cache', () => {
 		const testKey = 'newKey';
 		const newValue = Buffer.from('newValue');
 		// Simulate a cache miss by throwing an error
-		// @ts-expect-error too lazy
 		jest.mocked(mockedDB.get).mockRejectedValue(new Error('Key not found'));
 
 		const result = await cache(testKey, async () => Promise.resolve(newValue));
@@ -49,7 +47,6 @@ describe('cache', () => {
 		const testKey = 'invalidKey';
 
 		// Simulate a cache miss
-		// @ts-expect-error too lazy
 		jest.mocked(mockedDB.get).mockRejectedValue(new Error('Key not found'));
 
 		await expect(cache(testKey, async () => Promise.resolve('notABuffer' as unknown as Buffer)))
