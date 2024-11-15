@@ -7,9 +7,9 @@
     "versatiles-frontend": "src/index.ts"
   },
   "scripts": {
-    "build": "tsx src/build.ts",
+    "build": "tsx --env-file-if-exists=.env src/build.ts",
     "check": "npm run lint && npm run test",
-    "dev": "tsx src/dev.ts",
+    "dev": "tsx --env-file-if-exists=.env src/dev.ts",
     "lint": "eslint . --color",
     "release": "vrt release-npm",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",

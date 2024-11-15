@@ -1,4 +1,4 @@
- 
+
 
 import { basename, relative, resolve } from 'node:path';
 import { createGzip } from 'node:zlib';
@@ -221,7 +221,7 @@ export function generateFrontends(fileSystem: FileSystem, projectFolder: string,
 	// Load frontend configurations from the specified folder.
 	const frontendConfigs = loadFrontendConfigs(frontendsFolder);
 	// Read the project version from package.json to use in release notes.
-	 
+
 	const frontendVersion = String(JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')).version);
 	notes.setVersion(frontendVersion);
 
