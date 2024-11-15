@@ -20,7 +20,6 @@
   "author": "Michael Kreil <versatiles@michael-kreil.de>",
   "license": "MIT",
   "dependencies": {
-    "classic-level": "^2.0.0",
     "escape-html": "^1.0.3",
     "express": "^4.21.1",
     "ignore": "^6.0.2",
