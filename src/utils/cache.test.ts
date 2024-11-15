@@ -1,55 +1,78 @@
- 
- 
 import { jest } from '@jest/globals';
 
-const { mockClassicLevel } = await import('./__mocks__/classic-level');
-jest.unstable_mockModule('classic-level', () => mockClassicLevel);
-const { ClassicLevel } = await import('classic-level');
+// Mock node:fs and node:path modules
+jest.unstable_mockModule('node:fs', () => ({
+	existsSync: jest.fn(),
+	mkdirSync: jest.fn(),
+	readFileSync: jest.fn(),
+	writeFileSync: jest.fn(),
+}));
+jest.unstable_mockModule('node:path', () => ({
+	resolve: jest.fn((...args: string[]) => args.join('/')),
+}));
 
-const { cache } = await import('./cache');
+const { cache } = await import('./cache.js');
+const fs = await import('node:fs');
 
-describe('cache', () => {
-	// Mocked database instance for easier reference
-	const mockedDB = new ClassicLevel('');
-
+describe('cache function', () => {
 	beforeEach(() => {
-		// Clear mock call history before each test
+		// Clear mocks before each test
 		jest.clearAllMocks();
 	});
 
-	it('retrieves a value from the cache if it exists', async () => {
-		const testKey = 'testKey';
-		const testValue = Buffer.from('testValue');
+	it('should retrieve a value from cache if it exists', async () => {
+		const mockBuffer = Buffer.from('cached data');
+		(fs.existsSync as jest.Mock).mockReturnValue(true);
+		(fs.readFileSync as jest.Mock).mockReturnValue(mockBuffer);
 
-		jest.mocked(mockedDB.get).mockReturnValue(Promise.resolve(testValue));
+		const key = 'test-key';
+		const result = await cache(key, async () => {
+			throw new Error('Callback should not be called when the key exists');
+		});
 
-		const result = await cache(testKey, async () => Promise.resolve(Buffer.from('newValue')));
-
-		expect(mockedDB.get).toHaveBeenCalledWith(testKey);
-		expect(result).toEqual(testValue);
-		expect(mockedDB.put).not.toHaveBeenCalled();
+		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringContaining('test-key'));
+		expect(fs.readFileSync).toHaveBeenCalledWith(expect.stringContaining('test-key'));
+		expect(result).toBe(mockBuffer);
 	});
 
-	it('caches and returns a new value if the key does not exist in the cache', async () => {
-		const testKey = 'newKey';
-		const newValue = Buffer.from('newValue');
-		// Simulate a cache miss by throwing an error
-		jest.mocked(mockedDB.get).mockRejectedValue(new Error('Key not found'));
+	it('should call the callback, cache the result, and return it if the key does not exist', async () => {
+		const mockBuffer = Buffer.from('generated data');
+		(fs.existsSync as jest.Mock).mockReturnValue(false);
 
-		const result = await cache(testKey, async () => Promise.resolve(newValue));
+		const key = 'new-key';
+		const result = await cache(key, async () => mockBuffer);
 
-		expect(mockedDB.get).toHaveBeenCalledWith(testKey);
-		expect(mockedDB.put).toHaveBeenCalledWith(testKey, newValue);
-		expect(result).toEqual(newValue);
+		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringContaining('new-key'));
+		expect(fs.readFileSync).not.toHaveBeenCalled();
+		expect(fs.writeFileSync).toHaveBeenCalledWith(
+			expect.stringContaining('new-key'),
+			mockBuffer
+		);
+		expect(result).toBe(mockBuffer);
 	});
 
-	it('throws an error if the callback does not return a Buffer', async () => {
-		const testKey = 'invalidKey';
+	it('should throw an error if the callback does not return a Buffer', async () => {
+		(fs.existsSync as jest.Mock).mockReturnValue(false);
 
-		// Simulate a cache miss
-		jest.mocked(mockedDB.get).mockRejectedValue(new Error('Key not found'));
+		const key = 'invalid-key';
+		await expect(cache(key, async () => 'not a buffer' as unknown as Buffer)).rejects.toThrow(
+			'The callback function must return a Buffer'
+		);
 
-		await expect(cache(testKey, async () => Promise.resolve('notABuffer' as unknown as Buffer)))
-			.rejects.toThrow('The callback function must return a Buffer');
+		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringContaining('invalid-key'));
+		expect(fs.readFileSync).not.toHaveBeenCalled();
+		expect(fs.writeFileSync).not.toHaveBeenCalled();
+	});
+
+	it('should correctly sanitize the filename derived from the key', async () => {
+		(fs.existsSync as jest.Mock).mockReturnValue(false);
+		const mockBuffer = Buffer.from('data');
+		const key = 'key/with special@chars';
+		await cache(key, async () => mockBuffer);
+
+		expect(fs.writeFileSync).toHaveBeenCalledWith(
+			expect.stringContaining('key_x47_with_x32_special_x64_chars'),
+			mockBuffer
+		);
 	});
 });

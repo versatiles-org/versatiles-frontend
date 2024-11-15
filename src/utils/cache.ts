@@ -1,9 +1,11 @@
-import { ClassicLevel } from 'classic-level';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { resolve } from 'node:path';
 
 // Define the path to the cache folder relative to the module location.
 const folder = new URL('../../cache', import.meta.url).pathname;
-// Initialize the LevelDB database for caching with string keys and Buffer values.
-const db = new ClassicLevel<string, Buffer>(folder, { keyEncoding: 'utf8', valueEncoding: 'buffer' });
+
+// Initialize the "database" for caching with string keys and Buffer values.
+mkdirSync(folder, { recursive: true });
 
 /**
  * Attempts to retrieve a cached value for a given key. If the value is not found in the cache,
@@ -15,23 +17,15 @@ const db = new ClassicLevel<string, Buffer>(folder, { keyEncoding: 'utf8', value
  * @returns A Promise resolving to the Buffer associated with the key, either retrieved from cache or newly cached.
  */
 export async function cache(key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> {
-	let buffer: Buffer | false = false;
-	try {
-		// Attempt to retrieve the cached value.
-		buffer = await db.get(key);
-	} catch (_) {
-		// An error is thrown if the key doesn't exist, indicating the value is not in cache.
-	}
+	let filename = resolve(folder, key.replace(/[^a-z0-9-_]/gi, c => ' x' + c.charCodeAt(0) + ' '))
+	filename = filename.replace(/\s+/g, '_');
 
-	if (buffer === false) {
-		// If the value is not in cache, call cbBuffer to get the value and cache it.
-		buffer = await cbBuffer();
-		if (!(buffer instanceof Buffer)) throw Error('The callback function must return a Buffer');
-		await db.put(key, buffer); // Cache the newly obtained value.
-	} else {
-		// Ensure the retrieved value is a Buffer.
-		if (!(buffer instanceof Buffer)) throw Error('Cached value is not a Buffer');
-	}
+	if (existsSync(filename)) return readFileSync(filename);
+
+	const buffer = await cbBuffer();
+	if (!(buffer instanceof Buffer)) throw Error('The callback function must return a Buffer');
+
+	writeFileSync(filename, buffer);
 
 	return buffer;
 }
