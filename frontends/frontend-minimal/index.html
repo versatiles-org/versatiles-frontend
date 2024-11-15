@@ -6,16 +6,10 @@
 	<title>Versatiles</title>
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 
-	<script src="assets/maplibre-gl/maplibre-gl.js"></script>
-	<link href="assets/maplibre-gl/maplibre-gl.css" rel="stylesheet">
+	<script src="assets/lib/maplibre-gl/maplibre-gl.js"></script>
+	<link href="assets/lib/maplibre-gl/maplibre-gl.css" rel="stylesheet">
 
-	<script src="assets/mapdesigner/mapdesigner-control.js"></script>
-	<link href="assets/mapdesigner/mapdesigner-control.css" rel="stylesheet">
-
-	<script src="assets/maplibre-gl-inspect/maplibre-gl-inspect.js"></script>
-	<link href="assets/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet">
-
-	<script src="assets/styles/versatiles-style.js"></script>
+	<script src="assets/lib/versatiles-style/versatiles-style.js"></script>
 
 	<style>
 		body {
@@ -51,17 +45,10 @@
 			container: 'map',
 			bounds: [-180, -80, 180, 80],
 			zoom: 5,
+			style: VersaTilesStyle.colorful({ tiles: ['tiles/osm/{z}/{x}/{y}'], }),
 			maxZoom: 20,
 			hash: true,
 		});
-
-		map.addControl(new maplibregl.NavigationControl(), 'top-right');
-		map.addControl(new MaplibreInspect());
-		map.addControl(new MapDesignerControl({
-			tiles: ['tiles/osm/{z}/{x}/{y}'],
-			sprite: 'assets/sprites/sprites',
-			glyphs: 'assets/fonts/{fontstack}/{range}.pbf',
-		}));
 
 		// collapse attribution control
 		document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');

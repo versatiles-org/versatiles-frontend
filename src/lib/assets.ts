@@ -7,7 +7,8 @@ import { getLatestReleaseVersion } from './release_version';
 
 // Define constants for asset directories.
 const folderStyle = 'assets/styles/';
-const folderFonts = 'assets/fonts/';
+const folderLibrary = 'assets/lib/';
+const folderFonts = 'assets/glyphs/';
 const folderSprites = 'assets/sprites/';
 
 /**
@@ -49,6 +50,7 @@ export function getAssets(fileSystem: FileSystem): PromiseFunction {
 	 * @returns {PromiseFunction} - An async operation wrapped in a progress-tracking object.
 	 */
 	function addStyles(): PromiseFunction {
+		const folderLib = join(folderLibrary, 'versatiles-style/');
 		const label = notes.add('[VersaTiles style](https://github.com/versatiles-org/versatiles-style)');
 		return PromiseFunction.wrapAsync('add styles', 1, async () => {
 			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-style');
@@ -56,7 +58,7 @@ export function getAssets(fileSystem: FileSystem): PromiseFunction {
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/styles.tar.gz`)
 				.ungzipUntar(folderStyle);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/versatiles-style.tar.gz`)
-				.ungzipUntar(folderStyle);
+				.ungzipUntar(folderLib);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/sprites.tar.gz`)
 				.ungzipUntar(folderSprites);
 		});
@@ -68,7 +70,7 @@ export function getAssets(fileSystem: FileSystem): PromiseFunction {
 	 * @returns {PromiseFunction} - An async operation wrapped in a progress-tracking object.
 	 */
 	function addMaplibre(): PromiseFunction {
-		const folder = 'assets/maplibre-gl';
+		const folder = join(folderLibrary, 'maplibre-gl');
 		const label = notes.add('[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)');
 		return PromiseFunction.wrapAsync('add maplibre', 1, async () => {
 			const version = await getLatestReleaseVersion('maplibre', 'maplibre-gl-js');
@@ -84,7 +86,7 @@ export function getAssets(fileSystem: FileSystem): PromiseFunction {
 	 * @returns {PromiseFunction} - An async operation wrapped in a progress-tracking object.
 	 */
 	function addMaplibreInspect(): PromiseFunction {
-		const folder = 'assets/maplibre-gl-inspect';
+		const folder = join(folderLibrary, 'maplibre-gl-inspect');
 		notes.add('[MapLibre GL Inspect](https://github.com/maplibre/maplibre-gl-inspect)');
 		return PromiseFunction.wrapAsync('add maplibre-gl-inspect', 1, async () => {
 			const baseUrl = 'https://unpkg.com/@maplibre/maplibre-gl-inspect@latest/dist/';

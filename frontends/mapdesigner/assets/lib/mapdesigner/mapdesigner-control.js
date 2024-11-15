@@ -50,7 +50,12 @@ class MapDesignerControl {
 function getMapDesigner(map, config) {
 	const container = createElementFromHTML('<div></div>');
 
-	const styles = VersaTilesStyle.styles; // Assuming VersaTilesStyle.styles is defined elsewhere
+	let styles = {
+		colorful: VersaTilesStyle.colorful,
+		eclipse: VersaTilesStyle.eclipse,
+		graybeard: VersaTilesStyle.graybeard,
+		neutrino: VersaTilesStyle.neutrino,
+	}
 	let currentStyle = styles.colorful; // Default style
 
 	document.addEventListener('click', onDocumentClick);

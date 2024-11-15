@@ -6,16 +6,16 @@
 	<title>Versatiles</title>
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 
-	<script src="assets/maplibre-gl/maplibre-gl.js"></script>
-	<link href="assets/maplibre-gl/maplibre-gl.css" rel="stylesheet">
+	<script src="assets/lib/maplibre-gl/maplibre-gl.js"></script>
+	<link href="assets/lib/maplibre-gl/maplibre-gl.css" rel="stylesheet">
 
-	<script src="assets/mapdesigner/mapdesigner-control.js"></script>
-	<link href="assets/mapdesigner/mapdesigner-control.css" rel="stylesheet">
+	<script src="assets/lib/mapdesigner/mapdesigner-control.js"></script>
+	<link href="assets/lib/mapdesigner/mapdesigner-control.css" rel="stylesheet">
 
-	<script src="assets/maplibre-gl-inspect/maplibre-gl-inspect.js"></script>
-	<link href="assets/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet">
+	<script src="assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.js"></script>
+	<link href="assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet">
 
-	<script src="assets/styles/versatiles-style.js"></script>
+	<script src="assets/lib/versatiles-style/versatiles-style.js"></script>
 
 	<style>
 		body {
@@ -59,8 +59,6 @@
 		map.addControl(new MaplibreInspect());
 		map.addControl(new MapDesignerControl({
 			tiles: ['tiles/osm/{z}/{x}/{y}'],
-			sprite: 'assets/sprites/sprites',
-			glyphs: 'assets/fonts/{fontstack}/{range}.pbf',
 		}));
 
 		// collapse attribution control

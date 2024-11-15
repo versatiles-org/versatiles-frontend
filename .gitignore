@@ -1,4 +1,5 @@
 
+.env
 cache/
 coverage/
 node_modules/
