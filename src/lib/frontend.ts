@@ -88,7 +88,7 @@ export class Frontend {
 	 * 
 	 * @param folder - The destination folder for the tarball.
 	 */
-	public async saveAsBrTar(folder: string): Promise<void> {
+	public async saveAsBrTarGz(folder: string): Promise<void> {
 		await this.fileSystem.compress();
 		const pack = tar.pack();
 		for (const file of this.iterate()) {
@@ -98,7 +98,8 @@ export class Frontend {
 
 		await pipeline(
 			pack,
-			createWriteStream(resolve(folder, this.name + '.br.tar')),
+			createGzip({ level: 9 }),
+			createWriteStream(resolve(folder, this.name + '.br.tar.gz')),
 		);
 	}
 
@@ -248,7 +249,7 @@ export function generateFrontends(fileSystem: FileSystem, projectFolder: string,
 			async () => {
 				// Initialize progress tracking for each step of the frontend generation.
 				s = progress.add(name, 1);
-				sBr = progress.add(name + '.br.tar', 2);
+				sBr = progress.add(name + '.br.tar.gz', 2);
 				sGz = progress.add(name + '.tar.gz', 2);
 			},
 			async () => {
@@ -258,7 +259,7 @@ export function generateFrontends(fileSystem: FileSystem, projectFolder: string,
 				sGz.start();
 				// Create a new Frontend instance and generate the compressed tarballs.
 				const frontend = new Frontend(fileSystem, config, frontendsFolder);
-				await frontend.saveAsBrTar(dstFolder);
+				await frontend.saveAsBrTarGz(dstFolder);
 				sBr.end();
 				await frontend.saveAsTarGz(dstFolder);
 				sGz.end();
