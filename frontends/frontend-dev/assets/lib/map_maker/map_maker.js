@@ -2,8 +2,8 @@ import MaplibreControl from './lib/maplibre_control.js';
 import StyleMaker from './lib/style_maker.js';
 import { loadJSON } from './lib/utils.js';
 
-export default async function MapMaker(maplibregl, nodeId, meta_url) {
-	const info = await loadJSON(meta_url);
+export default async function MapMaker(maplibregl, nodeId, url) {
+	const meta = await loadJSON(url + '/tiles.json');
 	const tiles_url = window.location.origin + info.url;
 	const container = info.container;
 
@@ -67,7 +67,7 @@ function addZoomLevelWarning(map, zoom_min, zoom_max) {
 
 	function update() {
 		let zoom = map.getZoom();
-		let shouldBeVisible = (zoom < zoom_min) || (zoom > zoom_max+0.5);
+		let shouldBeVisible = (zoom < zoom_min) || (zoom > zoom_max + 0.5);
 
 		if (shouldBeVisible) {
 			let text = 'the data source is only defined for zoom level';

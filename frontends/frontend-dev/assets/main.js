@@ -1,5 +1,5 @@
 
-import MapMaker from './map_maker/map_maker.js';
+import MapMaker from './lib/map_maker/map_maker.js';
 
 init();
 
@@ -12,5 +12,5 @@ async function start() {
 	const id = (new URLSearchParams(window.location.search)).get('id');
 	if (!id) throw Error('id is not defined');
 
-	await MapMaker(maplibregl, 'map', '/api/source/' + id);
+	await MapMaker(maplibregl, 'map', `/tiles/${id}/`);
 }
