@@ -1,4 +1,4 @@
- 
+
 import { jest } from '@jest/globals';
 import { resolve } from 'path';
 import type { FileSystem as FileSystemType, File as FileType } from './file_system';
@@ -50,32 +50,30 @@ describe('Frontend class', () => {
 	it('should create brotli tarball', async () => {
 		const frontend = new Frontend(mockFileSystem, testConfig, frontendsPath);
 
-		await frontend.saveAsBrTar('/tmp/');
+		await frontend.saveAsBrTarGz('/tmp/');
 
 		expect(createWriteStream).toHaveBeenCalledTimes(1);
-		expect(createWriteStream).toHaveBeenCalledWith('/tmp/frontend.br.tar');
+		expect(createWriteStream).toHaveBeenCalledWith('/tmp/frontend.br.tar.gz');
 	});
 
-	it('loads frontend configurations correctly', () => {
-		const configs = loadFrontendConfigs(frontendsPath);
+	it('loads frontend configurations correctly', async () => {
+		const configs = await loadFrontendConfigs(frontendsPath);
 		expect(configs).toContainEqual(expect.objectContaining(
-			 
+
 			{ name: expect.any(String), include: expect.any(Array) },
 		));
 	});
 
 	it('generates frontends', async () => {
-		await PromiseFunction.run(generateFrontends(mockFileSystem, projectFolder, '/tmp'));
+		await PromiseFunction.run(await generateFrontends(mockFileSystem, projectFolder, '/tmp'));
 
-		expect(createWriteStream).toHaveBeenCalledTimes(6);
+		expect(createWriteStream).toHaveBeenCalledTimes(4);
 
 		const calledFilenames = createWriteStream.mock.calls.map(call => call[0] as string).sort();
 		expect(calledFilenames).toStrictEqual([
-			'/tmp/frontend-minimal.br.tar',
+			'/tmp/frontend-minimal.br.tar.gz',
 			'/tmp/frontend-minimal.tar.gz',
-			'/tmp/frontend-rust.br.tar',
-			'/tmp/frontend-rust.tar.gz',
-			'/tmp/frontend.br.tar',
+			'/tmp/frontend.br.tar.gz',
 			'/tmp/frontend.tar.gz',
 		]);
 	});

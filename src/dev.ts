@@ -29,7 +29,7 @@ progress.finish();
 
 // Loads the configuration for all frontends within the project.
 const frontendsFolder = resolve(projectFolder, 'frontends');
-const frontendConfigs = loadFrontendConfigs(frontendsFolder);
+const frontendConfigs = await loadFrontendConfigs(frontendsFolder);
 
 // Finds the configuration for the specified frontend.
 const frontendConfig = frontendConfigs.find(config => config.name === frontendName);

@@ -32,7 +32,7 @@ describe('build process', () => {
 		jest.clearAllMocks();
 
 		// Setup default mock implementations or return values
-		jest.mocked(loadFrontendConfigs).mockReturnValue([{ name: 'frontend', dev: {}, include: ['frontend'] }]);
+		jest.mocked(loadFrontendConfigs).mockResolvedValue([{ name: 'frontend', dev: {}, include: ['frontend'] }]);
 	});
 
 	it('prepares and starts the server for the specified frontend', async () => {
