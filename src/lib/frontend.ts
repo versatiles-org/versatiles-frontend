@@ -3,7 +3,7 @@
 import { basename, relative, resolve } from 'node:path';
 import { createGzip } from 'node:zlib';
 import { createWriteStream, existsSync, readFileSync, readdirSync, statSync, watch } from 'node:fs';
-import { parseDevConfig, type DevConfig } from '../server/server';
+import { type DevConfig } from '../server/server';
 import { pipeline } from 'node:stream/promises';
 import ignore from 'ignore';
 import notes from './release_notes';
@@ -162,48 +162,10 @@ export class Frontend {
  * @param frontendsFolder - The folder containing `frontends.json`.
  * @returns An array of FrontendConfig objects.
  */
-export function loadFrontendConfigs(frontendsFolder: string): FrontendConfig[] {
-	const configs = JSON.parse(readFileSync(resolve(frontendsFolder, 'frontends.json'), 'utf8')) as unknown;
-	if (typeof configs !== 'object' || configs == null) throw new Error('Invalid configuration object');
-
-	return Object.entries(configs)
-		.map(([name, configDef]: [string, unknown]) => parseFrontendConfig(name, configDef));
+export async function loadFrontendConfigs(frontendsFolder: string): Promise<FrontendConfig[]> {
+	return (await import(resolve(frontendsFolder, 'frontends.ts') + '?' + Date.now())).default as FrontendConfig[];
 }
 
-/**
- * Parses a single frontend configuration from a definition object.
- * 
- * @param name - The name of the frontend.
- * @param configDef - The configuration definition object.
- * @returns A FrontendConfig object.
- */
-function parseFrontendConfig(name: string, configDef: unknown): FrontendConfig {
-	if (typeof configDef !== 'object' || configDef == null) throw new Error('Invalid configuration definition');
-
-	// check 'include'
-	if (!('include' in configDef)) throw new Error('Missing \'include\' property');
-	if (!Array.isArray(configDef.include) || !configDef.include.every(e => typeof e === 'string')) {
-		throw new Error('Invalid \'include\' property, must be an array of strings');
-	}
-	const include = configDef.include as string[];
-
-	const config: FrontendConfig = { name, include };
-
-	// check 'ignore'
-	if ('ignore' in configDef) {
-		if (!Array.isArray(configDef.ignore) || !configDef.ignore.every(e => typeof e === 'string')) {
-			throw new Error('Invalid \'ignore\' property, must be an array of strings');
-		}
-		config.ignore = configDef.ignore as string[];
-	}
-
-	// check 'dev'
-	if ('dev' in configDef) {
-		config.dev = parseDevConfig(configDef.dev);
-	}
-
-	return config;
-}
 
 /**
  * Generates frontend bundles for deployment based on configurations.
@@ -215,12 +177,12 @@ function parseFrontendConfig(name: string, configDef: unknown): FrontendConfig {
  * @param dstFolder - The destination folder where the generated frontend bundles will be saved.
  * @returns A PromiseFunction instance that encapsulates the asynchronous operations of generating all frontends.
  */
-export function generateFrontends(fileSystem: FileSystem, projectFolder: string, dstFolder: string): Pf {
+export async function generateFrontends(fileSystem: FileSystem, projectFolder: string, dstFolder: string): Promise<Pf> {
 	// Resolve the path to the frontends folder within the project directory.
 	const frontendsFolder = resolve(projectFolder, 'frontends');
 
 	// Load frontend configurations from the specified folder.
-	const frontendConfigs = loadFrontendConfigs(frontendsFolder);
+	const frontendConfigs = await loadFrontendConfigs(frontendsFolder);
 	// Read the project version from package.json to use in release notes.
 
 	const frontendVersion = String(JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')).version);

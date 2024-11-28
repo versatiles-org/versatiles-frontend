@@ -8,6 +8,7 @@ export default [
 	...ts.configs.recommended,
 	{
 		ignores: [
+			'**/cache/**/*.*',
 			'**/dist/**/*.*',
 			'**/coverage/**/*.*',
 			'**/frontends/**/*.*',

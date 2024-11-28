@@ -1,4 +1,4 @@
- 
+
 import { jest } from '@jest/globals';
 
 // Mock progress
@@ -41,7 +41,7 @@ describe('getAssets', () => {
 		expect(glrvCalls).toStrictEqual([
 			['maplibre', 'maplibre-gl-js'],
 			['versatiles-org', 'versatiles-fonts'],
-			['versatiles-org', 'versatiles-style'],
+			['versatiles-org', 'versatiles-style', true],
 		]);
 
 		// test if correct releases were downloaded

@@ -25,7 +25,7 @@ cleanupFolder(dstFolder);
 await PromiseFunction.run(PromiseFunction.sequential(
 	getAssets(fileSystem),
 	compressFiles(),
-	generateFrontends(fileSystem, projectFolder, dstFolder),
+	await generateFrontends(fileSystem, projectFolder, dstFolder),
 ));
 
 // Save release notes in the destination folder.
