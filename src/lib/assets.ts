@@ -53,7 +53,7 @@ export function getAssets(fileSystem: FileSystem): PromiseFunction {
 		const folderLib = join(folderLibrary, 'versatiles-style/');
 		const label = notes.add('[VersaTiles style](https://github.com/versatiles-org/versatiles-style)');
 		return PromiseFunction.wrapAsync('add styles', 1, async () => {
-			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-style');
+			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-style', true);
 			label.setVersion(version);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/styles.tar.gz`)
 				.ungzipUntar(folderStyle);
