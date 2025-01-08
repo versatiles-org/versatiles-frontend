@@ -15,9 +15,8 @@ const frontends: FrontendConfig[] = [
 			}]
 		}
 	},
-	/*
 	{
-		name:'frontend-dev',
+		name: 'frontend-dev',
 		include: [
 			'all',
 			'frontend-dev',
@@ -30,7 +29,6 @@ const frontends: FrontendConfig[] = [
 			}]
 		}
 	},
-	*/
 	{
 		name: 'frontend-minimal',
 		include: [

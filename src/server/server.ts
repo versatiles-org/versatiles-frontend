@@ -107,16 +107,12 @@ export class Server {
 
 				const url = proxy.to + path.slice(proxy.from.length);
 
-				// Fetch the proxied URL, using the cache to avoid repeated requests.
-				const contentType = await cache('fetchType:' + url, async (): Promise<Buffer> => {
-					const { headers } = await fetch(url);
-					return Buffer.from(headers.get('content-type') ?? lookup(url) ?? 'application/octet-stream');
-				});
+				// Fetch the proxied URL
+				const response = await fetch(url);
+				const contentType = response.headers.get('content-type') ?? lookup(url) ?? 'application/octet-stream';
 
 				// Fetch the proxied URL, using the cache to avoid repeated requests.
-				const buffer = await cache('fetch:' + url, async (): Promise<Buffer> => {
-					return Buffer.from(await (await fetch(url)).arrayBuffer());
-				});
+				const buffer = Buffer.from(await response.arrayBuffer());
 				if (buffer.length === 0) return false;
 
 				res
