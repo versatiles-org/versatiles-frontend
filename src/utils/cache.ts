@@ -18,8 +18,8 @@ mkdirSync(cacheFolder, { recursive: true });
  * @returns A Promise resolving to the Buffer associated with the key, either retrieved from cache or newly cached.
  */
 export async function cache(action: string, key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> {
-	const folder = resolve(cacheFolder, action);
-	const filename = resolve(folder, key.replace(/[^a-z0-9-_.]/gi, c => '_x' + c.charCodeAt(0) + '_')).replace(/_+/g, '_');
+	const folder = resolve(cacheFolder, sanitize(action));
+	const filename = resolve(folder, sanitize(key));
 
 	if (existsSync(filename)) return readFileSync(filename);
 
@@ -30,4 +30,8 @@ export async function cache(action: string, key: string, cbBuffer: () => Promise
 	writeFileSync(filename, buffer);
 
 	return buffer;
+
+	function sanitize(key: string): string {
+		return key.replace(/[^a-z0-9-_. ]/gi, c => ' x' + c.charCodeAt(0) + ' ').trim().replace(/\s+/g, '_');
+	}
 }

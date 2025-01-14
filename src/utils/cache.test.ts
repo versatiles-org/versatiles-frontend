@@ -32,8 +32,8 @@ describe('cache function', () => {
 			throw new Error('Callback should not be called when the key exists');
 		});
 
-		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/action\/key$/));
-		expect(fs.readFileSync).toHaveBeenCalledWith(expect.stringMatching(/action\/key$/));
+		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key$/));
+		expect(fs.readFileSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key$/));
 		expect(result).toBe(mockBuffer);
 	});
 
@@ -43,10 +43,10 @@ describe('cache function', () => {
 
 		const result = await cache('action', 'key', async () => mockBuffer);
 
-		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/action\/key$/));
+		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key$/));
 		expect(fs.readFileSync).not.toHaveBeenCalled();
 		expect(fs.writeFileSync).toHaveBeenCalledWith(
-			expect.stringMatching(/action\/key$/),
+			expect.stringMatching(/\/action\/key$/),
 			mockBuffer
 		);
 		expect(result).toBe(mockBuffer);
@@ -59,7 +59,7 @@ describe('cache function', () => {
 			'The callback function must return a Buffer'
 		);
 
-		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/action\/key$/));
+		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key$/));
 		expect(fs.readFileSync).not.toHaveBeenCalled();
 		expect(fs.writeFileSync).not.toHaveBeenCalled();
 	});
@@ -70,7 +70,7 @@ describe('cache function', () => {
 		await cache('äçtion', 'key/with special@chars', async () => mockBuffer);
 
 		expect(fs.writeFileSync).toHaveBeenCalledWith(
-			expect.stringMatching('key_x47_with_x32_special_x64_chars'),
+			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars$/),
 			mockBuffer
 		);
 	});
