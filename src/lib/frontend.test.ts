@@ -1,4 +1,3 @@
-
 import { jest } from '@jest/globals';
 import { resolve } from 'path';
 import type { FileSystem as FileSystemType, File as FileType } from './file_system';

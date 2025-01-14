@@ -1,5 +1,4 @@
- 
-import { jest } from '@jest/globals';
+ import { jest } from '@jest/globals';
 import { mockFetchResponse } from '../lib/__mocks__/global_fetch';
 import type { Server as ServerType } from './server';
 import type { File as FileType, FileSystem as FileSystemType } from '../lib/file_system';

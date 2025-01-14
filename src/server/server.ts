@@ -3,7 +3,6 @@ import escapeHtml from 'escape-html';
 import type { FileSystem } from '../lib/file_system';
 import type { Express } from 'express';
 import { resolve } from 'node:url';
-import { cache } from '../utils/cache';
 import { lookup } from 'mrmime';
 
 /**

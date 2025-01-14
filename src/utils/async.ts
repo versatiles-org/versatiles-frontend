@@ -1,5 +1,3 @@
- 
-
 import type { ProgressLabel } from './progress';
 import progress from './progress';
 

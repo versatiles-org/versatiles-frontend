@@ -1,6 +1,3 @@
- 
- 
-
 import { jest } from '@jest/globals';
 import { mockFetchResponse } from './__mocks__/global_fetch';
 

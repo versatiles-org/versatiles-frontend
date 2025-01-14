@@ -1,5 +1,3 @@
- 
-
 import { resolve } from 'node:path';
 import { cleanupFolder } from './utils/utils';
 import notes from './lib/release_notes';

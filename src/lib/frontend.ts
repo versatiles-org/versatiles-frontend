@@ -1,5 +1,3 @@
-
-
 import { basename, relative, resolve } from 'node:path';
 import { createGzip } from 'node:zlib';
 import { createWriteStream, existsSync, readFileSync, readdirSync, statSync, watch } from 'node:fs';

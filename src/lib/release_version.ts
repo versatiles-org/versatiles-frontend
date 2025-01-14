@@ -1,4 +1,3 @@
-
 /**
  * Fetches the latest release version of a GitHub repository.
  * 

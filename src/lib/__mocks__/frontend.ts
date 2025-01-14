@@ -1,7 +1,3 @@
- 
- 
- 
-
 import { jest } from '@jest/globals';
 import PromiseFunction from '../../utils/async';
 

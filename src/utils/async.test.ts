@@ -1,5 +1,4 @@
- 
-import { jest } from '@jest/globals';
+ import { jest } from '@jest/globals';
 import { toHaveBeenCalledBefore } from 'jest-extended';
 import type { ProgressLabel } from './progress';
 expect.extend({ toHaveBeenCalledBefore });

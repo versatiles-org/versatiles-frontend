@@ -1,5 +1,3 @@
- 
- 
 import { jest } from '@jest/globals';
 
 jest.spyOn(process, 'exit').mockImplementationOnce(() => {

@@ -1,6 +1,3 @@
- 
- 
-
 import { jest } from '@jest/globals';
 
 export const mockReleaseVersion: jest.Mocked<typeof import('../release_version')> = {

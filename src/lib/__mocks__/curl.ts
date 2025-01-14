@@ -1,6 +1,3 @@
- 
- 
-
 import type { Curl as CurlType } from '../curl';
 import type { FileSystem } from '../file_system';
 import { jest } from '@jest/globals';
