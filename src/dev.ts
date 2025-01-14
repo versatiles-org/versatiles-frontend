@@ -19,10 +19,7 @@ const frontendConfigs = await loadFrontendConfigs(frontendsFolder);
 // Retrieves the name of the frontend to be developed from command line arguments.
 const frontendName = process.argv[2] as string | undefined;
 if (frontendName == null) {
-	console.error(
-		'set a frontend name as first argument, e.g.:',
-		frontendConfigs.map(config => config.name).join(', ')
-	);
+	console.error(`set a frontend name as first argument, e.g.: ${frontendConfigs.map(config => config.name).join(', ')}`);
 	process.exit(1);
 }
 
@@ -48,5 +45,11 @@ const frontend = new Frontend(fileSystem, frontendConfig, frontendsFolder);
 frontend.enterWatchMode();
 
 // Starts a development server for the frontend, utilizing its file system and any dev-specific configurations.
-const server = new Server(frontend.fileSystem, frontendConfig.dev);
+const devConfig = {
+	proxy: [{
+		from: '/tiles/',
+		to: 'https://tiles.versatiles.org/tiles/'
+	}]
+};
+const server = new Server(frontend.fileSystem, devConfig);
 await server.start();

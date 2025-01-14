@@ -10,7 +10,7 @@ import { lookup } from 'mrmime';
  * specifically for defining proxy rules.
  */
 export interface DevConfig {
-	proxy?: [{ from: string; to: string }]; // Array of proxy configurations.
+	proxy?: { from: string; to: string }[]; // Array of proxy configurations.
 }
 
 /**

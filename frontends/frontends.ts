@@ -7,13 +7,7 @@ export default [
 			'all',
 			'frontend',
 			'mapdesigner'
-		],
-		dev: {
-			proxy: [{
-				from: '/tiles/',
-				to: 'https://tiles.versatiles.org/tiles/'
-			}]
-		}
+		]
 	},
 	{
 		name: 'frontend-dev',
@@ -21,13 +15,7 @@ export default [
 			'all',
 			'frontend-dev',
 			'mapdesigner'
-		],
-		dev: {
-			proxy: [{
-				from: '/tiles/',
-				to: 'https://tiles.versatiles.org/tiles/'
-			}]
-		}
+		]
 	},
 	{
 		name: 'frontend-min',
@@ -48,12 +36,6 @@ export default [
 			'assets/lib/maplibre-gl/maplibre-gl-csp*',
 			'assets/lib/maplibre-gl/maplibre-gl-dev*',
 			'assets/styles/'
-		],
-		dev: {
-			proxy: [{
-				from: '/tiles/',
-				to: 'https://tiles.versatiles.org/tiles/'
-			}]
-		}
+		]
 	}
 ]
