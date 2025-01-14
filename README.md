@@ -22,8 +22,8 @@ npm run build
 
 This process will generate three distinct frontends:
 - **frontend**: A complete set with all styles, fonts, sprites, etc.
-- **frontend-rust**: Similar to `frontend`, with additional integration for the `versatiles-rs` API. (Work in progress)
-- **frontend-minimal**: A lighter version of `frontend`, excluding developer tools and limited to Noto fonts. (Work in progress)
+- **frontend-dev**: Similar to `frontend`, but allow you to switch between tile sources. (Work in progress)
+- **frontend-min**: A minimal version of `frontend`, excluding developer tools and limited to Noto fonts. (Work in progress)
 
 For each frontend, two files are generated:
 - `release/frontend*.tar.gz`: Contains all files in a gzipped tar archive.
@@ -34,8 +34,8 @@ For each frontend, two files are generated:
 Deploy the frontend with `versatiles-rs` by downloading the latest release and serving it:
 
 ```bash
-curl -L "https://github.com/versatiles-org/versatiles-frontend/releases/latest/download/frontend-rust.br.tar" > ./frontend.br.tar
-versatiles serve -s ./frontend.br.tar "planet.versatiles"
+curl -L "https://github.com/versatiles-org/versatiles-frontend/releases/latest/download/frontend-dev.br.tar" > ./frontend.br.tar
+versatiles serve -s ./frontend.br.tar "osm.versatiles"
 ```
 
 ## Developer Guide
@@ -50,9 +50,10 @@ npm run dev frontend
 
 Developer mode activates the following actions:
 - Fetches all required assets (fonts, styles, sprites, libraries, etc.)
-- Builds the selected frontend (alternative frontends can be run similarly, e.g., `npm run dev frontend-minimal`)
+- Builds the selected frontend (alternative frontends can be run similarly, e.g., `npm run dev frontend-min`)
 - Serves everything under `http://localhost:8080/`
-- Proxies tile requests to facilitate local development
+- Proxies tile requests to `tiles.versatiles.org`.
+- You can also use a local tile server by running `npm run dev -- -l 8081 frontend`. This will fetch tiles from `localhost:8081/tiles/...`.
 - Watches for any changes in the `/frontends/` directory and automatically rebuilds
 
 ## Project Structure
@@ -69,5 +70,3 @@ VersaTiles Frontend utilizes several external resources and libraries, including
 - Styles and sprites from [VersaTiles Style](https://github.com/versatiles-org/versatiles-style)
 - MapLibre GL JS from [MapLibre GL JS GitHub](https://github.com/maplibre/maplibre-gl-js)
 - MapLibre GL Inspect from [MapLibre GL Inspect GitHub](https://github.com/maplibre/maplibre-gl-inspect)
-
-Note: Some external dependencies may require separate installations or configurations.
