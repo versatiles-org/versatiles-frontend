@@ -9,15 +9,24 @@ import { Server } from './server/server';
 // Disables ANSI color codes in progress output for simplicity in development environments.
 progress.disableAnsi();
 
+// Defines the project folder
+const projectFolder = new URL('..', import.meta.url).pathname;
+
+// Loads the configuration for all frontends within the project.
+const frontendsFolder = resolve(projectFolder, 'frontends');
+const frontendConfigs = await loadFrontendConfigs(frontendsFolder);
+
 // Retrieves the name of the frontend to be developed from command line arguments.
 const frontendName = process.argv[2] as string | undefined;
 if (frontendName == null) {
-	console.error('set a frontend name as first argument, e.g. "frontend"');
+	console.error(
+		'set a frontend name as first argument, e.g.:',
+		frontendConfigs.map(config => config.name).join(', ')
+	);
 	process.exit(1);
 }
 
-// Defines the project folder and initializes the file system for managing files.
-const projectFolder = new URL('..', import.meta.url).pathname;
+// Initializes the file system for managing files.
 const fileSystem = new FileSystem();
 progress.setHeader('Preparing Server');
 
@@ -26,10 +35,6 @@ await Pf.run(getAssets(fileSystem));
 
 // Indicates completion of the asset preparation stage.
 progress.finish();
-
-// Loads the configuration for all frontends within the project.
-const frontendsFolder = resolve(projectFolder, 'frontends');
-const frontendConfigs = await loadFrontendConfigs(frontendsFolder);
 
 // Finds the configuration for the specified frontend.
 const frontendConfig = frontendConfigs.find(config => config.name === frontendName);
