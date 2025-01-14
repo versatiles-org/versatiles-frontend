@@ -5,6 +5,7 @@ import { Frontend, loadFrontendConfigs } from './lib/frontend';
 import { getAssets } from './lib/assets';
 import progress from './utils/progress';
 import { Server } from './server/server';
+import arg from 'arg';
 
 // Disables ANSI color codes in progress output for simplicity in development environments.
 progress.disableAnsi();
@@ -16,8 +17,19 @@ const projectFolder = new URL('..', import.meta.url).pathname;
 const frontendsFolder = resolve(projectFolder, 'frontends');
 const frontendConfigs = await loadFrontendConfigs(frontendsFolder);
 
+// parse arguments
+const args = arg({
+	'--local-proxy-port': Number,
+	'-l': '--local-proxy-port',
+},
+	{
+		permissive: false,
+		argv: process.argv.slice(2)
+	}
+)
+
 // Retrieves the name of the frontend to be developed from command line arguments.
-const frontendName = process.argv[2] as string | undefined;
+const frontendName = args._[0];
 if (frontendName == null) {
 	console.error(`set a frontend name as first argument, e.g.: ${frontendConfigs.map(config => config.name).join(', ')}`);
 	process.exit(1);
@@ -48,7 +60,10 @@ frontend.enterWatchMode();
 const devConfig = {
 	proxy: [{
 		from: '/tiles/',
-		to: 'https://tiles.versatiles.org/tiles/'
+		to:
+			args['--local-proxy-port']
+				? `http://localhost:${args['--local-proxy-port']}/tiles/`
+				: 'https://tiles.versatiles.org/tiles/',
 	}]
 };
 const server = new Server(frontend.fileSystem, devConfig);
