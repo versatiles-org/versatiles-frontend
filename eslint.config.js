@@ -8,15 +8,16 @@ export default [
 	...ts.configs.recommended,
 	{
 		ignores: [
-			'**/cache/**/*.*',
-			'**/dist/**/*.*',
-			'**/coverage/**/*.*',
-			'**/frontends/**/*.*',
+			'cache/**/*.*',
+			'coverage/**/*.*',
+			'dist/**/*.*',
+			'frontends/**/*.*',
+			'release/**/*.*',
 		]
 	},
 	{
 		files: [
-			'**/src/**/*.ts',
+			'src/**/*.ts',
 		],
 		languageOptions: {
 			ecmaVersion: 'latest',
