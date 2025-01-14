@@ -3,50 +3,25 @@
 
 <head>
 	<meta charset="utf-8">
-	<title>Versatiles</title>
+	<title>VersaTiles</title>
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
 	<link rel="icon" type="image/png" href="/versatiles.png">
 
-	<script src="assets/lib/maplibre-gl/maplibre-gl.js"></script>
-	<link href="assets/lib/maplibre-gl/maplibre-gl.css" rel="stylesheet">
+	<script src="/assets/lib/maplibre-gl/maplibre-gl.js"></script>
+	<link href="/assets/lib/maplibre-gl/maplibre-gl.css" rel="stylesheet">
 
-	<script src="assets/lib/mapdesigner/mapdesigner-control.js"></script>
-	<link href="assets/lib/mapdesigner/mapdesigner-control.css" rel="stylesheet">
+	<script src="/assets/lib/mapdesigner/mapdesigner-control.js"></script>
+	<link href="/assets/lib/mapdesigner/mapdesigner-control.css" rel="stylesheet">
 
-	<script src="assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.js"></script>
-	<link href="assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet">
+	<script src="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.js"></script>
+	<link href="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet">
 
-	<script src="assets/lib/versatiles-style/versatiles-style.js"></script>
-
-	<style>
-		body {
-			margin: 0;
-			padding: 0;
-		}
-
-		#map {
-			position: absolute;
-			top: 0;
-			bottom: 0;
-			width: 100%;
-		}
-
-		#logo {
-			position: absolute;
-			top: 1em;
-			left: 1em;
-			z-index: 1;
-		}
-
-		#logo img {
-			width: 3em;
-		}
-	</style>
+	<script src="/assets/lib/versatiles-style/versatiles-style.js"></script>
 </head>
 
-<body>
-	<a href="https://versatiles.org" id="logo"><img src="https://versatiles.org/assets/logo/versatiles.svg" alt="versatiles.org"></a>
-	<div id="map" class="maplibregl-compact"></div>
+<body style="margin:0;height:100%;">
+	<a href="https://versatiles.org" style="position:absolute;top:1em;left:1em;z-index:1"><img src="/versatiles.png" alt="VersaTiles" width="32"></a>
+	<div id="map" class="maplibregl-compact" style="position:absolute;top:0;bottom:0;width:100%"></div>
 	<script>
 		const map = new maplibregl.Map({
 			container: 'map',
