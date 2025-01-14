@@ -30,7 +30,7 @@ describe('Curl', () => {
 		await curl.ungzipUntar(testFolder);
 
 		expect(cache).toHaveBeenCalledTimes(1);
-		expect(cache).toHaveBeenCalledWith(`getBuffer:${testUrl}`, expect.any(Function));
+		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
 
 		expect(mockFileSystem.addFile).toHaveBeenCalledTimes(2);
 		expect(mockFileSystem.addFile).toHaveBeenNthCalledWith(1, '/test/file1.txt', 1708473415000, expect.any(Buffer));
@@ -41,7 +41,7 @@ describe('Curl', () => {
 		await curl.save(testFilename);
 
 		// Verify cache and FileSystem interactions
-		expect(cache).toHaveBeenCalledWith(`getBuffer:${testUrl}`, expect.any(Function));
+		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
 		expect(mockFileSystem.addFile).toHaveBeenCalledWith(testFilename, expect.any(Number), expect.any(Buffer));
 	});
 
@@ -51,7 +51,7 @@ describe('Curl', () => {
 		await curl.unzip(filename => filename.endsWith('.txt') ? `/unzipped/${filename}` : false);
 
 		expect(cache).toHaveBeenCalledTimes(1);
-		expect(cache).toHaveBeenCalledWith(`getBuffer:${testUrl}`, expect.any(Function));
+		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
 
 		expect(mockFileSystem.addFile).toHaveBeenCalledTimes(2);
 		expect(mockFileSystem.addFile).toHaveBeenNthCalledWith(1, '/unzipped/file1.txt', 1820, expect.any(Buffer));
