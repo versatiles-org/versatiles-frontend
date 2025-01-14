@@ -1,6 +1,6 @@
 import { FrontendConfig } from '../src/lib/frontend';
 
-const frontends: FrontendConfig[] = [
+export default [
 	{
 		name: 'frontend',
 		include: [
@@ -30,10 +30,10 @@ const frontends: FrontendConfig[] = [
 		}
 	},
 	{
-		name: 'frontend-minimal',
+		name: 'frontend-min',
 		include: [
 			'all',
-			'frontend-minimal'
+			'frontend-min'
 		],
 		ignore: [
 			'assets/glyphs/*',
@@ -57,5 +57,3 @@ const frontends: FrontendConfig[] = [
 		}
 	}
 ]
-
-export default frontends;
