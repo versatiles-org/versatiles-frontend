@@ -53,8 +53,13 @@ Developer mode activates the following actions:
 - Builds the selected frontend (alternative frontends can be run similarly, e.g., `npm run dev frontend-min`)
 - Serves everything under `http://localhost:8080/`
 - Proxies tile requests to `tiles.versatiles.org`.
-- You can also use a local tile server by running `npm run dev -- -l 8081 frontend`. This will fetch tiles from `localhost:8081/tiles/...`.
 - Watches for any changes in the `/frontends/` directory and automatically rebuilds
+- You can also use a local tile server from a different local port by running:
+```sh
+versatiles serve -p 8081 osm.versatiles overlay.versatiles
+# then run this in another shell
+npm run dev -- -l 8081 frontend-dev
+```
 
 ## Project Structure
 
