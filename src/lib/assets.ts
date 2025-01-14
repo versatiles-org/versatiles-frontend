@@ -8,7 +8,7 @@ import { getLatestReleaseVersion } from './release_version';
 // Define constants for asset directories.
 const folderStyle = 'assets/styles/';
 const folderLibrary = 'assets/lib/';
-const folderFonts = 'assets/glyphs/';
+const folderGlyphs = 'assets/glyphs/';
 const folderSprites = 'assets/sprites/';
 
 /**
@@ -40,7 +40,7 @@ export function getAssets(fileSystem: FileSystem): PromiseFunction {
 			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-fonts');
 			label.setVersion(version);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/${fontName}.tar.gz`)
-				.ungzipUntar(folderFonts);
+				.ungzipUntar(folderGlyphs);
 		});
 	}
 

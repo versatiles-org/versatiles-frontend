@@ -31,22 +31,22 @@ export class File {
 	 */
 	public async compress(): Promise<void> {
 		if (this.bufferBr) return; // Skip if already compressed.
-		this.bufferBr = await cache('compress:' + this.hash, async () => {
-			return new Promise(res => {
-				brotliCompress(
-					this.bufferRaw,
-					{
-						params: {
-							[constants.BROTLI_PARAM_QUALITY]: 11,
-							[constants.BROTLI_PARAM_SIZE_HINT]: this.bufferRaw.length,
-						},
+		this.bufferBr = await cache(
+			'compress',
+			this.hash,
+			async () => new Promise(res => brotliCompress(
+				this.bufferRaw,
+				{
+					params: {
+						[constants.BROTLI_PARAM_QUALITY]: 11,
+						[constants.BROTLI_PARAM_SIZE_HINT]: this.bufferRaw.length,
 					},
-					(error, buffer) => {
-						res(buffer);
-					},
-				);
-			});
-		});
+				},
+				(error, buffer) => {
+					res(buffer);
+				},
+			)),
+		);
 	}
 }
 

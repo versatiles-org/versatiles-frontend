@@ -1,11 +1,12 @@
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { ensureFolder } from './utils';
 
 // Define the path to the cache folder relative to the module location.
-const folder = new URL('../../cache', import.meta.url).pathname;
+const cacheFolder = new URL('../../cache', import.meta.url).pathname;
 
 // Initialize the "database" for caching with string keys and Buffer values.
-mkdirSync(folder, { recursive: true });
+mkdirSync(cacheFolder, { recursive: true });
 
 /**
  * Attempts to retrieve a cached value for a given key. If the value is not found in the cache,
@@ -16,15 +17,16 @@ mkdirSync(folder, { recursive: true });
  *                   if the key is not already present in the cache.
  * @returns A Promise resolving to the Buffer associated with the key, either retrieved from cache or newly cached.
  */
-export async function cache(key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> {
-	let filename = resolve(folder, key.replace(/[^a-z0-9-_]/gi, c => ' x' + c.charCodeAt(0) + ' '))
-	filename = filename.replace(/\s+/g, '_');
+export async function cache(action: string, key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> {
+	const folder = resolve(cacheFolder, action);
+	const filename = resolve(folder, key.replace(/[^a-z0-9-_.]/gi, c => '_x' + c.charCodeAt(0) + '_')).replace(/_+/g, '_');
 
 	if (existsSync(filename)) return readFileSync(filename);
 
 	const buffer = await cbBuffer();
 	if (!(buffer instanceof Buffer)) throw Error('The callback function must return a Buffer');
 
+	ensureFolder(folder);
 	writeFileSync(filename, buffer);
 
 	return buffer;
