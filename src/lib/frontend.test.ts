@@ -72,8 +72,8 @@ describe('Frontend class', () => {
 		expect(calledFilenames).toStrictEqual([
 			'/tmp/frontend-dev.br.tar.gz',
 			'/tmp/frontend-dev.tar.gz',
-			'/tmp/frontend-minimal.br.tar.gz',
-			'/tmp/frontend-minimal.tar.gz',
+			'/tmp/frontend-min.br.tar.gz',
+			'/tmp/frontend-min.tar.gz',
 			'/tmp/frontend.br.tar.gz',
 			'/tmp/frontend.tar.gz',
 		]);
