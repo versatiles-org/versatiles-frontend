@@ -4,8 +4,7 @@ import { loadJSON } from './utils.js';
 export default async function StyleMaker(mainOptions = {}) {
 	const source_name = 'data_source';
 	const randomColor = new RandomColor();
-	const background_style = await loadJSON('/assets/map_maker/background-style.json');
-	const shortbread_style = await loadJSON('/assets/styles/colorful.json');
+	const shortbread_style = await loadJSON('/assets/styles/colorful/style.json');
 	const meta = await loadJSON(mainOptions.metaUrl);
 
 	if (!background_style) throw Error('default background style not found');
@@ -23,7 +22,7 @@ export default async function StyleMaker(mainOptions = {}) {
 			layers: []
 		};
 
-		if (options.addBackgroundMap) addVectorMap('versatiles-background', background_style);
+		if (options.addBackgroundMap) addVectorMap('versatiles-background');
 
 		switch (mainOptions.format) {
 			case 'pbf':

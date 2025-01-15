@@ -4,8 +4,10 @@ import { loadJSON } from './lib/utils.js';
 
 export default async function MapMaker(maplibregl, nodeId, url) {
 	const meta = await loadJSON(url + '/tiles.json');
-	const tiles_url = window.location.origin + info.url;
-	const container = info.container;
+	const tiles_url = new URL(meta.tiles, window.location.origin).href
+		.replace(/%7B([xyz])%7D/gi, (a, b, c) => `{${b}}`)
+	console.log({ tiles_url });
+	console.log(meta);
 
 	const options = {
 		addBoundingBox: true,
@@ -15,10 +17,10 @@ export default async function MapMaker(maplibregl, nodeId, url) {
 
 	let makeStyle = await StyleMaker({
 		tiles_url: tiles_url + '{z}/{x}/{y}',
-		zoom_min: container.zoom_min,
-		zoom_max: container.zoom_max,
-		format: container.format,
-		bbox: container.bbox,
+		zoom_min: meta.minzoom,
+		zoom_max: meta.maxzoom,
+		format: meta.format,
+		bbox: meta.bounds,
 		metaUrl: tiles_url + 'meta.json',
 	})
 

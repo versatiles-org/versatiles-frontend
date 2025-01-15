@@ -1,13 +1,12 @@
 <!DOCTYPE html>
-
 <html>
 
 <head>
 	<meta charset="utf-8" />
-	<title>VersaTiles - Preview</title>
+	<title>VersaTiles - Overview</title>
 	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 	<link rel="icon" type="image/png" href="/versatiles.png">
-	
+
 	<style>
 		body {
 			font-family: sans-serif;
@@ -42,16 +41,17 @@
 			font-size: 1.5em;
 		}
 
-		div.box {
+		.box {
 			border: 1px solid #fff4;
 			border-radius: 3px;
 			padding: 1.5em;
 			margin: 2em 0;
 			background: #222;
 			box-sizing: border-box;
+			display: block;
 		}
 
-		div.box:hover {
+		.box:hover {
 			border: 1px solid #fff;
 		}
 
@@ -60,25 +60,25 @@
 			color: inherit !important;
 		}
 
-		div.row {
+		.row {
 			display: flex;
 			flex-wrap: nowrap;
 			gap: 10px;
 			opacity: 0.5;
 		}
 
-		div.row>div:first-child {
+		.row>div:first-child {
 			flex-basis: 20%;
 			text-align: right;
 			font-weight: bold;
 		}
 
-		div.row>div:last-child {
+		.row>div:last-child {
 			flex-basis: 80%;
 			text-align: left;
 		}
 
-		div.box:hover div.row {
+		.box:hover .row {
 			opacity: 1;
 		}
 	</style>
@@ -106,17 +106,15 @@
 			function draw() {
 				let html = [];
 				for (let s of tileSources) {
-					html.push(...[
-						`<a href="preview.html?id=${s.id}">`,
-						`<div class="box">`,
-						`<h2>${s.name ?? '?'}</h2>`,
-						`<div class="row"><div>url:</div><div>/tiles/${s.id ?? '?'}</div></div>`,
-						`<div class="row"><div>description:</div><div>${s.description ?? '?'}</div></div>`,
-						`<div class="row"><div>format:</div><div>${s.type ?? '?'} (${s.format ?? '?'})</div></div>`,
-						`<div class="row"><div>zoom:</div><div>${s.minzoom ?? '?'}-${s.maxzoom ?? '?'}</div></div>`,
-						`</div>`,
-						`</a>`
-					]);
+					html.push(`
+						<a class="box" href="preview.html?id=${s.id}">
+							<h2>${s.name ?? '?'}</h2>
+							<div class="row"><div>url:</div><div>/tiles/${s.id ?? '?'}</div></div>
+							<div class="row"><div>description:</div><div>${s.description ?? '?'}</div></div>
+							<div class="row"><div>format:</div><div>${s.type ?? '?'} (${s.format ?? '?'})</div></div>
+							<div class="row"><div>zoom:</div><div>${s.minzoom ?? '?'}-${s.maxzoom ?? '?'}</div></div>
+						</a>
+					`);
 				}
 				document.getElementById("list").innerHTML = html.join('\n');
 			}

@@ -1,5 +1,5 @@
 
-import MapMaker from './lib/map_maker/map_maker.js';
+import MapMaker from './map_maker.js';
 
 init();
 
