@@ -9,7 +9,7 @@ const config: JestConfigWithTsJest = {
 	testMatch: [
 		'**/src/**/*.test.ts',
 		'!**/src/**/*.mock.test.ts',
-		'**/frontend/**/*.test.ts',
+		'**/frontends/**/*.test.ts',
 	],
 	extensionsToTreatAsEsm: ['.ts'],
 	moduleNameMapper: { '^(\\.{1,2}/.*)\\.js$': '$1' },
