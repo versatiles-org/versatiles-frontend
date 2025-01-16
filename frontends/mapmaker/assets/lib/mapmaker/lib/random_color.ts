@@ -31,7 +31,7 @@ export default class RandomColor {
 
 	private getHueRange(hue?: string | number): Range {
 		if (typeof hue === 'string') {
-			const color = this.colorDictionary[hue];
+			const color = this.colorDictionary.get(hue);
 			if (color && color.hueRange) return color.hueRange;
 
 			const number = parseInt(hue);
@@ -103,10 +103,9 @@ export default class RandomColor {
 		// Maps red colors to make picking hue easier
 		if (hue >= 334 && hue <= 360) hue -= 360;
 
-		for (let colorName in this.colorDictionary) {
-			let color = this.colorDictionary[colorName];
+		for (const color of this.colorDictionary.values()) {
 			if (color.hueRange && hue >= color.hueRange[0] && hue <= color.hueRange[1]) {
-				return this.colorDictionary[colorName];
+				return color;
 			}
 		}
 		throw Error('Color not found');
@@ -115,7 +114,7 @@ export default class RandomColor {
 
 
 
-function HSVtoHSL(hsv) {
+function HSVtoHSL(hsv: [number, number, number]): [number, number, number] {
 	let s = hsv[1] / 100, v = hsv[2] / 100, k = (2 - s) * v;
 	return [hsv[0], 100 * s * v / (k < 1 ? k : 2 - k), 100 * k / 2];
 }
@@ -132,7 +131,7 @@ function seedToInteger(s?: string | number): number {
 type Range = [number, number];
 
 interface ColorDictionaryEntry {
-	hueRange: null | Range;
+	hueRange: Range;
 	lowerBounds: Range[];
 	saturationRange: Range;
 	brightnessRange: Range;
@@ -143,7 +142,7 @@ type ColorDictionary = Map<string, ColorDictionaryEntry>;
 function loadColorBounds(): ColorDictionary {
 	let dict: ColorDictionary = new Map();
 
-	defineColor('monochrome', null, [[0, 0], [100, 0]]);
+	defineColor('monochrome', [0, 0], [[0, 0], [100, 0]]);
 	defineColor('red', [-26, 18], [[20, 100], [30, 92], [40, 89], [50, 85], [60, 78], [70, 70], [80, 60], [90, 55], [100, 50]]);
 	defineColor('orange', [18, 46], [[20, 100], [30, 93], [40, 88], [50, 86], [60, 85], [70, 70], [100, 70]]);
 	defineColor('yellow', [46, 62], [[25, 100], [40, 94], [50, 89], [60, 86], [70, 84], [80, 82], [90, 80], [100, 75]]);
@@ -154,15 +153,15 @@ function loadColorBounds(): ColorDictionary {
 
 	return dict;
 
-	function defineColor(name: string, hueRange: null | Range, lowerBounds: Range[]): void {
+	function defineColor(name: string, hueRange: Range, lowerBounds: Range[]): void {
 		let greyest = lowerBounds[0];
 		let colorful = lowerBounds[lowerBounds.length - 1];
 
-		dict[name] = {
-			hueRange: hueRange,
-			lowerBounds: lowerBounds,
+		dict.set(name, {
+			hueRange,
+			lowerBounds,
 			saturationRange: [greyest[0], colorful[0]],
 			brightnessRange: [colorful[1], greyest[1]],
-		};
+		});
 	}
 }
