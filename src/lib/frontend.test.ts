@@ -58,7 +58,6 @@ describe('Frontend class', () => {
 	it('loads frontend configurations correctly', async () => {
 		const configs = await loadFrontendConfigs(frontendsPath);
 		expect(configs).toContainEqual(expect.objectContaining(
-
 			{ name: expect.any(String), include: expect.any(Array) },
 		));
 	});

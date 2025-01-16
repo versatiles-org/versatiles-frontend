@@ -161,7 +161,7 @@ export class Frontend {
  * @returns An array of FrontendConfig objects.
  */
 export async function loadFrontendConfigs(frontendsFolder: string): Promise<FrontendConfig[]> {
-	return (await import(resolve(frontendsFolder, 'frontends.ts') + '?' + Date.now())).default as FrontendConfig[];
+	return (await import(resolve(frontendsFolder, 'frontends.ts') + '?' + Date.now())).frontendConfigs;
 }
 
 

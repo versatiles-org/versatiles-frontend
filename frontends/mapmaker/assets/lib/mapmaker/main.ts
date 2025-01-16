@@ -1,10 +1,4 @@
 import MapMaker from './mapmaker';
-//import type * as MaplibreGl from 'maplibre-gl';
-
-
-//declare global {
-//	const maplibregl: typeof import('maplibre-gl');
-//}
 
 init();
 

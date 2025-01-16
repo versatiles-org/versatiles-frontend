@@ -1,7 +1,7 @@
 import { FrontendConfig } from '../src/lib/frontend';
 import { RollupConfig } from '../src/lib/rollup';
 
-export const rollupConfig: RollupConfig[] = [
+export const rollupConfigs: RollupConfig[] = [
 	{
 		frontend: 'mapmaker',
 		input: 'assets/lib/mapmaker/main.ts',
@@ -10,7 +10,7 @@ export const rollupConfig: RollupConfig[] = [
 	},
 ]
 
-export const frontendConfig: FrontendConfig[] = [
+export const frontendConfigs: FrontendConfig[] = [
 	{
 		name: 'frontend',
 		include: ['all', 'frontend', 'mapdesigner']

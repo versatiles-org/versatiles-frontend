@@ -4,11 +4,12 @@ const config: JestConfigWithTsJest = {
 	verbose: true,
 	testEnvironment: 'node',
 	transform: {
-		'^.+\\.ts$': ['ts-jest', { useESM: true }]
+		'^.+\\.ts$': ['ts-jest', { useESM: true }],
 	},
 	testMatch: [
 		'**/src/**/*.test.ts',
 		'!**/src/**/*.mock.test.ts',
+		'**/frontend/**/*.test.ts',
 	],
 	extensionsToTreatAsEsm: ['.ts'],
 	moduleNameMapper: { '^(\\.{1,2}/.*)\\.js$': '$1' },
