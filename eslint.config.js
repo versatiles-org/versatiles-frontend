@@ -11,13 +11,14 @@ export default [
 			'cache/**/*.*',
 			'coverage/**/*.*',
 			'dist/**/*.*',
-			'frontends/**/*.*',
+			'frontends/**/*.js',
 			'release/**/*.*',
 		]
 	},
 	{
 		files: [
 			'src/**/*.ts',
+			'frontends/**/*.ts',
 		],
 		languageOptions: {
 			ecmaVersion: 'latest',
