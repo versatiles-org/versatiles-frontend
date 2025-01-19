@@ -32,9 +32,9 @@ describe('Curl', () => {
 		expect(cache).toHaveBeenCalledTimes(1);
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
 
-		expect(mockFileSystem.addFile).toHaveBeenCalledTimes(2);
-		expect(mockFileSystem.addFile).toHaveBeenNthCalledWith(1, '/test/file1.txt', 1708473415000, expect.any(Buffer));
-		expect(mockFileSystem.addFile).toHaveBeenNthCalledWith(2, '/test/file2.txt', 1708473417000, expect.any(Buffer));
+		expect(mockFileSystem.addBufferAsFile).toHaveBeenCalledTimes(2);
+		expect(mockFileSystem.addBufferAsFile).toHaveBeenNthCalledWith(1, '/test/file1.txt', 1708473415000, expect.any(Buffer));
+		expect(mockFileSystem.addBufferAsFile).toHaveBeenNthCalledWith(2, '/test/file2.txt', 1708473417000, expect.any(Buffer));
 	});
 
 	it('should save a resource directly to a file', async () => {
@@ -42,7 +42,7 @@ describe('Curl', () => {
 
 		// Verify cache and FileSystem interactions
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
-		expect(mockFileSystem.addFile).toHaveBeenCalledWith(testFilename, expect.any(Number), expect.any(Buffer));
+		expect(mockFileSystem.addBufferAsFile).toHaveBeenCalledWith(testFilename, expect.any(Number), expect.any(Buffer));
 	});
 
 	it('should fetch, unzip, and save contents based on filter callback', async () => {
@@ -53,9 +53,9 @@ describe('Curl', () => {
 		expect(cache).toHaveBeenCalledTimes(1);
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
 
-		expect(mockFileSystem.addFile).toHaveBeenCalledTimes(2);
-		expect(mockFileSystem.addFile).toHaveBeenNthCalledWith(1, '/unzipped/file1.txt', 1820, expect.any(Buffer));
-		expect(mockFileSystem.addFile).toHaveBeenNthCalledWith(2, '/unzipped/file2.txt', 1821, expect.any(Buffer));
+		expect(mockFileSystem.addBufferAsFile).toHaveBeenCalledTimes(2);
+		expect(mockFileSystem.addBufferAsFile).toHaveBeenNthCalledWith(1, '/unzipped/file1.txt', 1820, expect.any(Buffer));
+		expect(mockFileSystem.addBufferAsFile).toHaveBeenNthCalledWith(2, '/unzipped/file2.txt', 1821, expect.any(Buffer));
 	});
 
 	it('should return a buffer from getBuffer method', async () => {

@@ -12,6 +12,7 @@ import type { File, FileSystem } from './file_system';
 import type { Ignore } from 'ignore';
 import type { ProgressLabel } from '../utils/progress';
 import type { WatchEventType } from 'node:fs';
+import { RollupFrontends } from './rollup';
 
 /**
  * Configuration for a frontend, detailing included and ignored paths, and development settings.
@@ -29,9 +30,7 @@ export interface FrontendConfig {
 export class Frontend {
 	public readonly fileSystem: FileSystem;
 
-	private readonly name: string;
-
-	private readonly include: string[];
+	private readonly config: FrontendConfig;
 
 	private readonly frontendsPath: string;
 
@@ -47,19 +46,27 @@ export class Frontend {
 	public constructor(fileSystem: FileSystem, config: FrontendConfig, frontendsPath: string) {
 		this.fileSystem = fileSystem.clone();
 		this.ignore = (ignore as unknown as () => Ignore)();
-		this.name = config.name;
+		this.config = config;
 		this.frontendsPath = frontendsPath;
-		this.include = config.include;
+	}
 
+	public async build(rollupFrontends: RollupFrontends): Promise<void> {
 		// Add files and directories to file system based on include paths.
-		this.include.forEach(include => {
+		for (const include of this.config.include) {
+			if (include.startsWith('rollup:')) {
+				const id = include.slice(7);
+				const rollupFrontend = await rollupFrontends.get(id);
+				this.fileSystem.addFileSystem(rollupFrontend);
+				continue;
+			}
+
 			const fullPath = resolve(this.frontendsPath, include);
 			if (!statSync(fullPath).isDirectory()) throw Error(`included directory "${include}" is not a directory`);
-			this.addPath(fullPath, fullPath);
-		});
+			this.addPath(fullPath);
+		};
 
 		// Add ignore patterns if provided.
-		if (config.ignore) this.ignore.add(config.ignore);
+		if (this.config.ignore) this.ignore.add(this.config.ignore);
 	}
 
 	/**
@@ -77,7 +84,7 @@ export class Frontend {
 		await pipeline(
 			pack,
 			createGzip({ level: 9 }),
-			createWriteStream(resolve(folder, this.name + '.tar.gz')),
+			createWriteStream(resolve(folder, this.config.name + '.tar.gz')),
 		);
 	}
 
@@ -97,7 +104,7 @@ export class Frontend {
 		await pipeline(
 			pack,
 			createGzip({ level: 9 }),
-			createWriteStream(resolve(folder, this.name + '.br.tar.gz')),
+			createWriteStream(resolve(folder, this.config.name + '.br.tar.gz')),
 		);
 	}
 
@@ -105,13 +112,25 @@ export class Frontend {
 	 * Watches the included paths for changes, updating the frontend's assets accordingly.
 	 */
 	public enterWatchMode(): void {
-		this.include.forEach(include => {
+		const rollupFrontends = new RollupFrontends();
+
+		this.config.include.forEach(include => {
+			console.log('watching', include);
+
+			if (include.startsWith('rollup:')) {
+				const id = include.slice(7);
+				rollupFrontends.watch(id, rollupFrontend => {
+					this.fileSystem.addFileSystem(rollupFrontend);
+				});
+				return
+			}
+
 			const fullPath = resolve(this.frontendsPath, include);
 			watch(fullPath, { recursive: true }, (event: WatchEventType, filename: string | null) => {
 				if (filename == null) return;
 				const fullname = resolve(fullPath, filename);
 				try {
-					this.addPath(fullname, fullPath);
+					this.addPath(fullname);
 				} catch (_) {
 					// Handle errors, e.g., logging or notifications.
 				}
@@ -124,7 +143,7 @@ export class Frontend {
 	 */
 	private *iterate(): IterableIterator<File> {
 		const filter = this.ignore.createFilter();
-		for (const file of this.fileSystem.iterate()) {
+		for (const file of this.fileSystem.iterateFiles()) {
 			if (filter(file.name)) yield file;
 		}
 	}
@@ -135,7 +154,7 @@ export class Frontend {
 	 * @param path - The path to add.
 	 * @param dir - The root directory for relative path calculations.
 	 */
-	private addPath(path: string, dir: string): void {
+	private addPath(path: string, dir: string = path): void {
 		if (!existsSync(path)) throw Error(`path "${path}" does not exist`);
 		if (basename(path).startsWith('.')) return; // Skip hidden files and directories.
 
@@ -145,7 +164,7 @@ export class Frontend {
 				this.addPath(resolve(path, name), dir);
 			});
 		} else {
-			this.fileSystem.addFile(
+			this.fileSystem.addBufferAsFile(
 				relative(dir, path),
 				stat.mtimeMs,
 				readFileSync(path),
@@ -157,13 +176,11 @@ export class Frontend {
 /**
  * Loads frontend configurations from a `frontends.json` file.
  * 
- * @param frontendsFolder - The folder containing `frontends.json`.
  * @returns An array of FrontendConfig objects.
  */
-export async function loadFrontendConfigs(frontendsFolder: string): Promise<FrontendConfig[]> {
-	return (await import(resolve(frontendsFolder, 'frontends.ts') + '?' + Date.now())).frontendConfigs;
+export async function loadFrontendConfigs(): Promise<FrontendConfig[]> {
+	return (await import('../../frontends/frontends.ts?' + Date.now())).frontendConfigs;
 }
-
 
 /**
  * Generates frontend bundles for deployment based on configurations.
@@ -176,11 +193,13 @@ export async function loadFrontendConfigs(frontendsFolder: string): Promise<Fron
  * @returns A PromiseFunction instance that encapsulates the asynchronous operations of generating all frontends.
  */
 export async function generateFrontends(fileSystem: FileSystem, projectFolder: string, dstFolder: string): Promise<Pf> {
+	const rollupFrontends = new RollupFrontends();
+
 	// Resolve the path to the frontends folder within the project directory.
 	const frontendsFolder = resolve(projectFolder, 'frontends');
 
 	// Load frontend configurations from the specified folder.
-	const frontendConfigs = await loadFrontendConfigs(frontendsFolder);
+	const frontendConfigs = await loadFrontendConfigs();
 	// Read the project version from package.json to use in release notes.
 
 	const frontendVersion = String(JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')).version);
@@ -190,7 +209,7 @@ export async function generateFrontends(fileSystem: FileSystem, projectFolder: s
 	// generating each frontend in parallel for efficiency.
 	return Pf.wrapProgress('generate frontends',
 		Pf.parallel(
-			...frontendConfigs.map(config => generateFrontend(config)),
+			...frontendConfigs.map(config => generateFrontend(config, rollupFrontends)),
 		),
 	);
 
@@ -201,7 +220,7 @@ export async function generateFrontends(fileSystem: FileSystem, projectFolder: s
 	 * @param config - The configuration object for the frontend to be generated.
 	 * @returns A PromiseFunction instance for the asynchronous operations of generating the frontend.
 	 */
-	function generateFrontend(config: FrontendConfig): Pf {
+	function generateFrontend(config: FrontendConfig, rollupFrontends: RollupFrontends): Pf {
 		const { name } = config;
 		let s: ProgressLabel, sBr: ProgressLabel, sGz: ProgressLabel;
 
@@ -219,6 +238,7 @@ export async function generateFrontends(fileSystem: FileSystem, projectFolder: s
 				sGz.start();
 				// Create a new Frontend instance and generate the compressed tarballs.
 				const frontend = new Frontend(fileSystem, config, frontendsFolder);
+				await frontend.build(rollupFrontends);
 				await frontend.saveAsBrTarGz(dstFolder);
 				sBr.end();
 				await frontend.saveAsTarGz(dstFolder);

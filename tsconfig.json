@@ -1,8 +1,7 @@
 {
 	"compilerOptions": {
 		"lib": [
-			"ESNext",
-			"DOM"
+			"ESNext"
 		],
 		"module": "ESNext",
 		"moduleResolution": "node",
@@ -18,5 +17,6 @@
 	},
 	"include": [
 		"src/**/*.ts",
+		"frontends/rollups.ts"
 	]
 }

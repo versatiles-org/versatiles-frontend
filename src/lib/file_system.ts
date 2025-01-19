@@ -54,7 +54,7 @@ export class File {
  * A custom file system interface for storing and managing File instances.
  */
 export class FileSystem {
-	private readonly files = new Map<string, File>(); // A map to store File instances.
+	public readonly files = new Map<string, File>(); // A map to store File instances.
 
 	/**
 	 * Constructs a FileSystem instance optionally with an existing map of files.
@@ -75,13 +75,13 @@ export class FileSystem {
 		let sizePos = 0;
 		// Calculate total size for progress calculation if callback provided.
 		if (callback) {
-			for (const file of this.iterate()) {
+			for (const file of this.iterateFiles()) {
 				if (!file.bufferBr) sizeSum += file.bufferRaw.length;
 			}
 			callback(0);
 		}
 		// Compress files and update progress.
-		for (const file of this.iterate()) {
+		for (const file of this.iterateFiles()) {
 			if (file.bufferBr) continue;
 
 			await file.compress();
@@ -101,9 +101,19 @@ export class FileSystem {
 	 * @param modificationTime - The last modification time of the file.
 	 * @param buffer - The raw buffer content of the file.
 	 */
-	public addFile(filename: string, modificationTime: number, buffer: Buffer): void {
+	public addBufferAsFile(filename: string, modificationTime: number, buffer: Buffer): void {
 		if (!filename) throw Error('filename is empty');
 		this.files.set(filename, new File(filename, modificationTime, buffer));
+	}
+
+	public addFile(file: File): void {
+		this.files.set(file.name, file);
+	}
+
+	public addFileSystem(fileSystem: FileSystem): void {
+		for (const file of fileSystem.iterateFiles()) {
+			this.files.set(file.name, file);
+		}
 	}
 
 	/**
@@ -130,7 +140,7 @@ export class FileSystem {
 	 * 
 	 * @returns An IterableIterator of File instances.
 	 */
-	public iterate(): IterableIterator<File> {
+	public iterateFiles(): IterableIterator<File> {
 		return this.files.values();
 	}
 

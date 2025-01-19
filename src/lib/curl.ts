@@ -45,7 +45,7 @@ export class Curl {
 			if (header.type !== 'file') throw Error(String(header.type));
 			const filename = urlResolve(folder, header.name);
 			void streamAsBuffer(stream).then((buffer): void => {
-				this.#fileSystem.addFile(filename, Number(header.mtime ?? Math.random()), buffer);
+				this.#fileSystem.addBufferAsFile(filename, Number(header.mtime ?? Math.random()), buffer);
 				next();
 				return;
 			});
@@ -67,7 +67,7 @@ export class Curl {
 	 * @param filename - The name of the file where the resource will be saved.
 	 */
 	public async save(filename: string): Promise<void> {
-		this.#fileSystem.addFile(filename, Math.random(), await this.getBuffer());
+		this.#fileSystem.addBufferAsFile(filename, Math.random(), await this.getBuffer());
 	}
 
 	/**
@@ -82,7 +82,7 @@ export class Curl {
 			const filename = cbFilter(entry.path);
 			if (filename != false) {
 				void entry.buffer().then(buffer => {
-					this.#fileSystem.addFile(filename, entry.vars.lastModifiedTime, buffer);
+					this.#fileSystem.addBufferAsFile(filename, entry.vars.lastModifiedTime, buffer);
 				});
 			} else {
 				entry.autodrain();

@@ -1,3 +1,4 @@
+import { HSVtoHSL } from './color';
 
 export interface RandomColorOptions {
 	seed?: string | number;
@@ -113,11 +114,6 @@ export default class RandomColor {
 }
 
 
-
-function HSVtoHSL(hsv: [number, number, number]): [number, number, number] {
-	let s = hsv[1] / 100, v = hsv[2] / 100, k = (2 - s) * v;
-	return [hsv[0], 100 * s * v / (k < 1 ? k : 2 - k), 100 * k / 2];
-}
 
 function seedToInteger(s?: string | number): number {
 	if (s == null) return Math.round(Math.random() * 0x1e9);

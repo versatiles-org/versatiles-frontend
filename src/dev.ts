@@ -15,7 +15,7 @@ const projectFolder = new URL('..', import.meta.url).pathname;
 
 // Loads the configuration for all frontends within the project.
 const frontendsFolder = resolve(projectFolder, 'frontends');
-const frontendConfigs = await loadFrontendConfigs(frontendsFolder);
+const frontendConfigs = await loadFrontendConfigs();
 
 // parse arguments
 const args = arg({

@@ -1,24 +1,16 @@
 import { FrontendConfig } from '../src/lib/frontend';
-import { RollupConfig } from '../src/lib/rollup';
-
-export const rollupConfigs: RollupConfig[] = [
-	{
-		frontend: 'mapmaker',
-		input: 'assets/lib/mapmaker/main.ts',
-		output: 'assets/lib/mapmaker/mapmaker.js',
-		drop: ['*.ts']
-	},
-]
 
 export const frontendConfigs: FrontendConfig[] = [
 	{
 		name: 'frontend',
-		include: ['all', 'frontend', 'mapdesigner']
+		include: ['all', 'frontend', 'rollup:style-selector']
 	},
+	/*
 	{
 		name: 'frontend-dev',
-		include: ['all', 'frontend-dev', 'mapmaker']
+		include: ['all', 'frontend-dev', 'rollup:style-selector']
 	},
+	*/
 	{
 		name: 'frontend-min',
 		include: ['all', 'frontend-min'],

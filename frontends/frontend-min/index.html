@@ -14,14 +14,16 @@
 </head>
 
 <body style="margin:0;height:100%;">
-	<a href="https://versatiles.org" style="position:absolute;top:1em;left:1em;z-index:1"><img src="/versatiles.png" alt="VersaTiles" width="32"></a>
+	<a href="https://versatiles.org" style="position:absolute;top:1em;left:1em;z-index:1">
+		<img src="/versatiles.png" alt="VersaTiles" width="32">
+	</a>
 	<div id="map" class="maplibregl-compact" style="position:absolute;top:0;bottom:0;width:100%"></div>
 	<script>
 		const map = new maplibregl.Map({
 			container: 'map',
 			bounds: [-180, -80, 180, 80],
 			zoom: 5,
-			style: VersaTilesStyle.colorful({ tiles: ['tiles/osm/{z}/{x}/{y}'], }),
+			style: VersaTilesStyle.styles.colorful({ tiles: ['tiles/osm/{z}/{x}/{y}'], }),
 			maxZoom: 20,
 			hash: true
 		});
