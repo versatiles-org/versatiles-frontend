@@ -83,11 +83,7 @@
 		}
 	</style>
 	<script>
-		console.log('1');
-		addEventListener('load', start)
-
-		async function start() {
-			console.log('2');
+		addEventListener('load', async start => {
 			let tileSources = (await getJSON('/tiles/index.json')).map(id => ({ id }))
 
 			draw();
@@ -118,11 +114,11 @@
 				}
 				document.getElementById("list").innerHTML = html.join('\n');
 			}
-		}
 
-		async function getJSON(url) {
-			return await (await fetch(url)).json()
-		}
+			async function getJSON(url) {
+				return await (await fetch(url)).json()
+			}
+		})
 	</script>
 </head>
 
