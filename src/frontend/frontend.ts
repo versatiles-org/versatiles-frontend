@@ -10,7 +10,6 @@ import progress from '../utils/progress';
 import tar from 'tar-stream';
 import type { FileSystem } from '../filesystem/file_system';
 import type { File } from '../filesystem/file';
-import type { Ignore } from 'ignore';
 import type { ProgressLabel } from '../utils/progress';
 import type { WatchEventType } from 'node:fs';
 import { RollupFrontends } from './rollup';
@@ -133,12 +132,7 @@ export class Frontend {
 			watch(fullPath, { recursive: true }, (event: WatchEventType, filename: string | null) => {
 				if (filename == null) return;
 				const fullname = resolve(fullPath, filename);
-				try {
-					this.addPath(fullname, fullPath);
-				} catch (error) {
-					throw error;
-					// Handle errors, e.g., logging or notifications.
-				}
+				this.addPath(fullname, fullPath);
 			});
 		});
 	}

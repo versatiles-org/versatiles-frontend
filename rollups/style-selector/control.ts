@@ -2,17 +2,16 @@
 import type { Map, IControl, ControlPosition, Evented as EventedClass } from 'maplibre-gl';
 import { StyleSelector, StyleSelectorConfig } from './style-selector';
 
-// @ts-ignore
+// @ts-expect-error don't know how to fix this
 const Evented = maplibregl.Evented as EventedClass;
 
-// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 type StyleSelectorControlOptions = StyleSelectorConfig & {
 }
 
 /**
  * StyleSelectorControl is a custom control for MapLibre GL JS maps that allows users to switch between different map styles.
  */
-// @ts-ignore
+// @ts-expect-error don't know how to fix this
 export class Control extends Evented implements IControl {
 	private config: StyleSelectorControlOptions;
 	private map?: Map;
