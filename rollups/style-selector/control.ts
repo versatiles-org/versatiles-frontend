@@ -12,6 +12,7 @@ type StyleSelectorControlOptions = StyleSelectorConfig & {
 /**
  * StyleSelectorControl is a custom control for MapLibre GL JS maps that allows users to switch between different map styles.
  */
+// @ts-ignore
 export class Control extends Evented implements IControl {
 	private config: StyleSelectorControlOptions;
 	private map?: Map;
@@ -50,9 +51,8 @@ export class Control extends Evented implements IControl {
 	 * Called when the control is removed from the map.
 	 */
 	onRemove() {
-		if (this.styleSelector) this.styleSelector.destroy();
-
 		// Clean up references
 		this.map = undefined;
+		this.styleSelector = undefined;
 	}
 }

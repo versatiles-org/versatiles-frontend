@@ -77,7 +77,6 @@ export class RollupFrontends {
 			} else continue;
 
 			const name = normalize(`${path}/${output.fileName}`);
-			console.log(`Writing file: ${name}`);
 			files.set(name, new File(name, now, Buffer.from(content)));
 		}
 
