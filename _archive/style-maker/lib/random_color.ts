@@ -86,13 +86,13 @@ export default class RandomColor {
 	}
 
 	private getMinimumBrightness(H: number, S: number): number {
-		let lowerBounds = this.getColorInfo(H).lowerBounds;
+		const lowerBounds = this.getColorInfo(H).lowerBounds;
 
 		for (let i = 0; i < lowerBounds.length - 1; i++) {
-			let s1 = lowerBounds[i][0], v1 = lowerBounds[i][1];
-			let s2 = lowerBounds[i + 1][0], v2 = lowerBounds[i + 1][1];
+			const s1 = lowerBounds[i][0], v1 = lowerBounds[i][1];
+			const s2 = lowerBounds[i + 1][0], v2 = lowerBounds[i + 1][1];
 			if (S >= s1 && S <= s2) {
-				let m = (v2 - v1) / (s2 - s1), b = v1 - m * s1;
+				const m = (v2 - v1) / (s2 - s1), b = v1 - m * s1;
 				return m * S + b;
 			}
 		}
@@ -136,7 +136,7 @@ interface ColorDictionaryEntry {
 type ColorDictionary = Map<string, ColorDictionaryEntry>;
 
 function loadColorBounds(): ColorDictionary {
-	let dict: ColorDictionary = new Map();
+	const dict: ColorDictionary = new Map();
 
 	defineColor('monochrome', [0, 0], [[0, 0], [100, 0]]);
 	defineColor('red', [-26, 18], [[20, 100], [30, 92], [40, 89], [50, 85], [60, 78], [70, 70], [80, 60], [90, 55], [100, 50]]);
@@ -150,8 +150,8 @@ function loadColorBounds(): ColorDictionary {
 	return dict;
 
 	function defineColor(name: string, hueRange: Range, lowerBounds: Range[]): void {
-		let greyest = lowerBounds[0];
-		let colorful = lowerBounds[lowerBounds.length - 1];
+		const greyest = lowerBounds[0];
+		const colorful = lowerBounds[lowerBounds.length - 1];
 
 		dict.set(name, {
 			hueRange,

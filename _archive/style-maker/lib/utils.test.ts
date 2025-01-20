@@ -88,7 +88,7 @@ describe('deepClone', () => {
 	});
 
 	it('should handle circular references gracefully', () => {
-		const obj: any = { a: 1 };
+		const obj = { a: 1 };
 		obj.self = obj;
 
 		expect(() => deepClone(obj)).toThrow(); // Modify if deepClone supports circular refs

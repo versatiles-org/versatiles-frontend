@@ -13,12 +13,15 @@ export default [
 			'dist/**/*.*',
 			'frontends/**/*.js',
 			'release/**/*.*',
+			'rollups/**/*.js',
+			'_archive/**/*.*',
 		]
 	},
 	{
 		files: [
 			'src/**/*.ts',
 			'frontends/**/*.ts',
+			'rollups/**/*.ts',
 		],
 		languageOptions: {
 			ecmaVersion: 'latest',

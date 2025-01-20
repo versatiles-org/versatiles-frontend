@@ -1,10 +1,10 @@
 import { resolve } from 'node:path';
 import { cleanupFolder } from './utils/utils';
-import notes from './lib/release_notes';
+import notes from './utils/release_notes';
 import PromiseFunction from './utils/async';
-import { FileSystem } from './lib/file_system';
-import { generateFrontends } from './lib/frontend';
-import { getAssets } from './lib/assets';
+import { FileSystem } from './filesystem/file_system';
+import { generateFrontends } from './frontend/frontend';
+import { loadAssets } from './frontend/assets';
 import type { ProgressLabel } from './utils/progress';
 import progress from './utils/progress';
 
@@ -21,7 +21,7 @@ cleanupFolder(dstFolder);
 
 // Run the main build tasks sequentially: fetch assets, compress files, and generate frontends.
 await PromiseFunction.run(PromiseFunction.sequential(
-	getAssets(fileSystem),
+	loadAssets(fileSystem),
 	compressFiles(),
 	await generateFrontends(fileSystem, projectFolder, dstFolder),
 ));

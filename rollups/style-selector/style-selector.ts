@@ -1,22 +1,32 @@
 import { styles } from '@versatiles/style';
-import type { default as mapNS } from 'maplibre-gl';
+import type { default as maplibre } from 'maplibre-gl';
 
-const { colorful, eclipse, graybeard, neutrino } = styles;
-type Style = typeof colorful | typeof eclipse | typeof graybeard | typeof neutrino;
+type Style = typeof styles.colorful | typeof styles.eclipse | typeof styles.graybeard | typeof styles.neutrino;
+
+export interface StyleSelectorConfig {
+	tiles: string[];
+}
 
 export class StyleSelector {
 	public container: HTMLElement;
 	private currentStyle: Style;
-	private map: mapNS.Map;
-	private config: any;
+	private map: maplibre.Map;
+	private config: StyleSelectorConfig;
 	private button: HTMLElement;
 	private listContainer: HTMLElement;
+	private knownStyles: { [name: string]: Style };
 
-	constructor(map: mapNS.Map, config: any) {
+	constructor(map: maplibre.Map, config: StyleSelectorConfig) {
 		this.map = map;
 		this.config = config;
+		this.onDocumentClickHandler = this.onDocumentClickHandler.bind(this);
+
+		this.knownStyles = { ...styles };
+		delete this.knownStyles.empty; // Remove empty style from list
+
+		this.currentStyle = this.knownStyles.colorful; // Default style
+
 		const container = this.container = createElementFromHTML('<div></div>');
-		this.currentStyle = styles.colorful; // Default style
 
 		document.addEventListener('click', this.onDocumentClickHandler);
 
@@ -25,11 +35,11 @@ export class StyleSelector {
 		container.appendChild(buttonContainer);
 
 		// Create style toggle button
-		const button = this.button = createElementFromHTML('<button type="button" class="maplibregl-ctrl-icon maplibregl-style-switcher"></button>');
-		buttonContainer.appendChild(button);
+		this.button = createElementFromHTML('<button type="button" class="maplibregl-ctrl-icon maplibregl-style-switcher"></button>');
+		buttonContainer.appendChild(this.button);
 
 		// Toggle style list display
-		button.addEventListener('click', () => {
+		this.button.addEventListener('click', () => {
 			listContainer.style.display = listContainer.style.display === 'block' ? 'none' : 'block';
 		});
 
@@ -43,7 +53,7 @@ export class StyleSelector {
 		listContainer.appendChild(list);
 
 		// Populate style options
-		Object.entries(styles).forEach(([name, style]) => {
+		Object.entries(this.knownStyles).forEach(([name, style]) => {
 			const styleElement = createElementFromHTML(`<button type="button">${name}</button>`);
 
 			// Style selection event
@@ -52,7 +62,7 @@ export class StyleSelector {
 				if (target.classList.contains('active')) return;
 
 				listContainer.style.display = 'none';
-				button.style.display = 'block';
+				this.button.style.display = 'block';
 				listContainer.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
 				target.classList.add('active');
 
@@ -67,6 +77,7 @@ export class StyleSelector {
 		});
 
 		this.updateStyle();
+		console.log(this.button);
 	}
 
 	private updateStyle() {
@@ -77,10 +88,6 @@ export class StyleSelector {
 		if (!this.button.contains(event.target as Node)) {
 			this.listContainer.style.display = 'none';
 		}
-	}
-
-	public destroy() {
-		document.removeEventListener('click', this.onDocumentClickHandler);
 	}
 }
 

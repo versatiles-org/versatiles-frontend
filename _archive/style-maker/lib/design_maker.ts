@@ -1,3 +1,4 @@
+import { LayerSpecification, StyleSpecification } from 'maplibre-gl';
 import { Color3, Color4, hsvToRgb, parseColor, rgbToHsv } from './color';
 import { absoluteUrl, deepClone } from './utils';
 
@@ -40,7 +41,7 @@ const defaultDesignMakerOptions: DesignMakerOptions = {
  * by applying color or layer modifications.
  */
 export class DesignMaker {
-	private readonly loadedStyles: Record<string, any> = {};
+	private readonly loadedStyles: Record<string, StyleSpecification> = {};
 
 	/**
 	 * Merges userOptions with defaults and transforms the style.
@@ -53,7 +54,7 @@ export class DesignMaker {
 		styleName: string,
 		tileSource: string,
 		userOptions: Partial<DesignMakerOptions> = {}
-	): Promise<any> {
+	): Promise<StyleSpecification> {
 		const options: DesignMakerOptions = {
 			...defaultDesignMakerOptions,
 			...userOptions
@@ -69,7 +70,7 @@ export class DesignMaker {
 	 * Fetches and caches a style JSON from "/assets/styles/{styleName}.json".
 	 * @param styleName  Name of the style file (without ".json")
 	 */
-	private async loadStyle(styleName: string): Promise<any> {
+	private async loadStyle(styleName: string): Promise<StyleSpecification> {
 		if (!styleName) {
 			throw new Error('loadStyle requires a style name');
 		}
@@ -94,7 +95,7 @@ export class DesignMaker {
 	/**
 	 * Given a style JSON, updates tile sources and patches layers based on options.
 	 */
-	private makeStyle(style: any, tileSource: string, options: DesignMakerOptions): any {
+	private makeStyle(style: StyleSpecification, tileSource: string, options: DesignMakerOptions): StyleSpecification {
 		if (typeof style !== 'object') {
 			throw new Error('style must be an object');
 		}
@@ -103,8 +104,12 @@ export class DesignMaker {
 		}
 
 		// Convert relative sprite/glyph paths to absolute
-		if (style.sprites) {
-			style.sprites = absoluteUrl(style.sprites);
+		if (style.sprite) {
+			if (typeof style.sprite === 'string') {
+				style.sprite = absoluteUrl(style.sprite);
+			} else if (Array.isArray(style.sprite)) {
+				style.sprite.forEach(s => s.url = absoluteUrl(s.url));
+			}
 		}
 		if (style.glyphs) {
 			style.glyphs = absoluteUrl(style.glyphs);
@@ -112,8 +117,10 @@ export class DesignMaker {
 
 		// Replace each source URL with tileSource
 		if (style.sources) {
-			Object.values(style.sources).forEach((src: any) => {
-				src.tiles = [absoluteUrl(tileSource)];
+			Object.values(style.sources).forEach(src => {
+				if (src.type === 'vector' || src.type === 'raster') {
+					src.tiles = [absoluteUrl(tileSource)];
+				}
 			});
 		}
 
@@ -125,7 +132,7 @@ export class DesignMaker {
 	/**
 	 * Applies color corrections and other transformations to style.layers
 	 */
-	private patchLayers(style: any, options: DesignMakerOptions): void {
+	private patchLayers(style: StyleSpecification, options: DesignMakerOptions): void {
 		// Clamp certain numeric fields to [0..1] or otherwise as needed
 		options.grey = Math.min(1, Math.max(0, options.grey));
 		options.fade = Math.min(1, Math.max(0, options.fade));
@@ -144,7 +151,7 @@ export class DesignMaker {
 		const fadeColorArr = parseColor(options.fadeColor);
 		const tintColorArr = parseColor(options.tintColor);
 
-		const paintColorKeys = [
+		const paintColorKeys = new Set<string>([
 			'background-color',
 			'circle-color',
 			'circle-stroke-color',
@@ -159,38 +166,35 @@ export class DesignMaker {
 			'icon-halo-color',
 			'line-color',
 			'line-gradient',
-			'sky-atmosphere-color',
-			'sky-atmosphere-halo-color',
-			'sky-gradient',
 			'text-color',
 			'text-halo-color'
-		];
+		]);
 
-		style.layers = style.layers.filter((layer: any) => {
+		style.layers = style.layers.filter((layer: LayerSpecification) => {
 			// Remove text or icon for labels/symbols if requested
 			if (layer.layout) {
-				if (options.hideLabels) {
+				if (options.hideLabels && 'text-field' in layer.layout) {
 					delete layer.layout['text-field'];
 				}
-				if (options.hideSymbols) {
+				if (options.hideSymbols && 'icon-image' in layer.layout) {
 					delete layer.layout['icon-image'];
 				}
-			}
 
-			// Filter out layers whose IDs match hideLayerIds
-			if (options.hideLayerIds instanceof RegExp && options.hideLayerIds.test(layer.id)) {
-				return false;
-			}
+				// Filter out layers whose IDs match hideLayerIds
+				if (options.hideLayerIds instanceof RegExp && options.hideLayerIds.test(layer.id)) {
+					return false;
+				}
 
-			// Adjust paint color fields
-			if (layer.paint) {
-				paintColorKeys.forEach((key) => {
-					if (layer.paint[key]) {
-						layer.paint[key] = fixColorValue(layer.paint[key], options, fadeColorArr, tintColorArr);
+				// Adjust paint color fields
+				if (layer.paint != null) {
+					const paint = (layer.paint as Record<string, any>);
+					for (const key in paint) {
+						if (!paintColorKeys.has(key)) continue;
+						paint[key] = fixColorValue(paint[key], options, fadeColorArr, tintColorArr);
 					}
-				});
-			}
-			return true;
+				}
+				return true;
+			};
 		});
 	}
 }

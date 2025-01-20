@@ -1,0 +1,16 @@
+{
+	"extends": "../tsconfig.json",
+	"compilerOptions": {
+		"lib": [
+			"DOM",
+			"ESNext"
+		],
+		"declaration": false
+	},
+	"include": [
+		"**/*.ts",
+	],
+	"exclude": [
+		"**/style-maker/**/*.ts"
+	]
+}

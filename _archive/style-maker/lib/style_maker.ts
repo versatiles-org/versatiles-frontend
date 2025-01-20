@@ -1,6 +1,8 @@
 // StyleMaker.ts
+import { SourceSpecification, StyleSpecification, VectorSourceSpecification } from 'maplibre-gl';
 import RandomColor from './random_color';
 import { loadJSON } from './utils';
+import { Style } from 'util';
 
 /** 
  * Define an interface for the main options you expect in 'mainOptions'.
@@ -33,8 +35,8 @@ export interface StyleOptions {
  */
 export default class StyleMaker {
 	private readonly randomColor: RandomColor;
-	private shortbreadStyle: any;   // from '/assets/styles/colorful/style.json'
-	private meta: any;              // from mainOptions.metaUrl
+	private shortbreadStyle?: StyleSpecification;   // from '/assets/styles/colorful/style.json'
+	private meta?: string;              // from mainOptions.metaUrl
 
 	/**
 	 * You can store or type `mainOptions` however you like (here: partial).
@@ -69,12 +71,11 @@ export default class StyleMaker {
 	 * Creates and returns the style object based on format, bounding box, etc.
 	 * @param options - Additional style options such as addBoundingBox, addBackgroundMap, etc.
 	 */
-	public makeStyle(options: StyleOptions = {}): any {
+	public makeStyle(options: StyleOptions = {}) {
 		const sourceName = 'data_source';
 
 		// Base style skeleton
-		const style: any = {
-			id: 'auto_generated',
+		const style: StyleSpecification = {
 			name: 'auto_generated',
 			version: 8,
 			sources: {},
@@ -122,7 +123,7 @@ export default class StyleMaker {
 	/**
 	 * Draws bounding box lines onto the style.
 	 */
-	private addBoundingBox(style: any): void {
+	private addBoundingBox(style: StyleSpecification): void {
 		if (!Array.isArray(this.mainOptions.bbox) || this.mainOptions.bbox.length < 4) {
 			throw new Error('mainOptions.bbox must be a [x0, y0, x1, y1] array.');
 		}
@@ -132,10 +133,8 @@ export default class StyleMaker {
 			type: 'geojson',
 			data: {
 				type: 'Feature',
-				geometry: {
-					type: 'Polygon',
-					coordinates
-				}
+				geometry: { type: 'Polygon', coordinates },
+				properties: {}
 			}
 		};
 		style.layers.push({
@@ -158,24 +157,19 @@ export default class StyleMaker {
 	 */
 	private addVectorMap(
 		sourceName: string,
-		newStyle: any,
-		style: any,
+		newStyle: StyleSpecification,
+		style: StyleSpecification,
 		options: StyleOptions
 	): void {
 		// Merge the newStyle sources into style.sources
 		if (newStyle.sources) {
-			for (let [key, value] of Object.entries(newStyle.sources)) {
-				if (typeof value !== 'object' || value === null) value = {};
-				const sourceValue = value as { [key: string]: any };
-
-				style.sources[key] = sourceValue;
-				sourceValue.scheme ??= 'xyz';
-				sourceValue.tilejson ??= '3.0.0';
-				sourceValue.tiles ??= [this.mainOptions.tiles_url];
-				sourceValue.minzoom ??= this.mainOptions.zoom_min;
-				sourceValue.maxzoom ??= this.mainOptions.zoom_max;
-				sourceValue.type ??= 'vector';
-				sourceValue.vector_layers ??= this.meta.vector_layers;
+			const sources = Object.values(newStyle.sources) as VectorSourceSpecification[];
+			for (const source of sources) {
+				source.scheme ??= 'xyz';
+				if (this.mainOptions.tiles_url) source.tiles ??= [this.mainOptions.tiles_url];
+				source.minzoom ??= this.mainOptions.zoom_min;
+				source.maxzoom ??= this.mainOptions.zoom_max;
+				source.type ??= 'vector';
 			}
 		}
 
@@ -205,7 +199,7 @@ export default class StyleMaker {
 	/**
 	 * Adds a raster source + single raster layer for images (jpg/png).
 	 */
-	private addRasterMap(sourceName: string, style: any): void {
+	private addRasterMap(sourceName: string, style: StyleSpecification): void {
 		style.sources[sourceName] = {
 			scheme: 'xyz',
 			tiles: [this.mainOptions.tiles_url],
@@ -224,7 +218,7 @@ export default class StyleMaker {
 	/**
 	 * If the style is "shortbread," copy glyphs, sprite, and layers from shortbreadStyle.
 	 */
-	private addShortbreadStyle(sourceName: string, style: any): void {
+	private addShortbreadStyle(sourceName: string, style): void {
 		if (this.shortbreadStyle.glyphs) {
 			style.glyphs = this.shortbreadStyle.glyphs;
 		}
@@ -232,7 +226,7 @@ export default class StyleMaker {
 			style.sprite = this.shortbreadStyle.sprite;
 		}
 		// Rewire shortbread layers to use the new source name
-		this.shortbreadStyle.layers.forEach((layer: any) => {
+		this.shortbreadStyle.layers.forEach((layer) => {
 			layer.source = sourceName;
 		});
 		style.layers = style.layers.concat(this.shortbreadStyle.layers);
@@ -242,7 +236,7 @@ export default class StyleMaker {
 	 * Builds a simple "inspector" style that draws circles, lines, and fills
 	 * for each vector layer in `this.meta.vector_layers`.
 	 */
-	private addInspectorStyle(sourceName: string, style: any): void {
+	private addInspectorStyle(sourceName: string, style): void {
 		// You could also add a background layer here if you want
 		const newLayers = {
 			circle: [] as any[],
@@ -331,10 +325,10 @@ export default class StyleMaker {
 	private addInspectorSubLayer(
 		geoType: string,
 		layerType: string,
-		baseStyle: any,
+		baseStyle,
 		sourceName: string,
 		layerId: string,
-		bucket: any[]
+		bucket[]
 	): void {
 		bucket.push(
 			Object.assign(baseStyle, {
@@ -364,7 +358,7 @@ export default class StyleMaker {
 			'sites', 'pois'
 		];
 		const idSet = new Set(knownIds);
-		const count = this.meta.vector_layers.filter((l: any) => idSet.has(l.id)).length;
+		const count = this.meta.vector_layers.filter((l) => idSet.has(l.id)).length;
 		return count > knownIds.length / 2; // e.g., if more than half match
 	}
 }

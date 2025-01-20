@@ -10,15 +10,17 @@
 	<script src="/assets/lib/maplibre-gl/maplibre-gl.js"></script>
 	<link href="/assets/lib/maplibre-gl/maplibre-gl.css" rel="stylesheet">
 
-	<script src="/assets/lib/mapdesigner/mapdesigner-control.js"></script>
-	<link href="/assets/lib/mapdesigner/mapdesigner-control.css" rel="stylesheet">
+	<script src="/assets/lib/style-selector/style-selector.js"></script>
+	<link href="/assets/lib/style-selector/style-selector.css" rel="stylesheet">
 
 	<script src="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.js"></script>
 	<link href="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet">
 </head>
 
 <body style="margin:0;height:100%;">
-	<a href="https://versatiles.org" style="position:absolute;top:1em;left:1em;z-index:1"><img src="/versatiles.png" alt="VersaTiles" width="32"></a>
+	<a href="https://versatiles.org" style="position:absolute;top:1em;left:1em;z-index:1">
+		<img src="/versatiles.png" alt="VersaTiles" width="32">
+	</a>
 	<div id="map" class="maplibregl-compact" style="position:absolute;top:0;bottom:0;width:100%"></div>
 	<script>
 		const map = new maplibregl.Map({
@@ -31,7 +33,7 @@
 
 		map.addControl(new maplibregl.NavigationControl(), 'top-right');
 		map.addControl(new MaplibreInspect());
-		map.addControl(new MapDesignerControl({
+		map.addControl(new StyleSelector.Control({
 			tiles: ['tiles/osm/{z}/{x}/{y}'],
 		}));
 

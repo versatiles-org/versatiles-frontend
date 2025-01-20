@@ -1,14 +1,18 @@
 
-import type { Map, IControl, ControlPosition } from 'maplibre-gl';
-import { Evented } from 'maplibre-gl';
-import { StyleSelector } from './style-selector';
+import type { Map, IControl, ControlPosition, Evented as EventedClass } from 'maplibre-gl';
+import { StyleSelector, StyleSelectorConfig } from './style-selector';
 
-interface StyleSelectorControlOptions { }
+// @ts-ignore
+const Evented = maplibregl.Evented as EventedClass;
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+type StyleSelectorControlOptions = StyleSelectorConfig & {
+}
 
 /**
  * StyleSelectorControl is a custom control for MapLibre GL JS maps that allows users to switch between different map styles.
  */
-export class StyleSelectorControl extends Evented implements IControl {
+export class Control extends Evented implements IControl {
 	private config: StyleSelectorControlOptions;
 	private map?: Map;
 	private styleSelector?: StyleSelector;

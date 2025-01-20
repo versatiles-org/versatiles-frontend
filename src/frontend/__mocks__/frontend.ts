@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import PromiseFunction from '../../utils/async';
 
-const originalModule = await import('../frontend');
+const originalModule = await import('../../frontend/frontend');
 
 export const mockFrontend = {
 	generateFrontends: jest.fn((): PromiseFunction => {
@@ -14,4 +14,4 @@ export const mockFrontend = {
 			//start: jest.fn().mockReturnValue(Promise.resolve(undefined)),
 		};
 	}),
-} as unknown as jest.Mocked<typeof import('../frontend')>;
+} as unknown as jest.Mocked<typeof import('../../frontend/frontend')>;

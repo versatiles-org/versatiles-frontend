@@ -1,5 +1,5 @@
 import type { Curl as CurlType } from '../curl';
-import type { FileSystem } from '../file_system';
+import type { FileSystem } from '../../filesystem/file_system';
 import { jest } from '@jest/globals';
 
 export type CurlInstance = InstanceType<typeof CurlType> & { url: string; fileSystem: FileSystem };

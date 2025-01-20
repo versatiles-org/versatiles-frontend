@@ -6,7 +6,8 @@ jest.spyOn(process, 'exit').mockImplementationOnce(() => {
 console.error = jest.fn().mockReturnValue(undefined);
 
 // Import all necessary mocks
-const { File, FileSystem } = await import('./lib/file_system');
+const { File } = await import('./filesystem/file');
+const { FileSystem } = await import('./filesystem/file_system');
 
 const { mockProgress } = await import('./utils/__mocks__/progress');
 jest.unstable_mockModule('./utils/progress', () => mockProgress);
@@ -16,13 +17,13 @@ const { mockServer } = await import('./server/__mocks__/server');
 jest.unstable_mockModule('./server/server', () => mockServer);
 const { Server } = await import('./server/server');
 
-const { mockFrontend } = await import('./lib/__mocks__/frontend');
-jest.unstable_mockModule('./lib/frontend', () => mockFrontend);
-const { Frontend, loadFrontendConfigs } = await import('./lib/frontend');
+const { mockFrontend } = await import('./frontend/__mocks__/frontend');
+jest.unstable_mockModule('./frontend/frontend', () => mockFrontend);
+const { Frontend, loadFrontendConfigs } = await import('./frontend/frontend');
 
-const { mockAssets } = await import('./lib/__mocks__/assets');
-jest.unstable_mockModule('./lib/assets', () => mockAssets);
-const { getAssets } = await import('./lib/assets');
+const { mockAssets } = await import('./frontend/__mocks__/assets');
+jest.unstable_mockModule('./frontend/assets', () => mockAssets);
+const { loadAssets: getAssets } = await import('./frontend/assets');
 
 describe('build process', () => {
 	beforeEach(() => {

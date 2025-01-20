@@ -1,9 +1,9 @@
-import { Curl } from './curl';
+import { Curl } from '../utils/curl';
 import { basename, join } from 'node:path';
 import PromiseFunction from '../utils/async';
-import notes from './release_notes';
-import type { FileSystem } from './file_system';
-import { getLatestReleaseVersion } from './release_version';
+import notes from '../utils/release_notes';
+import type { FileSystem } from '../filesystem/file_system';
+import { getLatestReleaseVersion } from '../utils/release_version';
 
 // Define constants for asset directories.
 const folderStyle = 'assets/styles/';
@@ -18,7 +18,7 @@ const folderSprites = 'assets/sprites/';
  * @param {FileSystem} fileSystem - The file system interface to use for file operations.
  * @returns {PromiseFunction} - A parallelized promise for loading all assets, wrapped with progress tracking.
  */
-export function getAssets(fileSystem: FileSystem): PromiseFunction {
+export function loadAssets(fileSystem: FileSystem): PromiseFunction {
 	return PromiseFunction.wrapProgress('load assets',
 		PromiseFunction.parallel(
 			addFont('fonts'),

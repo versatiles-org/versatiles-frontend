@@ -1,9 +1,9 @@
 import { jest } from '@jest/globals';
 
 
-const { mockReleaseNotes } = await import('./lib/__mocks__/release_notes');
-jest.unstable_mockModule('./lib/release_notes', () => mockReleaseNotes);
-const { default: notes } = await import('./lib/release_notes');
+const { mockReleaseNotes } = await import('./utils/__mocks__/release_notes');
+jest.unstable_mockModule('./utils/release_notes', () => mockReleaseNotes);
+const { default: notes } = await import('./utils/release_notes');
 
 const { mockCache } = await import('./utils/__mocks__/cache');
 jest.unstable_mockModule('./utils/cache', () => mockCache);
@@ -17,13 +17,13 @@ const { mockUtils } = await import('./utils/__mocks__/utils');
 jest.unstable_mockModule('./utils/utils', () => mockUtils);
 const { cleanupFolder } = await import('./utils/utils');
 
-const { mockAssets } = await import('./lib/__mocks__/assets');
-jest.unstable_mockModule('./lib/assets', () => mockAssets);
-const { getAssets } = await import('./lib/assets');
+const { mockAssets } = await import('./frontend/__mocks__/assets');
+jest.unstable_mockModule('./frontend/assets', () => mockAssets);
+const { loadAssets: getAssets } = await import('./frontend/assets');
 
-const { mockFrontend } = await import('./lib/__mocks__/frontend');
-jest.unstable_mockModule('./lib/frontend', () => mockFrontend);
-const { generateFrontends } = await import('./lib/frontend');
+const { mockFrontend } = await import('./frontend/__mocks__/frontend');
+jest.unstable_mockModule('./frontend/frontend', () => mockFrontend);
+const { generateFrontends } = await import('./frontend/frontend');
 
 describe('Build Process', () => {
 	beforeEach(() => {

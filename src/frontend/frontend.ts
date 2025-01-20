@@ -4,11 +4,12 @@ import { createWriteStream, existsSync, readFileSync, readdirSync, statSync, wat
 import { type DevConfig } from '../server/server';
 import { pipeline } from 'node:stream/promises';
 import ignore from 'ignore';
-import notes from './release_notes';
+import notes from '../utils/release_notes';
 import Pf from '../utils/async';
 import progress from '../utils/progress';
 import tar from 'tar-stream';
-import type { File, FileSystem } from './file_system';
+import type { FileSystem } from '../filesystem/file_system';
+import type { File } from '../filesystem/file';
 import type { Ignore } from 'ignore';
 import type { ProgressLabel } from '../utils/progress';
 import type { WatchEventType } from 'node:fs';
@@ -34,7 +35,7 @@ export class Frontend {
 
 	private readonly frontendsPath: string;
 
-	private readonly ignore: Ignore;
+	private readonly ignoreFilter: (pathname: string) => boolean;
 
 	/**
 	 * Constructs a Frontend instance.
@@ -45,9 +46,13 @@ export class Frontend {
 	 */
 	public constructor(fileSystem: FileSystem, config: FrontendConfig, frontendsPath: string) {
 		this.fileSystem = fileSystem.clone();
-		this.ignore = (ignore as unknown as () => Ignore)();
 		this.config = config;
 		this.frontendsPath = frontendsPath;
+
+		// Add ignore patterns if provided.
+		const ig = ignore();
+		if (config.ignore) ig.add(config.ignore);
+		this.ignoreFilter = ig.createFilter();
 	}
 
 	public async build(rollupFrontends: RollupFrontends): Promise<void> {
@@ -62,11 +67,9 @@ export class Frontend {
 
 			const fullPath = resolve(this.frontendsPath, include);
 			if (!statSync(fullPath).isDirectory()) throw Error(`included directory "${include}" is not a directory`);
+
 			this.addPath(fullPath);
 		};
-
-		// Add ignore patterns if provided.
-		if (this.config.ignore) this.ignore.add(this.config.ignore);
 	}
 
 	/**
@@ -126,12 +129,14 @@ export class Frontend {
 			}
 
 			const fullPath = resolve(this.frontendsPath, include);
+			this.addPath(fullPath);
 			watch(fullPath, { recursive: true }, (event: WatchEventType, filename: string | null) => {
 				if (filename == null) return;
 				const fullname = resolve(fullPath, filename);
 				try {
-					this.addPath(fullname);
-				} catch (_) {
+					this.addPath(fullname, fullPath);
+				} catch (error) {
+					throw error;
 					// Handle errors, e.g., logging or notifications.
 				}
 			});
@@ -142,10 +147,15 @@ export class Frontend {
 	 * Iterates over the frontend's files, filtering out those ignored.
 	 */
 	private *iterate(): IterableIterator<File> {
-		const filter = this.ignore.createFilter();
 		for (const file of this.fileSystem.iterateFiles()) {
-			if (filter(file.name)) yield file;
+			if (this.ignoreFilter(file.name)) yield file;
 		}
+	}
+
+	public getFile(path: string): Buffer | undefined {
+		if (!path) return undefined; // do not ask for empty paths
+		if (!this.ignoreFilter(path)) return undefined;
+		return this.fileSystem.getFile(path);
 	}
 
 	/**

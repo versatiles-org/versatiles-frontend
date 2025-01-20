@@ -4,9 +4,9 @@ import { finished } from 'node:stream/promises';
 import tar from 'tar-stream';
 import unzipper from 'unzipper';
 import type { Entry } from 'unzipper';
-import type { FileSystem } from './file_system';
-import { streamAsBuffer } from '../utils/utils';
-import { cache } from '../utils/cache';
+import type { FileSystem } from '../filesystem/file_system';
+import { streamAsBuffer } from './utils';
+import { cache } from './cache';
 
 /**
  * Provides utilities for fetching resources over HTTP(s), with support for caching,

@@ -1,9 +1,9 @@
 import express from 'express';
 import escapeHtml from 'escape-html';
-import type { FileSystem } from '../lib/file_system';
 import type { Express } from 'express';
 import { resolve } from 'node:url';
 import { lookup } from 'mrmime';
+import { Frontend } from '../frontend/frontend';
 
 /**
  * Defines the structure for development server configurations,
@@ -58,15 +58,15 @@ export class Server {
 	 * @param fileSystem - The file system from which to serve files.
 	 * @param config - Optional development configuration for the server.
 	 */
-	public constructor(fileSystem: FileSystem, config?: DevConfig) {
+	public constructor(frontend: Frontend, config?: DevConfig) {
 		this.app = express();
 
 		this.app.get('*', (req, res) => {
 			// Attempt to serve the request from the file system.
-			if (tryFileSystem(req.path)) return;
+			if (tryFrontend(req.path)) return;
 
 			// Attempt to serve an index.html file if the request is for a directory.
-			if (tryFileSystem(resolve(req.path + '/', 'index.html'))) return;
+			if (tryFrontend(resolve(req.path + '/', 'index.html'))) return;
 
 			// Attempt to proxy the request based on configuration.
 			void tryProxy(req.path).then(value => {
@@ -81,9 +81,9 @@ export class Server {
 			 * @param path - The request path.
 			 * @returns True if the file was served, false otherwise.
 			 */
-			function tryFileSystem(path: string): boolean {
+			function tryFrontend(path: string): boolean {
 				path = path.replace(/^\/+/, ''); // Remove leading slashes for file system lookup.
-				const buffer = fileSystem.getFile(path);
+				const buffer = frontend.getFile(path);
 				if (buffer == null) return false;
 				res
 					.header('content-type', lookup(path) ?? 'application/octet-stream')

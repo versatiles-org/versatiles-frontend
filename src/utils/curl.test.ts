@@ -1,12 +1,12 @@
 import { jest } from '@jest/globals';
 import { mockFetchResponse } from './__mocks__/global_fetch';
 
-const { mockCache } = await import('../utils/__mocks__/cache');
+const { mockCache } = await import('./__mocks__/cache');
 jest.unstable_mockModule('../utils/cache', () => mockCache);
-const { cache } = await import('../utils/cache');
+const { cache } = await import('./cache');
 
 const { Curl } = await import('./curl');
-const { FileSystem } = await import('./file_system');
+const { FileSystem } = await import('../filesystem/file_system');
 
 describe('Curl', () => {
 	let curl: InstanceType<typeof Curl>;

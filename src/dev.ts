@@ -1,8 +1,8 @@
 import { resolve } from 'node:path';
 import Pf from './utils/async';
-import { FileSystem } from './lib/file_system';
-import { Frontend, loadFrontendConfigs } from './lib/frontend';
-import { getAssets } from './lib/assets';
+import { FileSystem } from './filesystem/file_system';
+import { Frontend, loadFrontendConfigs } from './frontend/frontend';
+import { loadAssets } from './frontend/assets';
 import progress from './utils/progress';
 import { Server } from './server/server';
 import arg from 'arg';
@@ -40,7 +40,7 @@ const fileSystem = new FileSystem();
 progress.setHeader('Preparing Server');
 
 // Loads and prepares assets for the frontend using the custom FileSystem.
-await Pf.run(getAssets(fileSystem));
+await Pf.run(loadAssets(fileSystem));
 
 // Indicates completion of the asset preparation stage.
 progress.finish();
@@ -66,5 +66,5 @@ const devConfig = {
 				: 'https://tiles.versatiles.org/tiles/',
 	}]
 };
-const server = new Server(frontend.fileSystem, devConfig);
+const server = new Server(frontend, devConfig);
 await server.start();

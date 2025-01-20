@@ -23,7 +23,7 @@ export function HSVtoHSL([h, s, v]: Color3): Color3 {
  * Parses a color string (#abc, #rrggbb, rgba, etc.) into an [r,g,b,a] array.
  */
 export function parseColor(colorStr: string): Color4 {
-	let text = colorStr.replace(/\s+/g, '').toLowerCase();
+	const text = colorStr.replace(/\s+/g, '').toLowerCase();
 
 	// #rrggbb
 	let match = text.match(/^#([0-9a-f]{2})([0-9a-f]{2})([0-9a-f]{2})$/);

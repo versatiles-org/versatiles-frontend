@@ -8,23 +8,23 @@ await import('../utils/progress');
 const PromiseFunction = (await import('../utils/async')).default;
 
 // Mock curl
-const { mockCurl } = await import('./__mocks__/curl');
-jest.unstable_mockModule('./curl', () => mockCurl);
-const { Curl } = await import('./curl');
+const { mockCurl } = await import('../utils/__mocks__/curl');
+jest.unstable_mockModule('../utils/curl', () => mockCurl);
+const { Curl } = await import('../utils/curl');
 
-const { FileSystem } = await import('./file_system');
+const { FileSystem } = await import('../filesystem/file_system');
 
 // Mock utils
 const { mockUtils } = await import('../utils/__mocks__/utils');
 jest.unstable_mockModule('../utils/utils', () => mockUtils);
 
 // Mock release_version
-const { mockReleaseVersion } = await import('./__mocks__/release_version');
-jest.unstable_mockModule('./release_version', () => mockReleaseVersion);
-const { getLatestReleaseVersion } = await import('./release_version');
+const { mockReleaseVersion } = await import('../utils/__mocks__/release_version');
+jest.unstable_mockModule('../utils/release_version', () => mockReleaseVersion);
+const { getLatestReleaseVersion } = await import('../utils/release_version');
 
 
-const { getAssets } = await import('./assets');
+const { loadAssets: getAssets } = await import('./assets');
 
 
 

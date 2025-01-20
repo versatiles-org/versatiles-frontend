@@ -1,15 +1,20 @@
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { existsSync, watch, WatchEventType } from 'node:fs';
-import { normalize } from 'node:path';
+import { normalize, resolve } from 'node:path';
 import { rollup } from 'rollup';
-import { File, FileSystem } from './file_system';
+import { FileSystem } from '../filesystem/file_system';
+import { File } from '../filesystem/file';
+import css from 'rollup-plugin-import-css';
 
 export interface RollupConfig {
 	name: string;
 	id: string;
 	path: string;
 }
+
+
+const rollupFolder = resolve(import.meta.dirname + '/../../rollups/');
 
 export class RollupFrontends {
 	constructor() {
@@ -27,38 +32,37 @@ export class RollupFrontends {
 	 * @returns An array of RollupConfig objects.
 	 */
 	async loadRollupConfigs(): Promise<RollupConfig[]> {
-		return (await import('../../frontends/rollups.ts?' + Date.now())).rollupConfigs;
+		return (await import(resolve(rollupFolder, 'rollups.ts?' + Date.now()))).rollupConfigs;
 	}
 
 	async rollupFrontend(config: RollupConfig): Promise<FileSystem> {
-		const rollupFolder = normalize(import.meta.dirname + '/../../frontends/rollups/');
-
 		const { name, id, path } = config;
 
 		const input = normalize(`${rollupFolder}/${id}/index.ts`);
 		const tsconfig = normalize(`${rollupFolder}/tsconfig.json`);
 
-		console.log({
-			rollupFolder,
-			input,
-			tsconfig
-		})
-
 		if (!existsSync(input)) throw new Error(`Input file not found: ${input}`);
 
 		const bundle = await rollup({
 			input,
-			plugins: [nodeResolve(), typescript({ tsconfig })],
-			external: ['maplibre-gl'],
+			plugins: [
+				nodeResolve(),
+				css({ output: id + '.css' }),
+				typescript({ tsconfig })
+			],
+			external: ['maplibregl'],
+			onLog(level, log, handler) {
+				if (log.code === 'CIRCULAR_DEPENDENCY') return;
+				handler(level, log);
+			}
 		});
 
 		const result = await bundle.generate({
 			format: 'iife',
 			name,
 			sourcemap: true,
-			globals: {
-				'maplibre-gl': 'maplibre-gl'
-			}
+			globals: { 'maplibregl': 'maplibre-gl' },
+			file: id + '.js'
 		});
 
 		const files = new Map<string, File>();
@@ -73,6 +77,7 @@ export class RollupFrontends {
 			} else continue;
 
 			const name = normalize(`${path}/${output.fileName}`);
+			console.log(`Writing file: ${name}`);
 			files.set(name, new File(name, now, Buffer.from(content)));
 		}
 
@@ -80,7 +85,6 @@ export class RollupFrontends {
 	}
 
 	public async watch(id: string, cb: (rollupFrontend: FileSystem) => void): Promise<void> {
-		const rollupFolder = normalize(import.meta.dirname + '/../../frontends/rollups/');
 		const configs = await this.loadRollupConfigs();
 		const config = configs.find(c => c.id === id);
 		if (!config) throw new Error(`Rollup config not found: ${id}`);
@@ -91,7 +95,6 @@ export class RollupFrontends {
 
 		const fullPath = normalize(`${rollupFolder}/${id}`);
 		watch(fullPath, { recursive: true }, async (event: WatchEventType, filename: string | null) => {
-			console.log('watch', event, filename);
 			if (filename == null) return;
 			update();
 		});
