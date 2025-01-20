@@ -82,7 +82,6 @@ export class StyleSelector {
 	private updateStyle() {
 		console.log(this.config);
 		const style = this.currentStyle(this.config);
-		console.log(style);
 		this.map.setStyle(this.currentStyle(this.config));
 	}
 

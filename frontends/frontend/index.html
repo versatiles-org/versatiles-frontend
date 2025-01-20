@@ -32,7 +32,32 @@
 		});
 
 		map.addControl(new maplibregl.NavigationControl(), 'top-right');
-		map.addControl(new MaplibreInspect());
+		map.addControl(new MaplibreInspect({
+			sources: {
+				'versatiles-shortbread': [
+					'addresses',
+					'boundaries',
+					'boundary_labels',
+					'bridges',
+					'buildings',
+					'dam_lines',
+					'dam_polygons',
+					'ferries',
+					'land',
+					'ocean',
+					'pier_lines',
+					'pier_polygons',
+					'place_labels',
+					'pois',
+					'public_transport',
+					'sites',
+					'street_labels',
+					'street_polygons',
+					'streets',
+					'water_lines',
+					'water_polygons'],
+			},
+		}));
 		map.addControl(new StyleSelector.Control({
 			tiles: ['tiles/osm/{z}/{x}/{y}'],
 		}));
