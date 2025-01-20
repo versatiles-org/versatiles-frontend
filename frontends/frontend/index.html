@@ -29,38 +29,13 @@
 			zoom: 5,
 			maxZoom: 20,
 			hash: true,
+			maxPitch: 0,
+			dragRotate: false,
 		});
 
 		map.addControl(new maplibregl.NavigationControl(), 'top-right');
-		map.addControl(new MaplibreInspect({
-			sources: {
-				'versatiles-shortbread': [
-					'addresses',
-					'boundaries',
-					'boundary_labels',
-					'bridges',
-					'buildings',
-					'dam_lines',
-					'dam_polygons',
-					'ferries',
-					'land',
-					'ocean',
-					'pier_lines',
-					'pier_polygons',
-					'place_labels',
-					'pois',
-					'public_transport',
-					'sites',
-					'street_labels',
-					'street_polygons',
-					'streets',
-					'water_lines',
-					'water_polygons'],
-			},
-		}));
-		map.addControl(new StyleSelector.Control({
-			tiles: ['tiles/osm/{z}/{x}/{y}'],
-		}));
+		map.addControl(new MaplibreInspect({ sources: { 'versatiles-shortbread': ['addresses', 'boundaries', 'boundary_labels', 'bridges', 'buildings', 'dam_lines', 'dam_polygons', 'ferries', 'land', 'ocean', 'pier_lines', 'pier_polygons', 'place_labels', 'pois', 'public_transport', 'sites', 'street_labels', 'street_polygons', 'streets', 'water_lines', 'water_polygons'], } }));
+		map.addControl(new StyleSelector.Control({ tiles: ['tiles/osm/{z}/{x}/{y}'] }));
 
 		// collapse attribution control
 		document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');

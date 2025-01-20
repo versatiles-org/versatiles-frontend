@@ -25,8 +25,12 @@
 			zoom: 5,
 			style: VersaTilesStyle.styles.colorful({ tiles: ['tiles/osm/{z}/{x}/{y}'], }),
 			maxZoom: 20,
-			hash: true
+			hash: true,
+			maxPitch: 0,
+			dragRotate: false,
 		});
+
+		map.addControl(new maplibregl.NavigationControl(), 'top-right');
 
 		// collapse attribution control
 		document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');
