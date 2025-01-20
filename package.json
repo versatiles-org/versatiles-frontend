@@ -11,7 +11,6 @@
     "check": "npm run lint && npm run test",
     "dev": "tsx --env-file-if-exists=.env src/dev.ts",
     "lint": "eslint . --color",
-    "release": "vrt release-npm",
     "test": "NODE_OPTIONS=--experimental-vm-modules jest",
     "test-coverage": "NODE_OPTIONS=--experimental-vm-modules jest --coverage",
     "upgrade": "npm-check-updates -u && rm -f package-lock.json; rm -rf node_modules; npm i"
