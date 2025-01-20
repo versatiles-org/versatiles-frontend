@@ -1,4 +1,4 @@
-import { FrontendConfig } from '../src/lib/frontend';
+import type { FrontendConfig } from '../src/frontend/frontend';
 
 export const frontendConfigs: FrontendConfig[] = [
 	{

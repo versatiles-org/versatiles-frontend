@@ -17,6 +17,7 @@ await import('../utils/cache');
 const { File } = await import('../filesystem/file');
 const { FileSystem } = await import('../filesystem/file_system');
 const { Server } = await import('./server');
+const { Frontend } = await import('../frontend/frontend');
 
 describe('Server', () => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -54,8 +55,9 @@ describe('Server', () => {
 		mockFileSystem = new FileSystem(new Map<string, FileType>([
 			['existingFile.txt', new File('existingFile.txt', 12, Buffer.from('file content'))],
 		]));
+		const mockFrontend = new Frontend(mockFileSystem, { name: 'example', include: [] }, '');
 
-		server = new Server(mockFileSystem, {
+		server = new Server(mockFrontend, {
 			proxy: [{ from: '/api', to: 'http://example.com/api' }],
 		});
 

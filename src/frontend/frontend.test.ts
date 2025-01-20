@@ -67,12 +67,10 @@ describe('Frontend class', () => {
 	it('generates frontends', async () => {
 		await PromiseFunction.run(await generateFrontends(mockFileSystem, projectFolder, '/tmp'));
 
-		expect(createWriteStream).toHaveBeenCalledTimes(6);
+		expect(createWriteStream).toHaveBeenCalledTimes(4);
 
 		const calledFilenames = createWriteStream.mock.calls.map(call => call[0] as string).sort();
 		expect(calledFilenames).toStrictEqual([
-			'/tmp/frontend-dev.br.tar.gz',
-			'/tmp/frontend-dev.tar.gz',
 			'/tmp/frontend-min.br.tar.gz',
 			'/tmp/frontend-min.tar.gz',
 			'/tmp/frontend.br.tar.gz',

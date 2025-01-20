@@ -22,7 +22,7 @@ describe('Curl', () => {
 		jest.clearAllMocks();
 		// Initialize Curl with mocked FileSystem and URL
 		curl = new Curl(mockFileSystem, testUrl);
-		jest.spyOn(mockFileSystem, 'addFile');
+		jest.spyOn(mockFileSystem, 'addBufferAsFile');
 	});
 
 	it('should fetch and ungzip/untar a resource', async () => {
