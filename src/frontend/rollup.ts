@@ -1,7 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { existsSync, watch, WatchEventType } from 'node:fs';
-import { normalize, resolve } from 'node:path';
+import { dirname, normalize, resolve } from 'node:path';
 import { rollup } from 'rollup';
 import { FileSystem } from '../filesystem/file_system';
 import { File } from '../filesystem/file';
@@ -13,8 +13,7 @@ export interface RollupConfig {
 	path: string;
 }
 
-
-const rollupFolder = resolve(import.meta.dirname + '/../../rollups/');
+const rollupFolder = resolve(dirname(new URL(import.meta.url).pathname), '../../rollups/');
 
 export class RollupFrontends {
 	constructor() {
