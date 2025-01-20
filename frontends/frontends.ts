@@ -5,12 +5,10 @@ export const frontendConfigs: FrontendConfig[] = [
 		name: 'frontend',
 		include: ['all', 'frontend', 'rollup:style-selector']
 	},
-	/*
 	{
 		name: 'frontend-dev',
 		include: ['all', 'frontend-dev', 'rollup:style-selector']
 	},
-	*/
 	{
 		name: 'frontend-min',
 		include: ['all', 'frontend-min'],
