@@ -5,7 +5,6 @@ import unzipper from 'unzipper';
 import type { Entry } from 'unzipper';
 import type { FileDB } from '../files/filedb';
 import { cache } from './cache';
-import { resolve as urlResolve } from 'node:url';
 import { join } from 'node:path';
 
 /**

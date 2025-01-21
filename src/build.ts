@@ -24,7 +24,7 @@ progress.setHeader('Building Release');
 cleanupFolder(dstFolder);
 
 // Run the main build tasks sequentially: fetch assets, compress files, and generate frontends.
-let fileDBs = new FileDBs();
+const fileDBs = new FileDBs();
 await PromiseFunction.run(PromiseFunction.sequential(
 	loadFileDBs(fileDBs),
 	fileDBs.precompress(),

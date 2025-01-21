@@ -1,4 +1,3 @@
-import { resolve } from 'node:path';
 import Pf from './utils/async';
 import { Frontend, loadFrontendConfigs } from './frontend/frontend';
 import progress from './utils/progress';
@@ -9,11 +8,7 @@ import { FileDBs, loadFileDBs } from './files/filedbs';
 // Disables ANSI color codes in progress output for simplicity in development environments.
 //progress.disableAnsi();
 
-// Defines the project folder
-const projectFolder = new URL('..', import.meta.url).pathname;
-
 // Loads the configuration for all frontends within the project.
-const frontendsFolder = resolve(projectFolder, 'frontends');
 const frontendConfigs = await loadFrontendConfigs();
 
 // parse arguments

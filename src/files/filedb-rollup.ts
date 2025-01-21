@@ -1,9 +1,8 @@
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import { existsSync, watch, WatchEventType } from 'node:fs';
-import { basename, dirname, normalize, resolve } from 'node:path';
+import { existsSync, watch } from 'node:fs';
+import { basename, dirname, normalize } from 'node:path';
 import { rollup } from 'rollup';
-import { File } from '../files/file';
 import css from 'rollup-plugin-import-css';
 import { FileDB } from './filedb';
 
@@ -25,7 +24,6 @@ export class RollupFileDB extends FileDB {
 	}
 
 	public static async build(config: RollupFileDBConfig, frontendFolder: string): Promise<RollupFileDB> {
-		const { path, globalVariable, url } = config;
 		const db = new RollupFileDB(frontendFolder, config);
 		await db.rollup();
 		return db;
