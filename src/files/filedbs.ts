@@ -39,7 +39,7 @@ export class FileDBs {
 						entry.sizePos = sizePos;
 						const allSum = entries.reduce((sum, e) => sum + e.sizeSum, 0);
 						const allPos = entries.reduce((sum, e) => sum + e.sizePos, 0);
-						s.updateLabel(`compress files: ${(100 * allPos / allSum).toFixed(0)}%`);
+						s.updateLabel(`precompress files: ${(100 * allPos / allSum).toFixed(0)}%`);
 					})
 				}));
 				s.end();

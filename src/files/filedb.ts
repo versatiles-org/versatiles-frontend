@@ -1,6 +1,5 @@
+import { forEachAsync } from '../utils/parallel';
 import { File } from './file';
-
-
 
 /**
  * A custom file system interface for storing and managing File instances.
@@ -18,28 +17,23 @@ export abstract class FileDB {
 	 * 
 	 * @param callback - Optional callback to report compression progress.
 	 */
-	public async compress(callback?: (sizePos: number, sizeSum: number) => void): Promise<void> {
+	public async compress(callback: (sizePos: number, sizeSum: number) => void): Promise<void> {
 		let sizeSum = 0;
 		let sizePos = 0;
+
 		// Calculate total size for progress calculation if callback provided.
-		if (callback) {
-			for (const file of this.iterate()) {
-				if (file.bufferBr) continue;
-				sizeSum += file.bufferRaw.length;
-			}
-			callback(0, sizeSum);
-		}
-		// Compress files and update progress.
 		for (const file of this.iterate()) {
 			if (file.bufferBr) continue;
-			sizePos += file.bufferRaw.length;
-
-			await file.compress();
-
-			if (callback) {
-				callback(sizePos, sizeSum);
-			}
+			sizeSum += file.bufferRaw.length;
 		}
+		callback(0, sizeSum);
+
+		await forEachAsync(this.iterate(), async file => {
+			if (file.bufferBr) return;
+			await file.compress();
+			sizePos += file.bufferRaw.length;
+			callback(sizePos, sizeSum);
+		});
 		if (callback) callback(sizeSum, sizeSum);
 	}
 
