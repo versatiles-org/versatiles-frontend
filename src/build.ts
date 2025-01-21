@@ -8,6 +8,8 @@ import { loadAssets } from './frontend/assets';
 import type { ProgressLabel } from './utils/progress';
 import progress from './utils/progress';
 
+//progress.disableAnsi();
+
 // Define the project and destination folders using relative and absolute paths.
 const projectFolder = new URL('..', import.meta.url).pathname;
 const dstFolder = resolve(projectFolder, 'release');

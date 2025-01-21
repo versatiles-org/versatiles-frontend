@@ -1,11 +1,9 @@
-import { resolve as urlResolve } from 'node:url';
 import { createGunzip } from 'node:zlib';
 import { finished } from 'node:stream/promises';
-import tar from 'tar-stream';
+import * as tar from 'tar';
 import unzipper from 'unzipper';
 import type { Entry } from 'unzipper';
 import type { FileSystem } from '../filesystem/file_system';
-import { streamAsBuffer } from './utils';
 import { cache } from './cache';
 
 /**
@@ -34,31 +32,29 @@ export class Curl {
 	 * 
 	 * @param folder - The target folder where the untarred files will be saved.
 	 */
-	public async ungzipUntar(folder: string): Promise<void> {
-		const extract = tar.extract();
-		extract.on('entry', (header, stream, next) => {
-			// Skip directories and handle only files.
-			if (header.type === 'directory') {
-				next();
-				return;
-			}
-			if (header.type !== 'file') throw Error(String(header.type));
-			const filename = urlResolve(folder, header.name);
-			void streamAsBuffer(stream).then((buffer): void => {
-				this.#fileSystem.addBufferAsFile(filename, Number(header.mtime ?? Math.random()), buffer);
-				next();
-				return;
-			});
-		});
-
+	public async ungzipUntar(cbFilter: (filename: string) => string | false): Promise<void> {
 		const streamIn = createGunzip();
 		streamIn.on('error', error => {
 			console.log('gunzip error for: ' + this.#url);
 			throw error;
 		});
-		streamIn.pipe(extract);
+		streamIn.pipe(tar.t({
+			onReadEntry: async entry => {
+				if (entry.type !== 'File') return entry.resume();
+				const filename = cbFilter(entry.path);
+				if (filename != false) {
+					const buffers: Buffer[] = [];
+					for await (const buffer of entry) buffers.push(buffer);
+					this.#fileSystem.addBufferAsFile(
+						filename,
+						Number(entry.mtime ?? Math.random()),
+						Buffer.concat(buffers)
+					);
+				}
+				entry.resume();
+			}
+		}));
 		streamIn.end(await this.getBuffer());
-		await finished(extract);
 	}
 
 	/**
