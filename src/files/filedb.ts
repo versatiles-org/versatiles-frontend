@@ -1,18 +1,15 @@
 import { File } from './file';
+import { StaticFileDBConfig } from './filedb-static';
+
+
 
 /**
  * A custom file system interface for storing and managing File instances.
  */
-export class FileSystem {
+export abstract class FileDB {
 	public readonly files = new Map<string, File>(); // A map to store File instances.
 
-	/**
-	 * Constructs a FileSystem instance optionally with an existing map of files.
-	 * 
-	 * @param files - An optional map of files to initialize the file system.
-	 */
-	public constructor(files?: Map<string, File>) {
-		if (files) this.files = files;
+	public constructor() {
 	}
 
 	/**
@@ -20,31 +17,29 @@ export class FileSystem {
 	 * 
 	 * @param callback - Optional callback to report compression progress.
 	 */
-	public async compress(callback?: (status: number) => void): Promise<void> {
+	public async compress(callback?: (sizePos: number, sizeSum: number) => void): Promise<void> {
 		let sizeSum = 0;
 		let sizePos = 0;
 		// Calculate total size for progress calculation if callback provided.
 		if (callback) {
-			//console.log(Array.from(this.iterateFiles()).length);
-			for (const file of this.iterateFiles()) {
+			for (const file of this.iterate()) {
 				if (file.bufferBr) continue;
 				sizeSum += file.bufferRaw.length;
 			}
-			callback(0);
+			callback(0, sizeSum);
 		}
 		// Compress files and update progress.
-			//console.log(Array.from(this.iterateFiles()).length);
-		for (const file of this.iterateFiles()) {
+		for (const file of this.iterate()) {
 			if (file.bufferBr) continue;
 			sizePos += file.bufferRaw.length;
 
 			await file.compress();
 
 			if (callback) {
-				callback(sizePos / sizeSum);
+				callback(sizePos, sizeSum);
 			}
 		}
-		if (callback) callback(1);
+		if (callback) callback(sizeSum, sizeSum);
 	}
 
 	/**
@@ -63,29 +58,14 @@ export class FileSystem {
 		this.files.set(file.name, file);
 	}
 
-	public addFileSystem(fileSystem: FileSystem): void {
-		for (const file of fileSystem.iterateFiles()) {
-			this.files.set(file.name, file);
-		}
-	}
-
 	/**
 	 * Retrieves a file's raw buffer by its name.
 	 * 
 	 * @param filename - The name of the file to retrieve.
 	 * @returns The raw buffer of the file or undefined if not found.
 	 */
-	public getFile(filename: string): Buffer | undefined {
-		return this.files.get(filename)?.bufferRaw;
-	}
-
-	/**
-	 * Creates a clone of the current FileSystem instance.
-	 * 
-	 * @returns A new FileSystem instance with a copy of the current files.
-	 */
-	public clone(): FileSystem {
-		return new FileSystem(new Map(this.files));
+	public getFile(filename: string): Buffer | null {
+		return this.files.get(filename)?.bufferRaw ?? null;
 	}
 
 	/**
@@ -93,7 +73,7 @@ export class FileSystem {
 	 * 
 	 * @returns An IterableIterator of File instances.
 	 */
-	public iterateFiles(): IterableIterator<File> {
+	public iterate(): IterableIterator<File> {
 		return this.files.values();
 	}
 

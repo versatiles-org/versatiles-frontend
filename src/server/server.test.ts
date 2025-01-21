@@ -1,8 +1,8 @@
 import { jest } from '@jest/globals';
 import { mockFetchResponse } from '../utils/__mocks__/global_fetch';
 import type { Server as ServerType } from './server';
-import type { File as FileType } from '../filesystem/file';
-import type { FileSystem as FileSystemType } from '../filesystem/file_system';
+import type { File as FileType } from '../files/file';
+import type { FileSystem as FileSystemType } from '../files/filedb';
 import type { IncomingMessage, ServerResponse } from 'http';
 
 
@@ -14,8 +14,8 @@ const { mockCache } = await import('../utils/__mocks__/cache');
 jest.unstable_mockModule('../utils/cache', () => mockCache);
 await import('../utils/cache');
 
-const { File } = await import('../filesystem/file');
-const { FileSystem } = await import('../filesystem/file_system');
+const { File } = await import('../files/file');
+const { FileSystem } = await import('../files/filedb');
 const { Server } = await import('./server');
 const { Frontend } = await import('../frontend/frontend');
 

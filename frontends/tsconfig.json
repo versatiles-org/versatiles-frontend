@@ -11,6 +11,6 @@
 		"**/*.ts",
 	],
 	"exclude": [
-		"**/style-maker/**/*.ts"
+		"config.ts"
 	]
 }

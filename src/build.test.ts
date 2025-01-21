@@ -19,7 +19,7 @@ const { cleanupFolder } = await import('./utils/utils');
 
 const { mockAssets } = await import('./frontend/__mocks__/assets');
 jest.unstable_mockModule('./frontend/assets', () => mockAssets);
-const { loadAssets: getAssets } = await import('./frontend/assets');
+const { loadAssets: getAssets } = await import('./files/filedb-assets');
 
 const { mockFrontend } = await import('./frontend/__mocks__/frontend');
 jest.unstable_mockModule('./frontend/frontend', () => mockFrontend);

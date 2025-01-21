@@ -4,35 +4,32 @@ import { createWriteStream, existsSync, readFileSync, readdirSync, statSync, wat
 import { type DevConfig } from '../server/server';
 import { pipeline } from 'node:stream/promises';
 import ignore from 'ignore';
-import notes from '../utils/release_notes';
 import Pf from '../utils/async';
 import progress from '../utils/progress';
 import tar from 'tar-stream';
-import type { FileSystem } from '../filesystem/file_system';
-import type { File } from '../filesystem/file';
+import type { FileDB } from '../files/filedb';
+import type { File } from '../files/file';
 import type { ProgressLabel } from '../utils/progress';
 import type { WatchEventType } from 'node:fs';
 import { RollupFrontends } from './rollup';
+import { FileDBs } from '../files/filedbs';
 
 /**
  * Configuration for a frontend, detailing included and ignored paths, and development settings.
  */
-export interface FrontendConfig {
+export interface FrontendConfig<fileDBKeys = string> {
 	name: string;
-	include: string[];
+	fileDBs: fileDBKeys[];
 	ignore?: string[];
-	dev?: DevConfig;
 }
 
 /**
  * Represents a frontend, capable of bundling its assets into tarballs and watching for changes.
  */
 export class Frontend {
-	public readonly fileSystem: FileSystem;
+	public readonly fileDBs: FileDBs;
 
 	private readonly config: FrontendConfig;
-
-	private readonly frontendsPath: string;
 
 	private readonly ignoreFilter: (pathname: string) => boolean;
 
@@ -43,32 +40,14 @@ export class Frontend {
 	 * @param config - Configuration for the frontend, including paths and ignore patterns.
 	 * @param frontendsPath - The root path to the frontend assets.
 	 */
-	public constructor(fileSystem: FileSystem, config: FrontendConfig, frontendsPath: string) {
-		this.fileSystem = fileSystem.clone();
+	public constructor(fileDBs: FileDBs, config: FrontendConfig) {
+		this.fileDBs = fileDBs;
 		this.config = config;
-		this.frontendsPath = frontendsPath;
 
 		// Add ignore patterns if provided.
 		const ig = ignore();
 		if (config.ignore) ig.add(config.ignore);
 		this.ignoreFilter = ig.createFilter();
-	}
-
-	public async build(rollupFrontends: RollupFrontends): Promise<void> {
-		// Add files and directories to file system based on include paths.
-		for (const include of this.config.include) {
-			if (include.startsWith('rollup:')) {
-				const id = include.slice(7);
-				const rollupFrontend = await rollupFrontends.get(id);
-				this.fileSystem.addFileSystem(rollupFrontend);
-				continue;
-			}
-
-			const fullPath = resolve(this.frontendsPath, include);
-			if (!statSync(fullPath).isDirectory()) throw Error(`included directory "${include}" is not a directory`);
-
-			this.addPath(fullPath);
-		};
 	}
 
 	/**
@@ -96,7 +75,6 @@ export class Frontend {
 	 * @param folder - The destination folder for the tarball.
 	 */
 	public async saveAsBrTarGz(folder: string): Promise<void> {
-		await this.fileSystem.compress();
 		const pack = tar.pack();
 		for (const file of this.iterate()) {
 			pack.entry({ name: file.name + '.br' }, file.bufferBr);
@@ -114,66 +92,30 @@ export class Frontend {
 	 * Watches the included paths for changes, updating the frontend's assets accordingly.
 	 */
 	public enterWatchMode(): void {
-		const rollupFrontends = new RollupFrontends();
-
-		this.config.include.forEach(include => {
-			console.log('watching', include);
-
-			if (include.startsWith('rollup:')) {
-				const id = include.slice(7);
-				rollupFrontends.watch(id, rollupFrontend => {
-					this.fileSystem.addFileSystem(rollupFrontend);
-				});
-				return
-			}
-
-			const fullPath = resolve(this.frontendsPath, include);
-			this.addPath(fullPath);
-			watch(fullPath, { recursive: true }, (event: WatchEventType, filename: string | null) => {
-				if (filename == null) return;
-				const fullname = resolve(fullPath, filename);
-				this.addPath(fullname, fullPath);
-			});
-		});
+		throw Error('not implemented');
 	}
 
 	/**
 	 * Iterates over the frontend's files, filtering out those ignored.
 	 */
 	private *iterate(): IterableIterator<File> {
-		for (const file of this.fileSystem.iterateFiles()) {
-			if (this.ignoreFilter(file.name)) yield file;
+		for (const fileDBId of this.config.fileDBs) {
+			const fileDB = this.fileDBs.get(fileDBId);
+			for (const file of fileDB.iterate()) {
+				if (this.ignoreFilter(file.name)) yield file;
+			}
 		}
 	}
 
-	public getFile(path: string): Buffer | undefined {
-		if (!path) return undefined; // do not ask for empty paths
-		if (!this.ignoreFilter(path)) return undefined;
-		return this.fileSystem.getFile(path);
-	}
-
-	/**
-	 * Adds a path (file or directory) to the frontend, respecting ignore patterns.
-	 * 
-	 * @param path - The path to add.
-	 * @param dir - The root directory for relative path calculations.
-	 */
-	private addPath(path: string, dir: string = path): void {
-		if (!existsSync(path)) throw Error(`path "${path}" does not exist`);
-		if (basename(path).startsWith('.')) return; // Skip hidden files and directories.
-
-		const stat = statSync(path);
-		if (stat.isDirectory()) {
-			readdirSync(path).forEach(name => {
-				this.addPath(resolve(path, name), dir);
-			});
-		} else {
-			this.fileSystem.addBufferAsFile(
-				relative(dir, path),
-				stat.mtimeMs,
-				readFileSync(path),
-			);
+	public getFile(path: string): Buffer | null {
+		if (!path) return null; // do not ask for empty paths
+		if (!this.ignoreFilter(path)) return null;
+		for (const fileDBId of this.config.fileDBs) {
+			const fileDB = this.fileDBs.get(fileDBId);
+			const buffer = fileDB.getFile(path);
+			if (buffer) return buffer;
 		}
+		return null;
 	}
 }
 
@@ -183,7 +125,7 @@ export class Frontend {
  * @returns An array of FrontendConfig objects.
  */
 export async function loadFrontendConfigs(): Promise<FrontendConfig[]> {
-	return (await import('../../frontends/frontends.ts?' + Date.now())).frontendConfigs;
+	return (await import('../../frontends/config.ts?' + Date.now())).frontendConfigs;
 }
 
 /**
@@ -196,35 +138,27 @@ export async function loadFrontendConfigs(): Promise<FrontendConfig[]> {
  * @param dstFolder - The destination folder where the generated frontend bundles will be saved.
  * @returns A PromiseFunction instance that encapsulates the asynchronous operations of generating all frontends.
  */
-export async function generateFrontends(fileSystem: FileSystem, projectFolder: string, dstFolder: string): Promise<Pf> {
-	const rollupFrontends = new RollupFrontends();
+export function generateFrontends(fileDBs: FileDBs, dstFolder: string): Pf {
+	let s: ProgressLabel;
+	let parallel = Pf.parallel();
 
-	// Resolve the path to the frontends folder within the project directory.
-	const frontendsFolder = resolve(projectFolder, 'frontends');
-
-	// Load frontend configurations from the specified folder.
-	const frontendConfigs = await loadFrontendConfigs();
-	// Read the project version from package.json to use in release notes.
-
-	const frontendVersion = String(JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')).version);
-	notes.setVersion(frontendVersion);
-
-	// Use PromiseFunction to wrap the operation in progress tracking,
-	// generating each frontend in parallel for efficiency.
-	return Pf.wrapProgress('generate frontends',
-		Pf.parallel(
-			...frontendConfigs.map(config => generateFrontend(config, rollupFrontends)),
-		),
+	return Pf.single(
+		async () => {
+			s = progress.add('generate frontends');
+			const configs = await loadFrontendConfigs();
+			const todos = configs.map((config: FrontendConfig): Pf => generateFrontend(config))
+			parallel = Pf.parallel(...todos);
+			await parallel.init();
+		},
+		async () => {
+			s.start();
+			await parallel.run();
+			s.end();
+		},
 	);
 
-	/**
-	 * Generates a single frontend bundle based on its configuration.
-	 * It compresses the frontend assets into both Brotli-compressed and Gzip-compressed tarballs.
-	 * 
-	 * @param config - The configuration object for the frontend to be generated.
-	 * @returns A PromiseFunction instance for the asynchronous operations of generating the frontend.
-	 */
-	function generateFrontend(config: FrontendConfig, rollupFrontends: RollupFrontends): Pf {
+
+	function generateFrontend(config: FrontendConfig): Pf {
 		const { name } = config;
 		let s: ProgressLabel, sBr: ProgressLabel, sGz: ProgressLabel;
 
@@ -241,14 +175,35 @@ export async function generateFrontends(fileSystem: FileSystem, projectFolder: s
 				sBr.start();
 				sGz.start();
 				// Create a new Frontend instance and generate the compressed tarballs.
-				const frontend = new Frontend(fileSystem, config, frontendsFolder);
-				await frontend.build(rollupFrontends);
-				await frontend.saveAsBrTarGz(dstFolder);
-				sBr.end();
-				await frontend.saveAsTarGz(dstFolder);
+				const frontend = new Frontend(fileDBs, config);
+				await Promise.all([
+					(async () => { await frontend.saveAsBrTarGz(dstFolder); sBr.end(); })(),
+					(async () => { await frontend.saveAsTarGz(dstFolder); sGz.end(); })(),
+				])
 				sGz.end();
 				s.end();
 			},
 		);
 	}
+
 }
+/*
+
+export function generateFrontends(fileDBs: Map<string, FileDB>, dstFolder: string): Pf {
+	const rollupFrontends = new RollupFrontends();
+
+	// Load frontend configurations from the specified folder.
+	const frontendConfigs = await loadFrontendConfigs();
+	// Read the project version from package.json to use in release notes.
+
+	const frontendVersion = String(JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')).version);
+	notes.setVersion(frontendVersion);
+
+	// Use PromiseFunction to wrap the operation in progress tracking,
+	// generating each frontend in parallel for efficiency.
+	return Pf.wrapProgress('generate frontends',
+		Pf.parallel(
+			...frontendConfigs.map(config => generateFrontend(config, rollupFrontends)),
+		),
+	);
+	*/

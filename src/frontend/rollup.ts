@@ -3,8 +3,8 @@ import { nodeResolve } from '@rollup/plugin-node-resolve';
 import { existsSync, watch, WatchEventType } from 'node:fs';
 import { dirname, normalize, resolve } from 'node:path';
 import { rollup } from 'rollup';
-import { FileSystem } from '../filesystem/file_system';
-import { File } from '../filesystem/file';
+import { FileSystem } from '../files/filedb';
+import { File } from '../files/file';
 import css from 'rollup-plugin-import-css';
 
 export interface RollupConfig {

@@ -6,7 +6,7 @@ jest.unstable_mockModule('../utils/cache', () => mockCache);
 const { cache } = await import('./cache');
 
 const { Curl } = await import('./curl');
-const { FileSystem } = await import('../filesystem/file_system');
+const { FileSystem } = await import('../files/filedb');
 
 describe('Curl', () => {
 	let curl: InstanceType<typeof Curl>;

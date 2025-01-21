@@ -12,7 +12,7 @@ const { mockCurl } = await import('../utils/__mocks__/curl');
 jest.unstable_mockModule('../utils/curl', () => mockCurl);
 const { Curl } = await import('../utils/curl');
 
-const { FileSystem } = await import('../filesystem/file_system');
+const { FileSystem } = await import('./filedb');
 
 // Mock utils
 const { mockUtils } = await import('../utils/__mocks__/utils');
@@ -24,7 +24,7 @@ jest.unstable_mockModule('../utils/release_version', () => mockReleaseVersion);
 const { getLatestGithubReleaseVersion: getLatestReleaseVersion } = await import('../utils/release_version');
 
 
-const { loadAssets: getAssets } = await import('./assets');
+const { loadAssets: getAssets } = await import('./filedb-assets');
 
 
 

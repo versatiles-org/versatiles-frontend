@@ -6,8 +6,8 @@ jest.spyOn(process, 'exit').mockImplementationOnce(() => {
 console.error = jest.fn().mockReturnValue(undefined);
 
 // Import all necessary mocks
-const { File } = await import('./filesystem/file');
-const { FileSystem } = await import('./filesystem/file_system');
+const { File } = await import('./files/file');
+const { FileSystem } = await import('./files/filedb');
 
 const { mockProgress } = await import('./utils/__mocks__/progress');
 jest.unstable_mockModule('./utils/progress', () => mockProgress);
@@ -23,7 +23,7 @@ const { Frontend, loadFrontendConfigs } = await import('./frontend/frontend');
 
 const { mockAssets } = await import('./frontend/__mocks__/assets');
 jest.unstable_mockModule('./frontend/assets', () => mockAssets);
-const { loadAssets: getAssets } = await import('./frontend/assets');
+const { loadAssets: getAssets } = await import('./files/filedb-assets');
 
 describe('build process', () => {
 	beforeEach(() => {

@@ -17,7 +17,6 @@
 	},
 	"include": [
 		"src/**/*.ts",
-		"rollups/rollups.ts",
-		"frontends/frontends.ts"
+		"frontends/config.ts"
 	]
 }

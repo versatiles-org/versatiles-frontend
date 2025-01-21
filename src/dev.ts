@@ -1,8 +1,8 @@
 import { resolve } from 'node:path';
 import Pf from './utils/async';
-import { FileSystem } from './filesystem/file_system';
+import { FileSystem } from './files/filedb';
 import { Frontend, loadFrontendConfigs } from './frontend/frontend';
-import { loadAssets } from './frontend/assets';
+import { loadAssets } from './files/filedb-assets';
 import progress from './utils/progress';
 import { Server } from './server/server';
 import arg from 'arg';

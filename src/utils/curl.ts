@@ -3,7 +3,7 @@ import { finished } from 'node:stream/promises';
 import * as tar from 'tar';
 import unzipper from 'unzipper';
 import type { Entry } from 'unzipper';
-import type { FileSystem } from '../filesystem/file_system';
+import type { FileSystem } from '../files/filedb';
 import { cache } from './cache';
 import { resolve as urlResolve } from 'node:url';
 

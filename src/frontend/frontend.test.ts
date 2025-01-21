@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import { resolve } from 'path';
-import type { File as FileType } from '../filesystem/file';
-import type { FileSystem as FileSystemType } from '../filesystem/file_system';
+import type { File as FileType } from '../files/file';
+import type { FileSystem as FileSystemType } from '../files/filedb';
 
 const { mockCache } = await import('../utils/__mocks__/cache');
 jest.unstable_mockModule('../utils/cache', () => mockCache);
@@ -11,8 +11,8 @@ const { mockFs } = await import('../utils/__mocks__/node_fs');
 jest.unstable_mockModule('node:fs', () => mockFs);
 const { createWriteStream } = await import('node:fs');
 
-const { File } = await import('../filesystem/file');
-const { FileSystem } = await import('../filesystem/file_system');
+const { File } = await import('../files/file');
+const { FileSystem } = await import('../files/filedb');
 const { Frontend, loadFrontendConfigs, generateFrontends } = await import('./frontend');
 const progress = (await import('../utils/progress')).default;
 const PromiseFunction = (await import('../utils/async')).default;
