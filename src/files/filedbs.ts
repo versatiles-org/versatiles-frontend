@@ -4,7 +4,9 @@ import { ProgressLabel } from '../utils/progress';
 import progress from '../utils/progress';
 import { StaticFileDB, type StaticFileDBConfig } from './filedb-static';
 import { AssetFileDB, AssetFileDBConfig } from './filedb-assets';
-import { resolve } from 'node:path';
+import { RollupFileDB, RollupFileDBConfig } from './filedb-rollup';
+
+export type FileDBConfig = StaticFileDBConfig | AssetFileDBConfig | RollupFileDBConfig;
 
 const frontendFolder = new URL('../../frontends', import.meta.url).pathname;
 
@@ -49,7 +51,6 @@ export class FileDBs {
 	}
 }
 
-export type FileDBConfig = StaticFileDBConfig | AssetFileDBConfig;
 
 
 export async function loadFileDBConfigs(): Promise<Record<string, FileDBConfig>> {
@@ -77,6 +78,7 @@ export function loadFileDBs(fileDBs: FileDBs): PromiseFunction {
 							switch (config.type) {
 								case 'static': fileDB = await StaticFileDB.build(config, frontendFolder); break;
 								case 'asset': fileDB = await AssetFileDB.build(config); break;
+								case 'rollup': fileDB = await RollupFileDB.build(config, frontendFolder); break;
 								default:
 									// @ts-expect-error Just to be sure
 									throw Error(`unknown file db type: ${config.type}`);

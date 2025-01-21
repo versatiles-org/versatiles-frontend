@@ -1,5 +1,4 @@
 import { File } from './file';
-import { StaticFileDBConfig } from './filedb-static';
 
 
 
