@@ -1,17 +1,13 @@
-import { basename, relative, resolve } from 'node:path';
+import { resolve } from 'node:path';
 import { createGzip } from 'node:zlib';
-import { createWriteStream, existsSync, readFileSync, readdirSync, statSync, watch } from 'node:fs';
-import { type DevConfig } from '../server/server';
+import { createWriteStream } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import ignore from 'ignore';
 import Pf from '../utils/async';
 import progress from '../utils/progress';
 import tar from 'tar-stream';
-import type { FileDB } from '../files/filedb';
 import type { File } from '../files/file';
 import type { ProgressLabel } from '../utils/progress';
-import type { WatchEventType } from 'node:fs';
-import { RollupFrontends } from './rollup';
 import { FileDBs } from '../files/filedbs';
 
 /**
@@ -86,13 +82,6 @@ export class Frontend {
 			createGzip({ level: 9 }),
 			createWriteStream(resolve(folder, this.config.name + '.br.tar.gz')),
 		);
-	}
-
-	/**
-	 * Watches the included paths for changes, updating the frontend's assets accordingly.
-	 */
-	public enterWatchMode(): void {
-		throw Error('not implemented');
 	}
 
 	/**

@@ -76,7 +76,7 @@ export class AssetFileDB extends FileDB {
 		const version = await getLatestGithubReleaseVersion('maplibre', 'maplibre-gl-js');
 		label.setVersion(version);
 		await new Curl(this, `https://github.com/maplibre/maplibre-gl-js/releases/download/v${version}/dist.zip`)
-			.unzip(f => /package\/dist\/.*\.(js|css|map)$/.test(f) && [folder, basename(f)]);
+			.unzip(f => /dist\/.*\.(js|css|map)$/.test(f) && [folder, basename(f)]);
 	}
 
 	/**
@@ -89,6 +89,8 @@ export class AssetFileDB extends FileDB {
 		const version = await getLatestNPMReleaseVersion('@maplibre/maplibre-gl-inspect');
 		label.setVersion(version);
 		await new Curl(this, `https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-${version}.tgz`)
-			.ungzipUntar(f => /dist\/.*\.(js|css|map)$/.test(f) && [folder, basename(f)]);
+			.ungzipUntar(f => /package\/dist\/.*\.(js|css|map)$/.test(f) && [folder, basename(f)]);
 	}
+
+	public enterWatchMode(): void { }
 }

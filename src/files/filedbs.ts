@@ -44,6 +44,9 @@ export class FileDBs {
 			},
 		);
 	}
+	enterWatchMode(): void {
+		for (const fileDB of this.fileDBs.values()) fileDB.enterWatchMode();
+	}
 }
 
 export type FileDBConfig = StaticFileDBConfig | AssetFileDBConfig;

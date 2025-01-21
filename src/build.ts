@@ -7,7 +7,7 @@ import progress from './utils/progress';
 import { FileDBs, loadFileDBs } from './files/filedbs';
 import { readFileSync } from 'node:fs';
 
-progress.disableAnsi();
+//progress.disableAnsi();
 
 // Define the project and destination folders using relative and absolute paths.
 const projectFolder = new URL('..', import.meta.url).pathname;

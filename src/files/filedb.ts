@@ -12,6 +12,8 @@ export abstract class FileDB {
 	public constructor() {
 	}
 
+	public abstract enterWatchMode(): void;
+
 	/**
 	 * Compresses all files in the system that are not already compressed, optionally reporting progress.
 	 * 
@@ -49,12 +51,12 @@ export abstract class FileDB {
 	 * @param modificationTime - The last modification time of the file.
 	 * @param buffer - The raw buffer content of the file.
 	 */
-	public addBufferAsFile(filename: string, modificationTime: number, buffer: Buffer): void {
+	public setFileFromBuffer(filename: string, modificationTime: number, buffer: Buffer): void {
 		if (!filename) throw Error('filename is empty');
 		this.files.set(filename, new File(filename, modificationTime, buffer));
 	}
 
-	public addFile(file: File): void {
+	public setFile(file: File): void {
 		this.files.set(file.name, file);
 	}
 

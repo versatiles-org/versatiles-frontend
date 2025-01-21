@@ -1,14 +1,13 @@
 import { resolve } from 'node:path';
 import Pf from './utils/async';
-import { FileSystem } from './files/filedb';
 import { Frontend, loadFrontendConfigs } from './frontend/frontend';
-import { loadAssets } from './files/filedb-assets';
 import progress from './utils/progress';
 import { Server } from './server/server';
 import arg from 'arg';
+import { FileDBs, loadFileDBs } from './files/filedbs';
 
 // Disables ANSI color codes in progress output for simplicity in development environments.
-progress.disableAnsi();
+//progress.disableAnsi();
 
 // Defines the project folder
 const projectFolder = new URL('..', import.meta.url).pathname;
@@ -36,11 +35,11 @@ if (frontendName == null) {
 }
 
 // Initializes the file system for managing files.
-const fileSystem = new FileSystem();
+const fileDBs = new FileDBs();
 progress.setHeader('Preparing Server');
 
 // Loads and prepares assets for the frontend using the custom FileSystem.
-await Pf.run(loadAssets(fileSystem));
+await Pf.run(loadFileDBs(fileDBs));
 
 // Indicates completion of the asset preparation stage.
 progress.finish();
@@ -53,8 +52,8 @@ if (!frontendConfig) {
 }
 
 // Initializes the specified frontend, entering watch mode to automatically update files on change.
-const frontend = new Frontend(fileSystem, frontendConfig, frontendsFolder);
-frontend.enterWatchMode();
+const frontend = new Frontend(fileDBs, frontendConfig);
+fileDBs.enterWatchMode();
 
 // Starts a development server for the frontend, utilizing its file system and any dev-specific configurations.
 const devConfig = {
