@@ -1,7 +1,7 @@
 import { mockFetchResponse } from './__mocks__/global_fetch';
 
 
-const { getLatestReleaseVersion } = await import('../utils/release_version');
+const { getLatestGithubReleaseVersion: getLatestReleaseVersion } = await import('../utils/release_version');
 
 describe('getLatestReleaseVersion', () => {
 	it('fetches the latest release version', async () => {

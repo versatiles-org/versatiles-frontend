@@ -27,7 +27,7 @@ describe('Curl', () => {
 
 	it('should fetch and ungzip/untar a resource', async () => {
 		mockFetchResponse(testGzipTar);
-		await curl.ungzipUntar(testFolder);
+		await curl.ungzipUntar(f => [testFolder, f]);
 
 		expect(cache).toHaveBeenCalledTimes(1);
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
@@ -48,7 +48,7 @@ describe('Curl', () => {
 	it('should fetch, unzip, and save contents based on filter callback', async () => {
 		mockFetchResponse(testZip);
 
-		await curl.unzip(filename => filename.endsWith('.txt') ? `/unzipped/${filename}` : false);
+		await curl.unzip(filename => filename.endsWith('.txt') && ['/unzipped/', filename]);
 
 		expect(cache).toHaveBeenCalledTimes(1);
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));

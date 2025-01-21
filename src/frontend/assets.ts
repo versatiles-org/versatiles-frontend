@@ -3,7 +3,7 @@ import { basename, join } from 'node:path';
 import PromiseFunction from '../utils/async';
 import notes from '../utils/release_notes';
 import type { FileSystem } from '../filesystem/file_system';
-import { getLatestReleaseVersion } from '../utils/release_version';
+import { getLatestGithubReleaseVersion, getLatestNPMReleaseVersion } from '../utils/release_version';
 
 // Define constants for asset directories.
 const folderStyle = 'assets/styles/';
@@ -37,10 +37,10 @@ export function loadAssets(fileSystem: FileSystem): PromiseFunction {
 	function addFont(fontName: string): PromiseFunction {
 		const label = notes.add('[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)');
 		return PromiseFunction.wrapAsync('add fonts', 1, async () => {
-			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-fonts');
+			const version = await getLatestGithubReleaseVersion('versatiles-org', 'versatiles-fonts');
 			label.setVersion(version);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/${fontName}.tar.gz`)
-				.ungzipUntar(folderGlyphs);
+				.ungzipUntar(f => [folderGlyphs, f]);
 		});
 	}
 
@@ -53,14 +53,14 @@ export function loadAssets(fileSystem: FileSystem): PromiseFunction {
 		const folderLib = join(folderLibrary, 'versatiles-style/');
 		const label = notes.add('[VersaTiles style](https://github.com/versatiles-org/versatiles-style)');
 		return PromiseFunction.wrapAsync('add styles', 1, async () => {
-			const version = await getLatestReleaseVersion('versatiles-org', 'versatiles-style', true);
+			const version = await getLatestGithubReleaseVersion('versatiles-org', 'versatiles-style', true);
 			label.setVersion(version);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/styles.tar.gz`)
-				.ungzipUntar(folderStyle);
+				.ungzipUntar(f => [folderStyle, f]);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/versatiles-style.tar.gz`)
-				.ungzipUntar(folderLib);
+				.ungzipUntar(f => [folderLib, f]);
 			await new Curl(fileSystem, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/sprites.tar.gz`)
-				.ungzipUntar(folderSprites);
+				.ungzipUntar(f => [folderSprites, f]);
 		});
 	}
 
@@ -72,11 +72,11 @@ export function loadAssets(fileSystem: FileSystem): PromiseFunction {
 	function addMaplibre(): PromiseFunction {
 		const folder = join(folderLibrary, 'maplibre-gl');
 		const label = notes.add('[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)');
-		return PromiseFunction.wrapAsync('add maplibre', 1, async () => {
-			const version = await getLatestReleaseVersion('maplibre', 'maplibre-gl-js');
+		return PromiseFunction.wrapAsync('add maplibre-gl', 1, async () => {
+			const version = await getLatestGithubReleaseVersion('maplibre', 'maplibre-gl-js');
 			label.setVersion(version);
 			await new Curl(fileSystem, `https://github.com/maplibre/maplibre-gl-js/releases/download/v${version}/dist.zip`)
-				.unzip(filename => /dist\/.*\.(js|css|map)$/.test(filename) && join(folder, basename(filename)));
+				.unzip(f => /package\/dist\/.*\.(js|css|map)$/.test(f) && [folder, basename(f)]);
 		});
 	}
 
@@ -87,13 +87,12 @@ export function loadAssets(fileSystem: FileSystem): PromiseFunction {
 	 */
 	function addMaplibreInspect(): PromiseFunction {
 		const folder = join(folderLibrary, 'maplibre-gl-inspect');
-		notes.add('[MapLibre GL Inspect](https://github.com/maplibre/maplibre-gl-inspect)');
+		const label = notes.add('[MapLibre GL Inspect](https://github.com/maplibre/maplibre-gl-inspect)');
 		return PromiseFunction.wrapAsync('add maplibre-gl-inspect', 1, async () => {
-			const baseUrl = 'https://unpkg.com/@maplibre/maplibre-gl-inspect@latest/dist/';
-			await Promise.all([
-				new Curl(fileSystem, baseUrl + 'maplibre-gl-inspect.js').save(join(folder, 'maplibre-gl-inspect.js')),
-				new Curl(fileSystem, baseUrl + 'maplibre-gl-inspect.css').save(join(folder, 'maplibre-gl-inspect.css')),
-			]);
+			const version = await getLatestNPMReleaseVersion('@maplibre/maplibre-gl-inspect');
+			label.setVersion(version);
+			await new Curl(fileSystem, `https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-${version}.tgz`)
+				.ungzipUntar(f => /dist\/.*\.(js|css|map)$/.test(f) && [folder, basename(f)]);
 		});
 	}
 }

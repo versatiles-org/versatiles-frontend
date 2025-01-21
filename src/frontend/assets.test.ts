@@ -21,7 +21,7 @@ jest.unstable_mockModule('../utils/utils', () => mockUtils);
 // Mock release_version
 const { mockReleaseVersion } = await import('../utils/__mocks__/release_version');
 jest.unstable_mockModule('../utils/release_version', () => mockReleaseVersion);
-const { getLatestReleaseVersion } = await import('../utils/release_version');
+const { getLatestGithubReleaseVersion: getLatestReleaseVersion } = await import('../utils/release_version');
 
 
 const { loadAssets: getAssets } = await import('./assets');
@@ -52,8 +52,7 @@ describe('getAssets', () => {
 			'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/sprites.tar.gz',
 			'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/styles.tar.gz',
 			'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/versatiles-style.tar.gz',
-			'https://unpkg.com/@maplibre/maplibre-gl-inspect@latest/dist/maplibre-gl-inspect.css',
-			'https://unpkg.com/@maplibre/maplibre-gl-inspect@latest/dist/maplibre-gl-inspect.js',
+			'https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-2.3.4.tgz',
 		]);
 	});
 });

@@ -25,19 +25,22 @@ export class FileSystem {
 		let sizePos = 0;
 		// Calculate total size for progress calculation if callback provided.
 		if (callback) {
+			//console.log(Array.from(this.iterateFiles()).length);
 			for (const file of this.iterateFiles()) {
-				if (!file.bufferBr) sizeSum += file.bufferRaw.length;
+				if (file.bufferBr) continue;
+				sizeSum += file.bufferRaw.length;
 			}
 			callback(0);
 		}
 		// Compress files and update progress.
+			//console.log(Array.from(this.iterateFiles()).length);
 		for (const file of this.iterateFiles()) {
 			if (file.bufferBr) continue;
+			sizePos += file.bufferRaw.length;
 
 			await file.compress();
 
 			if (callback) {
-				sizePos += file.bufferRaw.length;
 				callback(sizePos / sizeSum);
 			}
 		}

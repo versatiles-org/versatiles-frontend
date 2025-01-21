@@ -78,7 +78,7 @@ export class ProgressLabel {
 			'   '.repeat(this.indent), // Indentation spaces.
 			' - ', // Prefix for the label.
 			this.label,
-			'\x1b[0m\n', // Reset ANSI styling.
+			'\x1b[0m\x1b[0K\n', // Reset ANSI styling.
 		].join('');
 	}
 

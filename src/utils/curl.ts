@@ -5,6 +5,7 @@ import unzipper from 'unzipper';
 import type { Entry } from 'unzipper';
 import type { FileSystem } from '../filesystem/file_system';
 import { cache } from './cache';
+import { resolve as urlResolve } from 'node:url';
 
 /**
  * Provides utilities for fetching resources over HTTP(s), with support for caching,
@@ -32,7 +33,7 @@ export class Curl {
 	 * 
 	 * @param folder - The target folder where the untarred files will be saved.
 	 */
-	public async ungzipUntar(cbFilter: (filename: string) => string | false): Promise<void> {
+	public async ungzipUntar(cbFilter: (filename: string) => string[] | false): Promise<void> {
 		const streamIn = createGunzip();
 		streamIn.on('error', error => {
 			console.log('gunzip error for: ' + this.#url);
@@ -41,10 +42,11 @@ export class Curl {
 		streamIn.pipe(tar.t({
 			onReadEntry: async entry => {
 				if (entry.type !== 'File') return entry.resume();
-				const filename = cbFilter(entry.path);
-				if (filename != false) {
+				const path = cbFilter(entry.path);
+				if (path != false) {
 					const buffers: Buffer[] = [];
 					for await (const buffer of entry) buffers.push(buffer);
+					const filename = path.reduce((f0, f1) => urlResolve(f0, f1));
 					this.#fileSystem.addBufferAsFile(
 						filename,
 						Number(entry.mtime ?? Math.random()),
@@ -55,6 +57,7 @@ export class Curl {
 			}
 		}));
 		streamIn.end(await this.getBuffer());
+		await finished(streamIn);
 	}
 
 	/**
@@ -72,11 +75,12 @@ export class Curl {
 	 * 
 	 * @param cbFilter - A callback function that determines the save path for each unzipped file, or skips the file.
 	 */
-	public async unzip(cbFilter: (filename: string) => string | false): Promise<void> {
+	public async unzip(cbFilter: (filename: string) => string[] | false): Promise<void> {
 		const zip = unzipper.Parse();
 		zip.on('entry', (entry: Entry) => {
-			const filename = cbFilter(entry.path);
-			if (filename != false) {
+			const path = cbFilter(entry.path);
+			if (path != false) {
+				const filename = path.reduce((f0, f1) => urlResolve(f0, f1));
 				void entry.buffer().then(buffer => {
 					this.#fileSystem.addBufferAsFile(filename, entry.vars.lastModifiedTime, buffer);
 				});
