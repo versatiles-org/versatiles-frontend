@@ -56,13 +56,26 @@ describe('Progress', () => {
 
 	it('should update a label and redraw', () => {
 		const progress = new Progress();
+
+		expect(process.stdout.write).toHaveBeenCalledTimes(0);
+
+		expect(progress.header).toBe(undefined);
+		progress.setHeader('test');
+		expect(progress.header).toBe('test');
+
+		expect(process.stdout.write).toHaveBeenCalledTimes(2);
+
 		const label = progress.add('Initial Label', 1);
 		label.updateLabel('Updated Label');
 
-		expect(process.stdout.write).toHaveBeenCalledTimes(3);
+		expect(process.stdout.write).toHaveBeenCalledTimes(4);
 		const writeCalls = (process.stdout.write as jest.Mock).mock.calls;
 		const output = writeCalls.map(call => call[0]).join('');
 		expect(output).toContain('Updated Label');
+
+		expect(label.status).toBe('new');
+		label.end();
+		expect(label.status).toBe('finished');
 	});
 
 	it('should mark a label as finished and redraw', () => {

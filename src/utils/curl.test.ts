@@ -1,16 +1,17 @@
 import { jest } from '@jest/globals';
 import { mockFetchResponse } from './__mocks__/global_fetch';
+import { MockedFileDB } from '../files/__mocks__/filedb';
 
 const { mockCache } = await import('./__mocks__/cache');
 jest.unstable_mockModule('../utils/cache', () => mockCache);
 const { cache } = await import('./cache');
 
 const { Curl } = await import('./curl');
-const { FileSystem } = await import('../files/filedb');
+const { FileDB } = await import('../files/filedb');
 
 describe('Curl', () => {
 	let curl: InstanceType<typeof Curl>;
-	const mockFileSystem = new FileSystem();
+	const mockFileDB = new MockedFileDB();
 	const testUrl = 'http://example.com/resource.tar.gz';
 	const testFolder = '/test/folder';
 	const testFilename = 'resource.tar.gz';
@@ -20,9 +21,9 @@ describe('Curl', () => {
 	beforeEach(() => {
 		// Reset mocks before each test
 		jest.clearAllMocks();
-		// Initialize Curl with mocked FileSystem and URL
-		curl = new Curl(mockFileSystem, testUrl);
-		jest.spyOn(mockFileSystem, 'addBufferAsFile');
+		// Initialize Curl with mocked FileDB and URL
+		curl = new Curl(mockFileDB, testUrl);
+		jest.spyOn(mockFileDB, 'setFileFromBuffer');
 	});
 
 	it('should fetch and ungzip/untar a resource', async () => {
@@ -32,17 +33,17 @@ describe('Curl', () => {
 		expect(cache).toHaveBeenCalledTimes(1);
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
 
-		expect(mockFileSystem.addBufferAsFile).toHaveBeenCalledTimes(2);
-		expect(mockFileSystem.addBufferAsFile).toHaveBeenNthCalledWith(1, '/test/file1.txt', 1708473415000, expect.any(Buffer));
-		expect(mockFileSystem.addBufferAsFile).toHaveBeenNthCalledWith(2, '/test/file2.txt', 1708473417000, expect.any(Buffer));
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledTimes(2);
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(1, '/test/folder/file1.txt', 1708473415000, expect.any(Buffer));
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(2, '/test/folder/file2.txt', 1708473417000, expect.any(Buffer));
 	});
 
 	it('should save a resource directly to a file', async () => {
 		await curl.save(testFilename);
 
-		// Verify cache and FileSystem interactions
+		// Verify cache and FileDB interactions
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
-		expect(mockFileSystem.addBufferAsFile).toHaveBeenCalledWith(testFilename, expect.any(Number), expect.any(Buffer));
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledWith(testFilename, expect.any(Number), expect.any(Buffer));
 	});
 
 	it('should fetch, unzip, and save contents based on filter callback', async () => {
@@ -53,9 +54,9 @@ describe('Curl', () => {
 		expect(cache).toHaveBeenCalledTimes(1);
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
 
-		expect(mockFileSystem.addBufferAsFile).toHaveBeenCalledTimes(2);
-		expect(mockFileSystem.addBufferAsFile).toHaveBeenNthCalledWith(1, '/unzipped/file1.txt', 1820, expect.any(Buffer));
-		expect(mockFileSystem.addBufferAsFile).toHaveBeenNthCalledWith(2, '/unzipped/file2.txt', 1821, expect.any(Buffer));
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledTimes(2);
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(1, '/unzipped/file1.txt', 1820, expect.any(Buffer));
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(2, '/unzipped/file2.txt', 1821, expect.any(Buffer));
 	});
 
 	it('should return a buffer from getBuffer method', async () => {

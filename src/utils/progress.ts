@@ -102,7 +102,7 @@ export class ProgressLabel {
 export class Progress {
 	private readonly labelList: ProgressLabel[] = []; // List of all progress labels.
 
-	private header?: string; // Optional header text for the progress display.
+	public header?: string; // Optional header text for the progress display.
 
 	private finished = false; // Flag indicating if the progress display is marked as finished.
 

@@ -68,20 +68,7 @@ export abstract class FileDB {
 	 * 
 	 * @returns An IterableIterator of File instances.
 	 */
-	public iterate(): IterableIterator<File> {
+	public iterate(): MapIterator<File> {
 		return this.files.values();
-	}
-
-	/**
-	 * Executes a callback for each file in the system that matches a given prefix.
-	 * 
-	 * @param prefix - The prefix to match files against.
-	 * @param cb - The callback to execute for each matching file.
-	 */
-	public forEachFile(prefix: string, cb: ((filename: string, buffer: Buffer) => void)): void {
-		for (const [name, file] of this.files.entries()) {
-			if (!name.startsWith(prefix)) continue;
-			cb(name, file.bufferRaw);
-		}
 	}
 }

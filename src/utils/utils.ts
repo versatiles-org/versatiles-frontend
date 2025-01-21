@@ -26,19 +26,3 @@ export function ensureFolder(path: string): void {
 	ensureFolder(dirname(path)); // Ensure the parent directory exists.
 	mkdirSync(path); // Create the folder.
 }
-
-/**
- * Converts a readable stream to a buffer.
- * 
- * @param stream - The readable stream to convert.
- * @returns A promise that resolves to a buffer containing the stream's data.
- */
-export async function streamAsBuffer(stream: Readable): Promise<Buffer> {
-	return new Promise(res => {
-		const buffers: Buffer[] = [];
-		stream.on('data', (chunk: Buffer) => buffers.push(chunk));
-		stream.on('end', () => {
-			res(Buffer.concat(buffers));
-		});
-	});
-}

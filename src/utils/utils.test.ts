@@ -46,14 +46,3 @@ describe('ensureFolder', () => {
 		expect(mkdirSync).toHaveBeenCalledWith('/test/folder');
 	});
 });
-
-import { Readable } from 'node:stream';
-
-describe('streamAsBuffer', () => {
-	it('converts a readable stream to a buffer', async () => {
-		const mockStream = Readable.from(['hello', ' ', 'world'].map(s => Buffer.from(s)));
-		const result = await utils.streamAsBuffer(mockStream);
-
-		expect(result.toString()).toBe('hello world');
-	});
-});
