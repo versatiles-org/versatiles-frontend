@@ -33,7 +33,7 @@ jobs:
         run: gh release view $RELEASE_TAG || gh release create $RELEASE_TAG
 
       - name: add files to release
-        run: gh release upload $RELEASE_TAG --clobber release/*.tar.gz release/*.br.tar
+        run: gh release upload $RELEASE_TAG --clobber release/*.tar.gz
 
       - name: update release
         run: gh release edit $RELEASE_TAG --draft=false --latest --prerelease=false --notes-file=release/notes.md
