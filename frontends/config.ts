@@ -2,10 +2,10 @@ import type { FileDBConfig } from '../src/files/filedbs';
 import type { FrontendConfig } from '../src/frontend/frontend';
 
 export const fileDBConfigs = {
-	'asset-fonts': { type: 'asset', source: 'fonts' },
-	'asset-styles': { type: 'asset', source: 'styles' },
-	'asset-maplibre': { type: 'asset', source: 'maplibre' },
-	'asset-maplibre-inspect': { type: 'asset', source: 'maplibre-inspect' },
+	'external-fonts': { type: 'external', source: 'fonts' },
+	'external-styles': { type: 'external', source: 'styles' },
+	'external-maplibre': { type: 'external', source: 'maplibre' },
+	'external-maplibre-inspect': { type: 'external', source: 'maplibre-inspect' },
 
 	'style-selector': { type: 'rollup', path: 'style-selector', url: 'assets/lib/style-selector/style-selector.js', globalVariable: 'StyleSelector' },
 
@@ -21,10 +21,10 @@ export const frontendConfigs: FrontendConfig<keyof typeof fileDBConfigs>[] = [
 		fileDBs: [
 			'all',
 			'frontend',
-			'asset-fonts',
-			'asset-styles',
-			'asset-maplibre',
-			'asset-maplibre-inspect',
+			'external-fonts',
+			'external-styles',
+			'external-maplibre',
+			'external-maplibre-inspect',
 			'style-selector'
 		]
 	},
@@ -33,10 +33,10 @@ export const frontendConfigs: FrontendConfig<keyof typeof fileDBConfigs>[] = [
 		fileDBs: [
 			'all',
 			'frontend-dev',
-			'asset-fonts',
-			'asset-styles',
-			'asset-maplibre',
-			'asset-maplibre-inspect',
+			'external-fonts',
+			'external-styles',
+			'external-maplibre',
+			'external-maplibre-inspect',
 			'style-selector'
 		]
 	},
@@ -45,9 +45,9 @@ export const frontendConfigs: FrontendConfig<keyof typeof fileDBConfigs>[] = [
 		fileDBs: [
 			'all',
 			'frontend-min',
-			'asset-fonts',
-			'asset-styles',
-			'asset-maplibre'
+			'external-fonts',
+			'external-styles',
+			'external-maplibre'
 		],
 		ignore: [
 			'assets/glyphs/*',

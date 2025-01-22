@@ -10,21 +10,21 @@ const folderLibrary = 'assets/lib/';
 const folderGlyphs = 'assets/glyphs/';
 const folderSprites = 'assets/sprites/';
 
-type AssetFileDBSources = 'fonts' | 'styles' | 'maplibre' | 'maplibre-inspect';
+type ExternalFileDBSources = 'fonts' | 'styles' | 'maplibre' | 'maplibre-inspect';
 
-export interface AssetFileDBConfig {
-	type: 'asset';
-	source: AssetFileDBSources;
+export interface ExternalFileDBConfig {
+	type: 'external';
+	source: ExternalFileDBSources;
 }
 
-export class AssetFileDB extends FileDB {
+export class ExternalFileDB extends FileDB {
 	/**
 	 * Constructs a FileSystem instance optionally with an existing map of files.
 	 * 
 	 * @param files - An optional map of files to initialize the file system.
 	 */
-	public static async build(config: AssetFileDBConfig): Promise<AssetFileDB> {
-		const db = new AssetFileDB();
+	public static async build(config: ExternalFileDBConfig): Promise<ExternalFileDB> {
+		const db = new ExternalFileDB();
 		switch (config.source) {
 			case 'fonts': await db.addFonts(); break;
 			case 'styles': await db.addStyles(); break;

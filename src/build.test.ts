@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 
-await import('./files/__mocks__/filedb-asset');
+await import('./files/__mocks__/filedb-external');
 await import('./files/__mocks__/filedb-rollup');
 await import('./files/__mocks__/filedb-static');
 await import('./utils/__mocks__/cache');

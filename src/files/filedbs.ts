@@ -3,10 +3,10 @@ import PromiseFunction from '../utils/async';
 import { ProgressLabel } from '../utils/progress';
 import progress from '../utils/progress';
 import { StaticFileDB, type StaticFileDBConfig } from './filedb-static';
-import { AssetFileDB, AssetFileDBConfig } from './filedb-asset';
+import { ExternalFileDB, ExternalFileDBConfig } from './filedb-external';
 import { RollupFileDB, RollupFileDBConfig } from './filedb-rollup';
 
-export type FileDBConfig = StaticFileDBConfig | AssetFileDBConfig | RollupFileDBConfig;
+export type FileDBConfig = StaticFileDBConfig | ExternalFileDBConfig | RollupFileDBConfig;
 
 const frontendFolder = new URL('../../frontends', import.meta.url).pathname;
 
@@ -77,7 +77,7 @@ export function loadFileDBs(fileDBs: FileDBs): PromiseFunction {
 							let fileDB: FileDB;
 							switch (config.type) {
 								case 'static': fileDB = await StaticFileDB.build(config, frontendFolder); break;
-								case 'asset': fileDB = await AssetFileDB.build(config); break;
+								case 'external': fileDB = await ExternalFileDB.build(config); break;
 								case 'rollup': fileDB = await RollupFileDB.build(config, frontendFolder); break;
 								default:
 									// @ts-expect-error Just to be sure
