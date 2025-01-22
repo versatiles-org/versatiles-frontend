@@ -5,14 +5,35 @@
 
 # VersaTiles Frontend
 
-VersaTiles Frontend is a dynamic, customizable frontend framework designed for interactive map and tile-based applications. It generates tar archives containing frontends that can directly used with e.g. `versatiles-rs` or `node-versatiles-server`.
+VersaTiles Frontend provides pre-packaged web assets to serve interactive maps, compatible with [`versatiles-rs`](https://github.com/versatiles-org/versatiles-rs) or [`node-versatiles-server`](https://github.com/versatiles-org/node-versatiles-server).
 
-## Getting Started
+## Available Frontends
+
+1. Standard Frontend
+- Files: `frontend.*`
+- Features: Includes all assets (styles, sprites, fonts, libraries) required for a standard map server.
+- Assumes: Shortbread tiles are served under `/tiles/osm`.
+
+2. Minimal Frontend
+- Files: `frontend-min.*`
+- Features: Reduced asset footprint, ideal for limited resources.
+- Assumes: Shortbread tiles are served under `/tiles/osm`.
+
+3. Development Frontend
+- Files: `frontend-dev.*`
+- Features: Includes all assets plus additional tools for development.
+- index.html: Lists available map sources.
+- preview.html: Previews individual map sources.
+
+## Download the latest release.
+
+You can [download the packaged frontends as the latest release](https://github.com/versatiles-org/versatiles-frontend/releases/latest/). Packages ending with `*.tar.gz` contain the original web frontend files. Packages ending with `*.br.tar.gz` contain the web frontend files pre-compressed with Brotli for faster serving. 
+
+## Improve the frontends
 
 ### Clone and Build
 
-To get started with VersaTiles Frontend, clone the repository and install dependencies:
-
+Clone the repository, install dependencies and build:
 ```bash
 git clone git@github.com:versatiles-org/versatiles-frontend.git
 cd versatiles-frontend
@@ -20,40 +41,38 @@ npm install
 npm run build
 ```
 
-This process will generate three distinct frontends:
-- **frontend**: A complete set with all styles, fonts, sprites, etc.
-- **frontend-dev**: Similar to `frontend`, but allow you to switch between tile sources. (Work in progress)
-- **frontend-min**: A minimal version of `frontend`, excluding developer tools and limited to Noto fonts. (Work in progress)
 
-For each frontend, two files are generated:
-- `release/frontend*.tar.gz`: Contains all files in a gzipped tar archive.
-- `release/frontend*.br.tar`: Contains all files precompressed with Brotli and packed in an uncompressed tar archive.
 
-### Using the Release with `versatiles-rs`
 
-Deploy the frontend with `versatiles-rs` by downloading the latest release and serving it:
+This will generate all three frontends: `frontend`, `frontend-dev` and `frontend-min`.
+
+- `frontend*.tar.gz`: Standard gzip-compressed container.
+- `frontend*.br.tar.gz`: Precompressed with Brotli for fast serving.
+
+## Use a frontend with `versatiles-rs`
 
 ```bash
-curl -L "https://github.com/versatiles-org/versatiles-frontend/releases/latest/download/frontend-dev.br.tar" > ./frontend.br.tar
-versatiles serve -s ./frontend.br.tar "osm.versatiles"
+curl -L "https://github.com/versatiles-org/versatiles-frontend/releases/latest/download/frontend-dev.br.tar.gz" -o ./frontend.br.tar.gz
+versatiles serve -s ./frontend.br.tar.gz "osm.versatiles"
 ```
 
 ## Developer Guide
 
 ### Run in Developer Mode
 
-To run a frontend in developer mode:
+Start the development server:
 
 ```bash
 npm run dev frontend
+# or:
+# npm run dev frontend-min
+# npm run dev frontend-dev
 ```
 
-Developer mode activates the following actions:
-- Fetches all required assets (fonts, styles, sprites, libraries, etc.)
-- Builds the selected frontend (alternative frontends can be run similarly, e.g., `npm run dev frontend-min`)
-- Serves everything under `http://localhost:8080/`
-- Proxies tile requests to `tiles.versatiles.org`.
-- Watches for any changes in the `/frontends/` directory and automatically rebuilds
+Features:
+- Serves at http://localhost:8080/.
+- Proxies tile requests to tiles.versatiles.org.
+- Watches for file changes and auto-rebuilds.
 - You can also use a local tile server from a different local port by running:
 ```sh
 versatiles serve -p 8081 osm.versatiles overlay.versatiles
@@ -62,15 +81,14 @@ npm run dev -- -l 8081 frontend-dev
 ```
 
 ## Project Structure
-
-- **cache/**: Used for caching requests, file compression, etc.
-- **frontends/**: Contains static files (HTML, CSS, JavaScript) for use in various frontends.
-- **release/**: Stores finished release files.
-- **src/**: Contains TypeScript code for generating frontends and optionally serving them locally.
+- **cache/**: Caches requests, compresses files.
+- **frontends/**: Contains static files (HTML, CSS, JS).
+- **release/**: Packaged frontend files.
+- **src/**: TypeScript code for frontend generation and local serving.
 
 ## Resources
 
-VersaTiles Frontend utilizes several external resources and libraries, including but not limited to:
+VersaTiles Frontend uses several external resources and libraries, including:
 - Fonts from [VersaTiles Fonts](https://github.com/versatiles-org/versatiles-fonts)
 - Styles and sprites from [VersaTiles Style](https://github.com/versatiles-org/versatiles-style)
 - MapLibre GL JS from [MapLibre GL JS GitHub](https://github.com/maplibre/maplibre-gl-js)
