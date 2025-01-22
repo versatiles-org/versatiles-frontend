@@ -1,6 +1,5 @@
 import { existsSync, mkdirSync, rmSync } from 'node:fs';
 import { dirname } from 'node:path';
-import type { Readable } from 'node:stream';
 
 /**
  * Deletes the contents of a folder recursively and recreates it.

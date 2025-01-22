@@ -1,9 +1,7 @@
- 
- 
 import { jest } from '@jest/globals';
 import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../progress';
 
-const originalModule = await import('../progress');
+const originalModule = await import('../progress?' + Math.random());
 originalModule.default.disable();
 
 function mockProgressLabel(progressLabel: ProgressLabelType): ProgressLabelType {
@@ -15,11 +13,11 @@ function mockProgressLabel(progressLabel: ProgressLabelType): ProgressLabelType 
 	return progressLabel;
 }
 
-const ProgressLabel = jest.fn((progress: ProgressType, label: string, indent: number) => {
+export const ProgressLabel = jest.fn((progress: ProgressType, label: string, indent: number) => {
 	return mockProgressLabel(new originalModule.ProgressLabel(progress, label, indent));
 });
 
-const Progress = jest.fn(() => {
+export const Progress = jest.fn(() => {
 	const progress = new originalModule.Progress();
 	jest.spyOn(progress, 'disableAnsi');
 	jest.spyOn(progress, 'disable');
@@ -28,22 +26,21 @@ const Progress = jest.fn(() => {
 	jest.spyOn(progress, 'redraw');
 	jest.spyOn(progress, 'write');
 
-	// @ts-expect-error too lazy
-	 
+
 	progress._add = progress.add;
-	jest.spyOn(progress, 'add').mockImplementation((name: string, indent = 0): ProgressLabelType => {
-		// @ts-expect-error too lazy
-		 
+	progress.add = jest.fn((name: string, indent = 0): ProgressLabelType => {
 		return mockProgressLabel(progress._add(name, indent));
 	});
 	return progress;
 });
 
-const progress = new Progress();
+export const progress = new Progress();
 progress.disable();
 
-export const mockProgress = {
+const mockProgress = {
 	ProgressLabel, Progress, default: progress,
 } as unknown as jest.Mocked<typeof import('../progress')>;
 
-jest.unstable_mockModule('../utils/progress', () => mockProgress);
+try { jest.unstable_mockModule('../progress', () => mockProgress) } catch (e) { }
+try { jest.unstable_mockModule('./progress', () => mockProgress) } catch (e) { }
+try { jest.unstable_mockModule('./utils/progress', () => mockProgress) } catch (e) { }

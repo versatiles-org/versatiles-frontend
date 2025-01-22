@@ -3,11 +3,8 @@ import { createGzip } from 'node:zlib';
 import { createWriteStream } from 'node:fs';
 import { pipeline } from 'node:stream/promises';
 import ignore from 'ignore';
-import Pf from '../utils/async';
-import progress from '../utils/progress';
 import tar from 'tar-stream';
 import type { File } from '../files/file';
-import type { ProgressLabel } from '../utils/progress';
 import { FileDBs } from '../files/filedbs';
 
 /**
@@ -107,73 +104,4 @@ export class Frontend {
 		}
 		return null;
 	}
-}
-
-/**
- * Loads frontend configurations from a `frontends.json` file.
- * 
- * @returns An array of FrontendConfig objects.
- */
-export async function loadFrontendConfigs(): Promise<FrontendConfig[]> {
-	return (await import('../../frontends/config.ts?' + Date.now())).frontendConfigs;
-}
-
-/**
- * Generates frontend bundles for deployment based on configurations.
- * This function reads frontend configurations, sets the version for release notes,
- * and initiates the bundling process for each frontend configuration in parallel.
- * 
- * @param fileSystem - The file system interface used for file operations.
- * @param projectFolder - The root directory of the project containing the frontend configurations.
- * @param dstFolder - The destination folder where the generated frontend bundles will be saved.
- * @returns A PromiseFunction instance that encapsulates the asynchronous operations of generating all frontends.
- */
-export function generateFrontends(fileDBs: FileDBs, dstFolder: string): Pf {
-	let s: ProgressLabel;
-	let parallel = Pf.parallel();
-
-	return Pf.single(
-		async () => {
-			s = progress.add('generate frontends');
-			const configs = await loadFrontendConfigs();
-			const todos = configs.map((config: FrontendConfig): Pf => generateFrontend(config))
-			parallel = Pf.parallel(...todos);
-			await parallel.init();
-		},
-		async () => {
-			s.start();
-			await parallel.run();
-			s.end();
-		},
-	);
-
-
-	function generateFrontend(config: FrontendConfig): Pf {
-		const { name } = config;
-		let s: ProgressLabel, sBr: ProgressLabel, sGz: ProgressLabel;
-
-		return Pf.single(
-			async () => {
-				// Initialize progress tracking for each step of the frontend generation.
-				s = progress.add(name, 1);
-				sBr = progress.add(name + '.br.tar.gz', 2);
-				sGz = progress.add(name + '.tar.gz', 2);
-			},
-			async () => {
-				// Start the progress trackers.
-				s.start();
-				sBr.start();
-				sGz.start();
-				// Create a new Frontend instance and generate the compressed tarballs.
-				const frontend = new Frontend(fileDBs, config);
-				await Promise.all([
-					(async () => { await frontend.saveAsBrTarGz(dstFolder); sBr.end(); })(),
-					(async () => { await frontend.saveAsTarGz(dstFolder); sGz.end(); })(),
-				])
-				sGz.end();
-				s.end();
-			},
-		);
-	}
-
 }

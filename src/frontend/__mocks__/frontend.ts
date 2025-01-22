@@ -1,33 +1,28 @@
-import type { Frontend } from '../frontend';
 import { jest } from '@jest/globals';
-import PromiseFunction from '../../utils/async';
-import { MockedFileDBs } from '../../files/__mocks__/filedbs';
+import type { FileDBs } from '../../files/filedbs';
+import type { FrontendConfig } from '../frontend';
 
-const originalModule = await import('../../frontend/frontend');
+const { Frontend: OriginalFrontend } = await import('../../frontend/frontend?' + Math.random()) as typeof import('../../frontend/frontend');
 
-export const generateFrontends = jest.fn((): PromiseFunction => {
-	return PromiseFunction.single(async () => { }, async () => { });
-});
+class MockedFrontend extends OriginalFrontend {
+	constructor(fileDBs: FileDBs, config: FrontendConfig) {
+		super(fileDBs, config);
+	}
+	async saveAsTarGz() { }
+	async saveAsBrTarGz() { }
+}
 
-export const loadFrontendConfigs = jest.fn(originalModule.loadFrontendConfigs);
+export const Frontend = jest.fn(
+	(fileDBs: FileDBs, config: FrontendConfig) => {
+		return jest.mocked(new MockedFrontend(fileDBs, config))
+	}
+);
 
-export type MockedFrontend = InstanceType<typeof MockedFrontend>;
-export const MockedFrontend = jest.fn(() => {
-	const knownFiles = new Map<string, string>();
-	const me = {
-		fileDBs: new MockedFileDBs(),
-		saveAsTarGz: jest.fn(async () => { }),
-		saveAsBrTarGz: jest.fn(async () => { }),
-		getFile: jest.fn((path: string) => {
-			const content = knownFiles.get(path);
-			return content ? Buffer.from(content) : null
-		}),
-		iterate: jest.fn(() => (new Map()).values()),
-		ignoreFilter: jest.fn(() => true),
-		config: { name: 'example', fileDBs: [] },
-	} as const satisfies Frontend;
-	return {
-		...me,
-		addFile: (filename: string, content: string) => knownFiles.set(filename, content),
-	};
-});
+const mockedModule = {
+	Frontend,
+}
+
+try { jest.unstable_mockModule('./frontend', () => mockedModule) } catch (e) { }
+try { jest.unstable_mockModule('../frontend', () => mockedModule) } catch (e) { }
+try { jest.unstable_mockModule('./frontend/frontend', () => mockedModule) } catch (e) { }
+try { jest.unstable_mockModule('../frontend/frontend', () => mockedModule) } catch (e) { }

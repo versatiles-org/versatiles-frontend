@@ -1,13 +1,10 @@
- import { jest } from '@jest/globals';
+import { jest } from '@jest/globals';
 import { toHaveBeenCalledBefore } from 'jest-extended';
 import type { ProgressLabel } from './progress';
 expect.extend({ toHaveBeenCalledBefore });
 
-const { mockProgress } = await import('./__mocks__/progress');
-jest.unstable_mockModule('./progress', () => mockProgress);
-const progress = (await import('./progress')).default;
+const { progress } = await import('./__mocks__/progress');
 
- 
 const PromiseFunctions = (await import('./async')).default;
 
 function getAsyncMock(): jest.Mock<() => Promise<void>> {

@@ -1,11 +1,12 @@
 import { resolve } from 'node:path';
+import { readFileSync } from 'node:fs';
+
 import { cleanupFolder } from './utils/utils';
 import notes from './utils/release_notes';
 import PromiseFunction from './utils/async';
-import { generateFrontends } from './frontend/frontend';
 import progress from './utils/progress';
+import { generateFrontends } from './frontend/generate';
 import { FileDBs, loadFileDBs } from './files/filedbs';
-import { readFileSync } from 'node:fs';
 
 //progress.disableAnsi();
 

@@ -1,5 +1,6 @@
 import Pf from './utils/async';
-import { Frontend, loadFrontendConfigs } from './frontend/frontend';
+import { Frontend } from './frontend/frontend';
+import { loadFrontendConfigs } from './frontend/load';
 import progress from './utils/progress';
 import { Server } from './server/server';
 import arg from 'arg';

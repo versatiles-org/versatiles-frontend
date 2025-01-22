@@ -3,7 +3,7 @@ import PromiseFunction from '../utils/async';
 import { ProgressLabel } from '../utils/progress';
 import progress from '../utils/progress';
 import { StaticFileDB, type StaticFileDBConfig } from './filedb-static';
-import { AssetFileDB, AssetFileDBConfig } from './filedb-assets';
+import { AssetFileDB, AssetFileDBConfig } from './filedb-asset';
 import { RollupFileDB, RollupFileDBConfig } from './filedb-rollup';
 
 export type FileDBConfig = StaticFileDBConfig | AssetFileDBConfig | RollupFileDBConfig;

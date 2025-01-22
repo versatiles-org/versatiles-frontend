@@ -30,7 +30,7 @@ class Label {
 /**
  * Manages the creation and saving of release notes for a project.
  */
-class ReleaseNotes {
+export class ReleaseNotes {
 	private version = ''; // The version of the release.
 
 	private readonly labelList: Label[] = []; // List of all labels included in the release notes.

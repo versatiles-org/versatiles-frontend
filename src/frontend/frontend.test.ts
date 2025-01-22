@@ -1,15 +1,14 @@
 import { jest } from '@jest/globals';
 import { FrontendConfig } from './frontend';
-import { loadFileDBConfigs } from '../files/filedbs';
 
-const { mockCache } = await import('../utils/__mocks__/cache');
-jest.unstable_mockModule('../utils/cache', () => mockCache);
-await import('../utils/cache');
+await import('../utils/__mocks__/cache');
 
 const { createWriteStream } = await import('../utils/__mocks__/node_fs');
 
-const { MockedFileDBs } = await import('../files/__mocks__/filedbs');
-const { Frontend, loadFrontendConfigs, generateFrontends } = await import('./frontend');
+const { FileDBs, loadFileDBConfigs } = await import('../files/__mocks__/filedbs');
+const { Frontend, } = await import('./frontend');
+const { loadFrontendConfigs } = await import('./load');
+const { generateFrontends } = await import('./generate');
 const progress = (await import('../utils/progress')).default;
 const PromiseFunction = (await import('../utils/async')).default;
 
@@ -20,7 +19,7 @@ if (!jest.isMockFunction(createWriteStream)) throw Error();
 let fileDBConfig = await loadFileDBConfigs();
 
 describe('Frontend class', () => {
-	let mockFileDBs: InstanceType<typeof MockedFileDBs>;
+	let mockFileDBs: InstanceType<typeof FileDBs>;
 	const testConfig = {
 		name: 'frontend',
 		fileDBs: ['all'],
@@ -29,7 +28,7 @@ describe('Frontend class', () => {
 
 	beforeEach(() => {
 		jest.clearAllMocks(); // Clear mocks before each test
-		mockFileDBs = new MockedFileDBs(
+		mockFileDBs = new FileDBs(
 			Object.fromEntries(
 				Object.entries(fileDBConfig)
 					.map(([name, config]) => {

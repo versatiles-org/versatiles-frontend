@@ -1,17 +1,16 @@
 import { jest } from '@jest/globals';
 import { mockFetchResponse } from './__mocks__/global_fetch';
-import { MockedFileDB } from '../files/__mocks__/filedb';
+import { FileDB } from '../files/__mocks__/filedb';
 
 const { mockCache } = await import('./__mocks__/cache');
 jest.unstable_mockModule('../utils/cache', () => mockCache);
 const { cache } = await import('./cache');
 
 const { Curl } = await import('./curl');
-const { FileDB } = await import('../files/filedb');
 
 describe('Curl', () => {
 	let curl: InstanceType<typeof Curl>;
-	const mockFileDB = new MockedFileDB();
+	const mockFileDB = new FileDB();
 	const testUrl = 'http://example.com/resource.tar.gz';
 	const testFolder = '/test/folder';
 	const testFilename = 'resource.tar.gz';

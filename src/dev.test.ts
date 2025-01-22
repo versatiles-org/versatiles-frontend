@@ -1,37 +1,20 @@
 import { jest } from '@jest/globals';
 
-jest.spyOn(process, 'exit').mockImplementationOnce(() => {
-	throw new Error('process.exit() was called.');
-});
-console.error = jest.fn().mockReturnValue(undefined);
+console.error = jest.fn(() => { });
 
 // Import all necessary mocks
-const { File } = await import('./files/file');
-const { FileSystem } = await import('./files/filedb');
-
-const { mockProgress } = await import('./utils/__mocks__/progress');
-jest.unstable_mockModule('./utils/progress', () => mockProgress);
-const progress = (await import('./utils/progress')).default;
-
-const { mockServer } = await import('./server/__mocks__/server');
-jest.unstable_mockModule('./server/server', () => mockServer);
-const { Server } = await import('./server/server');
-
-const { mockFrontend } = await import('./frontend/__mocks__/frontend');
-jest.unstable_mockModule('./frontend/frontend', () => mockFrontend);
-const { Frontend, loadFrontendConfigs } = await import('./frontend/frontend');
-
-const { mockAssets } = await import('./frontend/__mocks__/assets');
-jest.unstable_mockModule('./frontend/assets', () => mockAssets);
-const { loadAssets: getAssets } = await import('./files/filedb-assets');
+const { progress } = await import('./utils/__mocks__/progress');
+const { } = await import('./files/__mocks__/filedb-asset');
+const { } = await import('./files/__mocks__/filedb-static');
+const { FileDBs } = await import('./files/__mocks__/filedbs');
+const { loadFrontendConfigs } = await import('./frontend/__mocks__/load');
+const { Frontend } = await import('./frontend/__mocks__/frontend');
+const { Server } = await import('./server/__mocks__/server');
 
 describe('build process', () => {
 	beforeEach(() => {
 		// Clear mocks before each test
 		jest.clearAllMocks();
-
-		// Setup default mock implementations or return values
-		jest.mocked(loadFrontendConfigs).mockResolvedValue([{ name: 'frontend', dev: {}, include: ['frontend'] }]);
 	});
 
 	it('prepares and starts the server for the specified frontend', async () => {
@@ -44,26 +27,27 @@ describe('build process', () => {
 			await import('./dev');
 		});
 
-		expect(progress.disableAnsi).toHaveBeenCalled();
 		expect(progress.setHeader).toHaveBeenCalledWith('Preparing Server');
-		expect(getAssets).toHaveBeenCalled();
 		expect(loadFrontendConfigs).toHaveBeenCalled();
-		expect(Frontend).toHaveBeenCalledWith(
-			new FileSystem(new Map([['index.html', new File('index.html', 42, Buffer.from('file content'))]])),
-			{ dev: {}, include: ['frontend'], name: 'frontend' },
-			expect.any(String),
-		);
+
+		expect(Frontend.mock.calls).toStrictEqual([[
+			expect.any(FileDBs),
+			{ name: 'frontend', fileDBs: expect.any(Array) }
+		]]);
 		expect(Server).toHaveBeenCalled();
 		expect(progress.finish).toHaveBeenCalled();
 
 		// Verify the server started with the correct configuration
-		// @ts-expect-error too lazy
 		const serverInstance = new Server();
 		expect(serverInstance.start).toHaveBeenCalled();
 	});
 
 	it('exits the process if no frontend name is provided', async () => {
 		process.argv.length = 2; // Simulate missing frontend name
+
+		jest.spyOn(process, 'exit').mockImplementationOnce(() => {
+			throw new Error('process.exit() was called.');
+		});
 
 		await expect(jest.isolateModulesAsync(async () => {
 			await import('./dev');

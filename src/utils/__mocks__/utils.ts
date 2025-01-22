@@ -1,8 +1,13 @@
 import { jest } from '@jest/globals';
 
-export const mockUtils = {
-	cleanupFolder: jest.fn().mockReturnValue(undefined),
-	ensureFolder: jest.fn().mockReturnValue(undefined),
-} as unknown as jest.Mocked<typeof import('../utils')>;
+export const cleanupFolder = jest.fn().mockReturnValue(undefined);
+export const ensureFolder = jest.fn().mockReturnValue(undefined);
 
-jest.unstable_mockModule('../utils/utils', () => mockUtils);
+export const mockUtils = {
+  cleanupFolder,
+  ensureFolder,
+} as const satisfies jest.Mocked<typeof import('../utils')>;
+
+try { jest.unstable_mockModule('../utils', () => mockUtils) } catch (e) { }
+try { jest.unstable_mockModule('./utils', () => mockUtils) } catch (e) { }
+try { jest.unstable_mockModule('./utils/utils', () => mockUtils) } catch (e) { }
