@@ -1,3 +1,4 @@
+import { env } from 'process';
 import supportsColor from 'supports-color';
 
 // Defines possible states for a progress label.
@@ -117,6 +118,7 @@ export class Progress {
 	 */
 	public constructor() {
 		this.#useAnsi = Boolean(supportsColor.stdout);
+		if (env.NO_COLOR != null) this.#useAnsi = false;
 	}
 
 	public get useAnsi(): boolean {

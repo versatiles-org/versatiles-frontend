@@ -6,6 +6,9 @@ on:
       - "v*"
   workflow_dispatch:
 
+env:
+  FORCE_COLOR: 1
+
 jobs:
   release:
     name: Build and release
@@ -24,7 +27,7 @@ jobs:
         run: 'echo "RELEASE_TAG=v$(jq -r ''.version'' package.json)" >> $GITHUB_ENV'
 
       - run: npm install
-      - run: npm run build
+      - run: NO_COLOR=1 npm run build
 
       - name: create release if needed
         run: gh release view $RELEASE_TAG || gh release create $RELEASE_TAG
