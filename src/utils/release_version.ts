@@ -10,14 +10,14 @@ export async function getLatestGithubReleaseVersion(owner: string, repo: string,
 
 	const headers = new Headers();
 	// Optionally use a GitHub token for authorization.
-	if (process.env.GITHUB_TOKEN != null) headers.append('Authorization', 'Bearer ' + process.env.GITHUB_TOKEN);
+	if (process.env.GH_TOKEN != null) headers.append('Authorization', 'Bearer ' + process.env.GH_TOKEN);
 
 	const response = await fetch(url, { headers, redirect: 'follow' });
 	const data = await response.json();
 	// Validate the response data.
 	if (!Array.isArray(data)) {
 		console.log({ data });
-		throw Error('wrong response, maybe set environment variable "GITHUB_TOKEN"?');
+		throw Error('wrong response, maybe set environment variable "GH_TOKEN"?');
 	}
 
 	// Extract and return the latest version, ignoring the 'v' prefix.
