@@ -1,11 +1,14 @@
 import { jest } from '@jest/globals';
 
-export const mockCache: jest.Mocked<typeof import('../cache')> = {
-	cache: jest.fn(async (action: string, key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> => {
-		return cbBuffer();
-	}),
-};
+export const cache = jest.fn(async (action: string, key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> => {
+	return cbBuffer();
+});
 
-try { jest.unstable_mockModule('../cache', () => mockCache) } catch (_) { /* */ }
-try { jest.unstable_mockModule('./cache', () => mockCache) } catch (_) { /* */ }
-try { jest.unstable_mockModule('./utils/cache', () => mockCache) } catch (_) { /* */ }
+const mockedModule = {
+	cache
+}
+
+try { jest.unstable_mockModule('./cache', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('../cache', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./utils/cache', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('../utils/cache', () => mockedModule) } catch (_) { /* */ }

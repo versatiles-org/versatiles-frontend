@@ -10,9 +10,7 @@ const { mockExpress } = await import('../utils/__mocks__/express');
 jest.unstable_mockModule('express', () => mockExpress);
 const express = (await import('express')).default;
 
-const { mockCache } = await import('../utils/__mocks__/cache');
-jest.unstable_mockModule('../utils/cache', () => mockCache);
-await import('../utils/cache');
+await import('../utils/__mocks__/cache');
 
 const { Server, parseDevConfig } = await import('./server');
 const { Frontend } = await import('../frontend/__mocks__/frontend');

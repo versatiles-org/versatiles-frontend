@@ -34,7 +34,7 @@ export class File {
 		this.bufferBr = await cache(
 			'compress',
 			this.hash,
-			async () => new Promise(res => brotliCompress(
+			async () => new Promise((res, rej) => brotliCompress(
 				this.bufferRaw,
 				{
 					params: {
@@ -43,6 +43,7 @@ export class File {
 					},
 				},
 				(error, buffer) => {
+					if (error) return rej(error);;
 					res(buffer);
 				},
 			)),

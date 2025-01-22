@@ -2,9 +2,7 @@ import { jest } from '@jest/globals';
 import { mockFetchResponse } from './__mocks__/global_fetch';
 import { FileDB } from '../files/__mocks__/filedb';
 
-const { mockCache } = await import('./__mocks__/cache');
-jest.unstable_mockModule('../utils/cache', () => mockCache);
-const { cache } = await import('./cache');
+const { cache } = await import('./__mocks__/cache');
 
 const { Curl } = await import('./curl');
 
