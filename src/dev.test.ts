@@ -5,6 +5,7 @@ console.error = jest.fn(() => { });
 // Import all necessary mocks
 const { progress } = await import('./utils/__mocks__/progress');
 await import('./files/__mocks__/filedb-asset');
+await import('./files/__mocks__/filedb-rollup');
 await import('./files/__mocks__/filedb-static');
 const { FileDBs } = await import('./files/__mocks__/filedbs');
 const { loadFrontendConfigs } = await import('./frontend/__mocks__/load');

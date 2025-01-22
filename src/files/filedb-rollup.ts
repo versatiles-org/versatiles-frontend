@@ -17,14 +17,14 @@ export class RollupFileDB extends FileDB {
 	private config: RollupFileDBConfig;
 	private frontendFolder: string;
 
-	constructor(frontendFolder: string, config: RollupFileDBConfig) {
+	constructor(config: RollupFileDBConfig, frontendFolder: string) {
 		super();
 		this.config = config;
 		this.frontendFolder = frontendFolder;
 	}
 
 	public static async build(config: RollupFileDBConfig, frontendFolder: string): Promise<RollupFileDB> {
-		const db = new RollupFileDB(frontendFolder, config);
+		const db = new RollupFileDB(config, frontendFolder);
 		await db.rollup();
 		return db;
 	}
@@ -84,28 +84,3 @@ export class RollupFileDB extends FileDB {
 		})
 	}
 }
-
-/*
-
-export class RollupFrontends {
-
-	async rollupFrontend(config: RollupConfig): Promise<FileSystem> {
-
-	public async watch(id: string, cb: (rollupFrontend: FileSystem) => void): Promise<void> {
-		const configs = await this.loadRollupConfigs();
-		const config = configs.find(c => c.id === id);
-		if (!config) throw new Error(`Rollup config not found: ${id}`);
-
-		const update = async () => cb(await this.rollupFrontend(config));
-
-		update();
-
-		const fullPath = normalize(`${rollupFolder}/${id}`);
-		watch(fullPath, { recursive: true }, async (event: WatchEventType, filename: string | null) => {
-			if (filename == null) return;
-			update();
-		});
-	}
-}
-
-*/
