@@ -48,7 +48,7 @@ export class ProgressLabel {
 		if (this.progress.useAnsi) {
 			this.progress.redraw();
 		} else {
-			this.progress.write(this.getOutputText());
+			this.progress.writeLine(this.getOutputText());
 		}
 	}
 
@@ -60,7 +60,7 @@ export class ProgressLabel {
 		if (this.progress.useAnsi) {
 			this.progress.redraw();
 		} else {
-			this.progress.write(this.getOutputText());
+			this.progress.writeLine(this.getOutputText());
 		}
 	}
 
@@ -126,8 +126,8 @@ export class Progress {
 	/**
 	 * Disables the use of ANSI colors in the progress display.
 	 */
-	public disableAnsi(): void {
-		this.#useAnsi = false;
+	public setAnsi(ansi: boolean): void {
+		this.#useAnsi = ansi;
 	}
 
 	/**
@@ -142,12 +142,12 @@ export class Progress {
 	 * 
 	 * @param header - The header text to set.
 	 */
-	public setHeader(header: string): void {		
+	public setHeader(header: string): void {
 		if (this.#useAnsi) {
 			this.header = header;
 			this.redraw();
 		} else {
-			this.write(header);
+			this.writeLine(header);
 		}
 	}
 
@@ -159,7 +159,7 @@ export class Progress {
 			this.finished = true;
 			this.redraw();
 		} else {
-			this.write('Finished');
+			this.writeLine('Finished');
 		}
 	}
 
@@ -187,12 +187,12 @@ export class Progress {
 
 		if (!this.started) {
 			// Clear the terminal and set up for drawing.
-			process.stdout.write('\x1b[2J\x1b[3J\x1b[H\x1b7');
+			this.write('\x1b[2J\x1b[3J\x1b[H\x1b7');
 			this.started = true;
 		}
 
 		// Re-draw the progress display, including the header and all labels.
-		process.stdout.write([
+		this.write([
 			'\x1b8', // Restore cursor position.
 			`\x1b[${this.finished ? 2 : 1}m${this.header ?? ''}\x1b[0m\n`, // Optionally set header with styling.
 			...this.labelList.map(l => l.getOutputAnsi()), // Generate ANSI output for each label.
@@ -205,12 +205,16 @@ export class Progress {
 	 * 
 	 * @param line - The line of text to write.
 	 */
-	public write(line: string): void {
+	public writeLine(line: string): void {
 		if (this.#disabled) return;
-		process.stdout.write(line + '\n');
+		this.write(line + '\n');
+	}
+
+	public write(text: string): void {
+		process.stdout.write(text);
 	}
 }
 
 // The singleton instance of Progress for use throughout the application.
-const progress = new Progress();
-export default progress;
+const globalProgress = new Progress();
+export default globalProgress;

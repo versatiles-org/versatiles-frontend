@@ -19,7 +19,7 @@ export const ProgressLabel = jest.fn((progress: ProgressType, label: string, ind
 
 export const Progress = jest.fn(() => {
 	const progress = new originalModule.Progress();
-	jest.spyOn(progress, 'disableAnsi');
+	jest.spyOn(progress, 'setAnsi');
 	jest.spyOn(progress, 'disable');
 	jest.spyOn(progress, 'setHeader');
 	jest.spyOn(progress, 'finish');
