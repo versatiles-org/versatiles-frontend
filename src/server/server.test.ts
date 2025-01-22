@@ -1,6 +1,6 @@
 import { jest } from '@jest/globals';
 import { mockFetchResponse } from '../utils/__mocks__/global_fetch';
-import type { Server as ServerType } from './server';
+import type { DevConfig, Server as ServerType } from './server';
 import type { IncomingMessage, ServerResponse } from 'http';
 import type { Frontend as FrontendType } from '../frontend/frontend';
 import { FileDBs } from '../files/__mocks__/filedbs';
@@ -14,7 +14,7 @@ const { mockCache } = await import('../utils/__mocks__/cache');
 jest.unstable_mockModule('../utils/cache', () => mockCache);
 await import('../utils/cache');
 
-const { Server } = await import('./server');
+const { Server, parseDevConfig } = await import('./server');
 const { Frontend } = await import('../frontend/__mocks__/frontend');
 
 describe('Server', () => {
@@ -101,5 +101,65 @@ describe('Server', () => {
 
 		expect(res.end).toHaveBeenCalledTimes(1);
 		expect(res.end).toHaveBeenCalledWith(Buffer.from('response'));
+	});
+});
+
+describe('parseDevConfig', () => {
+	test('should return an empty config if no properties are provided', () => {
+		const input = {};
+		const result = parseDevConfig(input);
+		expect(result).toEqual({});
+	});
+
+	test('should throw an error if input is not an object', () => {
+		const inputs = [null, undefined, 42, 'string', true];
+		for (const input of inputs) {
+			expect(() => parseDevConfig(input)).toThrow("Invalid 'dev' property, must be an object");
+		}
+	});
+
+	test('should throw an error if proxy is not an array', () => {
+		const input = { proxy: 'invalid' };
+		expect(() => parseDevConfig(input)).toThrow("Invalid 'proxy' configuration, each proxy must be an object with 'from' and 'to' string properties");
+	});
+
+	test('should throw an error if proxy array contains invalid objects', () => {
+		const invalidProxies = [
+			{ from: '/api' }, // Missing 'to'
+			{ to: '/target' }, // Missing 'from'
+			{ from: '/api', to: 42 }, // 'to' is not a string
+			'not an object',
+		];
+
+		for (const invalidProxy of invalidProxies) {
+			const input = { proxy: [invalidProxy] };
+			expect(() => parseDevConfig(input)).toThrow("Invalid 'proxy' configuration, each proxy must be an object with 'from' and 'to' string properties");
+		}
+	});
+
+	test('should correctly parse a valid proxy configuration', () => {
+		const input = {
+			proxy: [
+				{ from: '/api', to: 'http://localhost:3000/api' },
+				{ from: '/assets', to: 'http://localhost:3000/assets' },
+			],
+		};
+
+		const expectedOutput: DevConfig = {
+			proxy: [
+				{ from: '/api', to: 'http://localhost:3000/api' },
+				{ from: '/assets', to: 'http://localhost:3000/assets' },
+			],
+		};
+
+		const result = parseDevConfig(input);
+		expect(result).toEqual(expectedOutput);
+	});
+
+	test('should handle an empty proxy array', () => {
+		const input = { proxy: [] };
+		const expectedOutput: DevConfig = { proxy: [] };
+		const result = parseDevConfig(input);
+		expect(result).toEqual(expectedOutput);
 	});
 });
