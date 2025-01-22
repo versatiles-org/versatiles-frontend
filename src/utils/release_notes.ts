@@ -54,7 +54,6 @@ export class ReleaseNotes {
 	public add(name: string): Label {
 		const label = new Label(name);
 		this.labelList.push(label);
-		if (this.labelMap.has(name)) throw Error('Duplicate label name');
 		this.labelMap.set(name, label);
 
 		return label;

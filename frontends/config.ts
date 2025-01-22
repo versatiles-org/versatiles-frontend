@@ -2,7 +2,8 @@ import type { FileDBConfig } from '../src/files/filedbs';
 import type { FrontendConfig } from '../src/frontend/frontend';
 
 export const fileDBConfigs = {
-	'external-fonts': { type: 'external', source: 'fonts' },
+	'external-fonts': { type: 'external', source: 'fonts-all' },
+	'external-fonts-noto': { type: 'external', source: 'fonts-noto' },
 	'external-styles': { type: 'external', source: 'styles' },
 	'external-maplibre': { type: 'external', source: 'maplibre' },
 	'external-maplibre-inspect': { type: 'external', source: 'maplibre-inspect' },
@@ -45,13 +46,11 @@ export const frontendConfigs: FrontendConfig<keyof typeof fileDBConfigs>[] = [
 		fileDBs: [
 			'all',
 			'frontend-min',
-			'external-fonts',
+			'external-fonts-noto',
 			'external-styles',
 			'external-maplibre'
 		],
 		ignore: [
-			'assets/glyphs/*',
-			'!assets/glyphs/noto_sans_regular/',
 			'*.d.ts',
 			'*.map',
 			'*@3x.json',

@@ -33,7 +33,7 @@ describe('getAssets', () => {
 		})
 
 		it('fonts', async () => {
-			await ExternalFileDB.build({ type: 'external', source: 'fonts' });
+			await ExternalFileDB.build({ type: 'external', source: 'fonts-all' });
 			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-fonts']]);
 			expect(getCurlCalls()).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.2.3/fonts.tar.gz'

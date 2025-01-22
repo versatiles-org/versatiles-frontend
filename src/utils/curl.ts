@@ -5,7 +5,6 @@ import unzipper from 'unzipper';
 import type { Entry } from 'unzipper';
 import type { FileDB } from '../files/filedb';
 import { cache } from './cache';
-import { join } from 'node:path';
 
 /**
  * Provides utilities for fetching resources over HTTP(s), with support for caching,
@@ -33,7 +32,7 @@ export class Curl {
 	 * 
 	 * @param folder - The target folder where the untarred files will be saved.
 	 */
-	public async ungzipUntar(cbFilter: (filename: string) => string[] | false): Promise<void> {
+	public async ungzipUntar(cbFilter: (filename: string) => string | false): Promise<void> {
 		const streamIn = createGunzip();
 		streamIn.on('error', error => {
 			console.log('gunzip error for: ' + this.url);
@@ -47,7 +46,7 @@ export class Curl {
 					const buffers: Buffer[] = [];
 					for await (const buffer of entry) buffers.push(buffer);
 					this.fileDB.setFileFromBuffer(
-						join(...path),
+						path,
 						Number(entry.mtime ?? Math.random()),
 						Buffer.concat(buffers)
 					);
@@ -74,13 +73,13 @@ export class Curl {
 	 * 
 	 * @param cbFilter - A callback function that determines the save path for each unzipped file, or skips the file.
 	 */
-	public async unzip(cbFilter: (filename: string) => string[] | false): Promise<void> {
+	public async unzip(cbFilter: (filename: string) => string | false): Promise<void> {
 		const zip = unzipper.Parse();
 		zip.on('entry', (entry: Entry) => {
 			const path = cbFilter(entry.path);
 			if (path != false) {
 				void entry.buffer().then(buffer => {
-					this.fileDB.setFileFromBuffer(join(...path), entry.vars.lastModifiedTime, buffer);
+					this.fileDB.setFileFromBuffer(path, entry.vars.lastModifiedTime, buffer);
 				});
 			} else {
 				entry.autodrain();

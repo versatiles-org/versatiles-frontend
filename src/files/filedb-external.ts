@@ -10,7 +10,7 @@ const folderLibrary = 'assets/lib/';
 const folderGlyphs = 'assets/glyphs/';
 const folderSprites = 'assets/sprites/';
 
-type ExternalFileDBSources = 'fonts' | 'styles' | 'maplibre' | 'maplibre-inspect';
+type ExternalFileDBSources = 'fonts-all' | 'fonts-noto' | 'styles' | 'maplibre' | 'maplibre-inspect';
 
 export interface ExternalFileDBConfig {
 	type: 'external';
@@ -26,10 +26,12 @@ export class ExternalFileDB extends FileDB {
 	public static async build(config: ExternalFileDBConfig): Promise<ExternalFileDB> {
 		const db = new ExternalFileDB();
 		switch (config.source) {
-			case 'fonts': await db.addFonts(); break;
+			case 'fonts-all': await db.addFonts('fonts'); break;
+			case 'fonts-noto': await db.addFonts('noto_sans'); break;
 			case 'styles': await db.addStyles(); break;
 			case 'maplibre': await db.addMaplibre(); break;
 			case 'maplibre-inspect': await db.addMaplibreInspect(); break;
+			default: throw new Error(`Unknown external file source: ${config.source}`);
 		}
 		return db;
 	}
@@ -40,12 +42,16 @@ export class ExternalFileDB extends FileDB {
 	 * Adds fonts to the project by downloading and extracting them from the specified release.
 	 *
 	 */
-	private async addFonts(): Promise<void> {
+	private async addFonts(name: 'fonts' | 'noto_sans'): Promise<void> {
 		const label = notes.add('[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)');
 		const version = await getLatestGithubReleaseVersion('versatiles-org', 'versatiles-fonts');
 		label.setVersion(version);
-		await new Curl(this, `https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/fonts.tar.gz`)
-			.ungzipUntar(f => [folderGlyphs, f]);
+
+		await new Curl(this, `https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/${name}.tar.gz`)
+			.ungzipUntar(filename => {
+				if (filename == 'fonts.json') filename = 'index.json';
+				return join(folderGlyphs, filename)
+			});
 	}
 
 	/**
@@ -59,11 +65,11 @@ export class ExternalFileDB extends FileDB {
 		const version = await getLatestGithubReleaseVersion('versatiles-org', 'versatiles-style', true);
 		label.setVersion(version);
 		await new Curl(this, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/styles.tar.gz`)
-			.ungzipUntar(f => [folderStyle, f]);
+			.ungzipUntar(f => join(folderStyle, f));
 		await new Curl(this, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/versatiles-style.tar.gz`)
-			.ungzipUntar(f => [folderLib, f]);
+			.ungzipUntar(f => join(folderLib, f));
 		await new Curl(this, `https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/sprites.tar.gz`)
-			.ungzipUntar(f => [folderSprites, f]);
+			.ungzipUntar(f => join(folderSprites, f));
 	}
 
 	/**
@@ -76,7 +82,7 @@ export class ExternalFileDB extends FileDB {
 		const version = await getLatestGithubReleaseVersion('maplibre', 'maplibre-gl-js');
 		label.setVersion(version);
 		await new Curl(this, `https://github.com/maplibre/maplibre-gl-js/releases/download/v${version}/dist.zip`)
-			.unzip(f => /dist\/.*\.(js|css|map)$/.test(f) && [folder, basename(f)]);
+			.unzip(f => /dist\/.*\.(js|css|map)$/.test(f) && join(folder, basename(f)));
 	}
 
 	/**
@@ -89,7 +95,7 @@ export class ExternalFileDB extends FileDB {
 		const version = await getLatestNPMReleaseVersion('@maplibre/maplibre-gl-inspect');
 		label.setVersion(version);
 		await new Curl(this, `https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-${version}.tgz`)
-			.ungzipUntar(f => /package\/dist\/.*\.(js|css|map)$/.test(f) && [folder, basename(f)]);
+			.ungzipUntar(f => /package\/dist\/.*\.(js|css|map)$/.test(f) && join(folder, basename(f)));
 	}
 
 	public enterWatchMode(): void { }

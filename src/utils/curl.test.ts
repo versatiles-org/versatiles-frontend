@@ -1,6 +1,7 @@
 import { jest } from '@jest/globals';
 import { mockFetchResponse } from './__mocks__/global_fetch';
 import { FileDB } from '../files/__mocks__/filedb';
+import { join } from 'node:path';
 
 const { cache } = await import('./__mocks__/cache');
 
@@ -25,7 +26,7 @@ describe('Curl', () => {
 
 	it('should fetch and ungzip/untar a resource', async () => {
 		mockFetchResponse(testGzipTar);
-		await curl.ungzipUntar(f => [testFolder, f]);
+		await curl.ungzipUntar(f => join(testFolder, f));
 
 		expect(cache).toHaveBeenCalledTimes(1);
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
@@ -46,7 +47,7 @@ describe('Curl', () => {
 	it('should fetch, unzip, and save contents based on filter callback', async () => {
 		mockFetchResponse(testZip);
 
-		await curl.unzip(filename => filename.endsWith('.txt') && ['/unzipped/', filename]);
+		await curl.unzip(filename => filename.endsWith('.txt') && join('/unzipped/', filename));
 
 		expect(cache).toHaveBeenCalledTimes(1);
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
