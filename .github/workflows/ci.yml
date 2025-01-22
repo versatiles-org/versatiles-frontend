@@ -9,6 +9,9 @@ on:
   pull_request:
   workflow_dispatch:
 
+env:
+  FORCE_COLOR: 1
+
 jobs:
   release:
     name: Lint and test
