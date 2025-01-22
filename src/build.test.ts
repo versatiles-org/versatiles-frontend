@@ -3,6 +3,7 @@ import { jest } from '@jest/globals';
 await import('./files/__mocks__/filedb-asset');
 await import('./files/__mocks__/filedb-static');
 await import('./utils/__mocks__/cache');
+await import('./utils/__mocks__/release_version');
 const { Frontend } = await import('./frontend/__mocks__/frontend');
 const { default: notes } = await import('./utils/__mocks__/release_notes');
 const { progress } = await import('./utils/__mocks__/progress');
