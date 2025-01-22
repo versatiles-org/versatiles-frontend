@@ -1,18 +1,14 @@
 import { jest } from '@jest/globals';
-import { resolve } from 'path';
-import type { File as FileType } from '../files/file';
-import type { FileSystem as FileSystemType } from '../files/filedb';
+import { FrontendConfig } from './frontend';
+import { loadFileDBConfigs } from '../files/filedbs';
 
 const { mockCache } = await import('../utils/__mocks__/cache');
 jest.unstable_mockModule('../utils/cache', () => mockCache);
 await import('../utils/cache');
 
-const { mockFs } = await import('../utils/__mocks__/node_fs');
-jest.unstable_mockModule('node:fs', () => mockFs);
-const { createWriteStream } = await import('node:fs');
+const { createWriteStream } = await import('../utils/__mocks__/node_fs');
 
-const { File } = await import('../files/file');
-const { FileSystem } = await import('../files/filedb');
+const { MockedFileDBs } = await import('../files/__mocks__/filedbs');
 const { Frontend, loadFrontendConfigs, generateFrontends } = await import('./frontend');
 const progress = (await import('../utils/progress')).default;
 const PromiseFunction = (await import('../utils/async')).default;
@@ -21,26 +17,30 @@ progress.disable();
 
 if (!jest.isMockFunction(createWriteStream)) throw Error();
 
-const projectFolder = new URL('../../', import.meta.url).pathname;
+let fileDBConfig = await loadFileDBConfigs();
 
 describe('Frontend class', () => {
-	let mockFileSystem: FileSystemType;
+	let mockFileDBs: InstanceType<typeof MockedFileDBs>;
 	const testConfig = {
 		name: 'frontend',
-		include: ['all', 'frontend'],
+		fileDBs: ['all'],
 		ignore: ['ignore-me.txt'],
-	};
-	const frontendsPath = resolve(projectFolder, 'frontends');
+	} as const satisfies FrontendConfig;
 
 	beforeEach(() => {
 		jest.clearAllMocks(); // Clear mocks before each test
-		mockFileSystem = new FileSystem(new Map<string, FileType>([
-			['nothing.js', new File('nothing.js', 12, Buffer.from('file content'))],
-		]));
+		mockFileDBs = new MockedFileDBs(
+			Object.fromEntries(
+				Object.entries(fileDBConfig)
+					.map(([name, config]) => {
+						return [name, { [name + '.html']: 'html content of ' + name }];
+					})
+			)
+		);
 	});
 
 	it('should create gzip-compressed tarball', async () => {
-		const frontend = new Frontend(mockFileSystem, testConfig, frontendsPath);
+		const frontend = new Frontend(mockFileDBs, testConfig);
 
 		await frontend.saveAsTarGz('/tmp/');
 
@@ -49,7 +49,7 @@ describe('Frontend class', () => {
 	});
 
 	it('should create brotli tarball', async () => {
-		const frontend = new Frontend(mockFileSystem, testConfig, frontendsPath);
+		const frontend = new Frontend(mockFileDBs, testConfig);
 
 		await frontend.saveAsBrTarGz('/tmp/');
 
@@ -60,12 +60,12 @@ describe('Frontend class', () => {
 	it('loads frontend configurations correctly', async () => {
 		const configs = await loadFrontendConfigs();
 		expect(configs).toContainEqual(expect.objectContaining(
-			{ name: expect.any(String), include: expect.any(Array) },
+			{ name: expect.any(String), fileDBs: expect.any(Array) },
 		));
 	});
 
 	it('generates frontends', async () => {
-		await PromiseFunction.run(await generateFrontends(mockFileSystem, projectFolder, '/tmp'));
+		await PromiseFunction.run(await generateFrontends(mockFileDBs, '/tmp/'));
 
 		expect(createWriteStream).toHaveBeenCalledTimes(6);
 

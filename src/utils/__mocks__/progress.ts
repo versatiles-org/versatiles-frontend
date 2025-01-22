@@ -45,3 +45,5 @@ progress.disable();
 export const mockProgress = {
 	ProgressLabel, Progress, default: progress,
 } as unknown as jest.Mocked<typeof import('../progress')>;
+
+jest.unstable_mockModule('../utils/progress', () => mockProgress);

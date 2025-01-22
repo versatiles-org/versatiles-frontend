@@ -1,58 +1,69 @@
 import { jest } from '@jest/globals';
 
 // Mock progress
-const { mockProgress } = await import('../utils/__mocks__/progress');
-jest.unstable_mockModule('../utils/progress', () => mockProgress);
-await import('../utils/progress');
-
-const PromiseFunction = (await import('../utils/async')).default;
-
-// Mock curl
-const { mockCurl } = await import('../utils/__mocks__/curl');
-jest.unstable_mockModule('../utils/curl', () => mockCurl);
-const { Curl } = await import('../utils/curl');
-
-const { FileSystem } = await import('./filedb');
-
-// Mock utils
-const { mockUtils } = await import('../utils/__mocks__/utils');
-jest.unstable_mockModule('../utils/utils', () => mockUtils);
-
-// Mock release_version
-const { mockReleaseVersion } = await import('../utils/__mocks__/release_version');
-jest.unstable_mockModule('../utils/release_version', () => mockReleaseVersion);
-const { getLatestGithubReleaseVersion: getLatestReleaseVersion } = await import('../utils/release_version');
-
-
-const { loadAssets: getAssets } = await import('./filedb-assets');
+const { } = await import('../utils/__mocks__/progress');
+const { MockedCurl } = await import('../utils/__mocks__/curl');
+const { getLatestGithubReleaseVersion, getLatestNPMReleaseVersion } = await import('../utils/__mocks__/release_version');
+const { AssetFileDB } = await import('./filedb-assets');
 
 
 
 describe('getAssets', () => {
-	it('successfully downloads and processes assets', async () => {
-		const mockFileSystem = new FileSystem();
+	function getGHCalls() {
+		const calls = getLatestGithubReleaseVersion.mock.calls;
+		calls.sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
+		return calls;
+	}
 
-		await expect(PromiseFunction.run(getAssets(mockFileSystem))).resolves.toBeUndefined();
+	function getNPMCalls() {
+		const calls = getLatestNPMReleaseVersion.mock.calls.map(e => e[0]);
+		calls.sort((a, b) => a.localeCompare(b));
+		return calls;
+	}
 
-		// test if correct release versions were requestes
-		const glrvCalls = jest.mocked(getLatestReleaseVersion).mock.calls;
-		glrvCalls.sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
-		expect(glrvCalls).toStrictEqual([
-			['maplibre', 'maplibre-gl-js'],
-			['versatiles-org', 'versatiles-fonts'],
-			['versatiles-org', 'versatiles-style', true],
-		]);
+	function getCurlCalls() {
+		const calls = MockedCurl.mock.calls.map(e => e[1]);
+		calls.sort((a, b) => a.localeCompare(b));
+		return calls;
+	}
 
-		// test if correct releases were downloaded
-		const curlResults = jest.mocked(Curl).mock.results.map(e => (e.value as { url: string }).url);
-		curlResults.sort();
-		expect(curlResults).toStrictEqual([
-			'https://github.com/maplibre/maplibre-gl-js/releases/download/v1.2.3/dist.zip',
-			'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.2.3/fonts.tar.gz',
-			'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/sprites.tar.gz',
-			'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/styles.tar.gz',
-			'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/versatiles-style.tar.gz',
-			'https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-2.3.4.tgz',
-		]);
-	});
+	describe('successfully downloads and processes assets', () => {
+		beforeEach(() => {
+			jest.clearAllMocks();
+		})
+
+		it('fonts', async () => {
+			const fileDB = await AssetFileDB.build({ type: 'asset', source: 'fonts' });
+			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-fonts']]);
+			expect(getCurlCalls()).toStrictEqual([
+				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.2.3/fonts.tar.gz'
+			]);
+		});
+
+		it('styles', async () => {
+			const fileDB = await AssetFileDB.build({ type: 'asset', source: 'styles' });
+			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-style', true]]);
+			expect(getCurlCalls()).toStrictEqual([
+				'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/sprites.tar.gz',
+				'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/styles.tar.gz',
+				'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/versatiles-style.tar.gz',
+			]);
+		});
+
+		it('maplibre', async () => {
+			const fileDB = await AssetFileDB.build({ type: 'asset', source: 'maplibre' });
+			expect(getGHCalls()).toStrictEqual([['maplibre', 'maplibre-gl-js']]);
+			expect(getCurlCalls()).toStrictEqual([
+				'https://github.com/maplibre/maplibre-gl-js/releases/download/v1.2.3/dist.zip'
+			]);
+		});
+
+		it('maplibre-inspect', async () => {
+			const fileDB = await AssetFileDB.build({ type: 'asset', source: 'maplibre-inspect' });
+			expect(getNPMCalls()).toStrictEqual(['@maplibre/maplibre-gl-inspect']);
+			expect(getCurlCalls()).toStrictEqual([
+				'https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-2.3.4.tgz'
+			]);
+		});
+	})
 });

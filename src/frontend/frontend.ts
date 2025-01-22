@@ -25,9 +25,9 @@ export interface FrontendConfig<fileDBKeys = string> {
 export class Frontend {
 	public readonly fileDBs: FileDBs;
 
-	private readonly config: FrontendConfig;
+	public readonly config: FrontendConfig;
 
-	private readonly ignoreFilter: (pathname: string) => boolean;
+	public readonly ignoreFilter: (pathname: string) => boolean;
 
 	/**
 	 * Constructs a Frontend instance.
@@ -73,6 +73,7 @@ export class Frontend {
 	public async saveAsBrTarGz(folder: string): Promise<void> {
 		const pack = tar.pack();
 		for (const file of this.iterate()) {
+			if (!file.bufferBr) await file.compress();
 			pack.entry({ name: file.name + '.br' }, file.bufferBr);
 		}
 		pack.finalize();
@@ -87,7 +88,7 @@ export class Frontend {
 	/**
 	 * Iterates over the frontend's files, filtering out those ignored.
 	 */
-	private *iterate(): IterableIterator<File> {
+	public *iterate(): IterableIterator<File> {
 		for (const fileDBId of this.config.fileDBs) {
 			const fileDB = this.fileDBs.get(fileDBId);
 			for (const file of fileDB.iterate()) {
@@ -176,23 +177,3 @@ export function generateFrontends(fileDBs: FileDBs, dstFolder: string): Pf {
 	}
 
 }
-/*
-
-export function generateFrontends(fileDBs: Map<string, FileDB>, dstFolder: string): Pf {
-	const rollupFrontends = new RollupFrontends();
-
-	// Load frontend configurations from the specified folder.
-	const frontendConfigs = await loadFrontendConfigs();
-	// Read the project version from package.json to use in release notes.
-
-	const frontendVersion = String(JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')).version);
-	notes.setVersion(frontendVersion);
-
-	// Use PromiseFunction to wrap the operation in progress tracking,
-	// generating each frontend in parallel for efficiency.
-	return Pf.wrapProgress('generate frontends',
-		Pf.parallel(
-			...frontendConfigs.map(config => generateFrontend(config, rollupFrontends)),
-		),
-	);
-	*/

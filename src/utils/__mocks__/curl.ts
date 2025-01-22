@@ -1,16 +1,16 @@
-import type { Curl as CurlType } from '../curl';
-import type { FileSystem } from '../../files/filedb';
+import type { Curl } from '../curl';
+import { MockedFileDB } from '../../files/__mocks__/filedb';
 import { jest } from '@jest/globals';
 
-export type CurlInstance = InstanceType<typeof CurlType> & { url: string; fileSystem: FileSystem };
+export const mockedCurlInstance = jest.mocked({
+	url: 'mocked url',
+	fileDB: new MockedFileDB(),
+	ungzipUntar: jest.fn(async () => { }),
+	save: jest.fn(async () => { }),
+	unzip: jest.fn(async () => { }),
+	getBuffer: jest.fn(async () => Buffer.from('mocked buffer')),
+}) as unknown as jest.Mocked<Curl>;
 
-export const mockCurl = {
-	Curl: jest.fn((fileSystem: FileSystem, url: string) => ({
-		url: url,
-		fileSystem: fileSystem,
-		ungzipUntar: jest.fn().mockReturnValue(Promise.resolve()),
-		save: jest.fn().mockReturnValue(Promise.resolve()),
-		unzip: jest.fn().mockReturnValue(Promise.resolve()),
-		getBuffer: jest.fn().mockReturnValue(Promise.resolve(Buffer.from('mocked buffer'))),
-	})),
-} as unknown as jest.Mocked<typeof import('../curl')>;
+export const MockedCurl = jest.fn((fileDB: MockedFileDB, url: string) => mockedCurlInstance);
+
+jest.unstable_mockModule('../utils/curl', () => ({ Curl: MockedCurl }));

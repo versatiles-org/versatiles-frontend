@@ -60,4 +60,3 @@ export async function getLatestNPMReleaseVersion(packageName: string): Promise<s
 
 	return versions[0].version;
 }
-

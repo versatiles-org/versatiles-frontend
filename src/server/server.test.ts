@@ -1,9 +1,8 @@
 import { jest } from '@jest/globals';
 import { mockFetchResponse } from '../utils/__mocks__/global_fetch';
 import type { Server as ServerType } from './server';
-import type { File as FileType } from '../files/file';
-import type { FileSystem as FileSystemType } from '../files/filedb';
 import type { IncomingMessage, ServerResponse } from 'http';
+import type { Frontend } from '../frontend/frontend';
 
 
 const { mockExpress } = await import('../utils/__mocks__/express');
@@ -14,15 +13,13 @@ const { mockCache } = await import('../utils/__mocks__/cache');
 jest.unstable_mockModule('../utils/cache', () => mockCache);
 await import('../utils/cache');
 
-const { File } = await import('../files/file');
-const { FileSystem } = await import('../files/filedb');
 const { Server } = await import('./server');
-const { Frontend } = await import('../frontend/frontend');
+const { MockedFrontend } = await import('../frontend/__mocks__/frontend');
 
 describe('Server', () => {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars
 	let server: ServerType;
-	let mockFileSystem: FileSystemType;
+	let mockedFrontend: InstanceType<typeof MockedFrontend>;
 	let getFunction: (req: IncomingMessage, res: ServerResponse) => void;
 
 	async function fakeRequest(path: string): Promise<{
@@ -52,12 +49,9 @@ describe('Server', () => {
 		// Create new mocks
 		mockFetchResponse('response');
 
-		mockFileSystem = new FileSystem(new Map<string, FileType>([
-			['existingFile.txt', new File('existingFile.txt', 12, Buffer.from('file content'))],
-		]));
-		const mockFrontend = new Frontend(mockFileSystem, { name: 'example', include: [] }, '');
+		mockedFrontend = new MockedFrontend();
 
-		server = new Server(mockFrontend, {
+		server = new Server(mockedFrontend as Frontend, {
 			proxy: [{ from: '/api', to: 'http://example.com/api' }],
 		});
 
@@ -67,6 +61,8 @@ describe('Server', () => {
 	});
 
 	it('should serve files from the file system', async () => {
+		mockedFrontend.addFile('existingFile.txt', 'file content');
+
 		const res = await fakeRequest('/existingFile.txt');
 
 		expect(res.header).toHaveBeenCalledTimes(1);
