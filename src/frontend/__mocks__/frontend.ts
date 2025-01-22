@@ -22,7 +22,7 @@ const mockedModule = {
 	Frontend,
 }
 
-try { jest.unstable_mockModule('./frontend', () => mockedModule) } catch (e) { }
-try { jest.unstable_mockModule('../frontend', () => mockedModule) } catch (e) { }
-try { jest.unstable_mockModule('./frontend/frontend', () => mockedModule) } catch (e) { }
-try { jest.unstable_mockModule('../frontend/frontend', () => mockedModule) } catch (e) { }
+try { jest.unstable_mockModule('./frontend', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('../frontend', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./frontend/frontend', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('../frontend/frontend', () => mockedModule) } catch (_) { /* */ }

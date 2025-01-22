@@ -6,7 +6,7 @@ export const loadFrontendConfigs = jest.fn(OriginalModule.loadFrontendConfigs);
 
 const mockedModule = { loadFrontendConfigs }
 
-try { jest.unstable_mockModule('./load', () => mockedModule) } catch (e) { }
-try { jest.unstable_mockModule('../load', () => mockedModule) } catch (e) { }
-try { jest.unstable_mockModule('./frontend/load', () => mockedModule) } catch (e) { }
-try { jest.unstable_mockModule('../frontend/load', () => mockedModule) } catch (e) { }
+try { jest.unstable_mockModule('./load', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('../load', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./frontend/load', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('../frontend/load', () => mockedModule) } catch (_) { /* */ }

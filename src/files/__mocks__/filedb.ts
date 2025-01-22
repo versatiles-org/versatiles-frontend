@@ -21,6 +21,6 @@ const mockedModule = {
 	FileDB
 }
 
-try { jest.unstable_mockModule('../filedb', () => mockedModule) } catch (e) { }
-try { jest.unstable_mockModule('./filedb', () => mockedModule)} catch (e) { }
-try { jest.unstable_mockModule('./files/filedb', () => mockedModule)} catch (e) { }
+try { jest.unstable_mockModule('../filedb', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./filedb', () => mockedModule)} catch (_) { /* */ }
+try { jest.unstable_mockModule('./files/filedb', () => mockedModule)} catch (_) { /* */ }

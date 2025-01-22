@@ -41,6 +41,6 @@ const mockProgress = {
 	ProgressLabel, Progress, default: progress,
 } as unknown as jest.Mocked<typeof import('../progress')>;
 
-try { jest.unstable_mockModule('../progress', () => mockProgress) } catch (e) { }
-try { jest.unstable_mockModule('./progress', () => mockProgress) } catch (e) { }
-try { jest.unstable_mockModule('./utils/progress', () => mockProgress) } catch (e) { }
+try { jest.unstable_mockModule('../progress', () => mockProgress) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./progress', () => mockProgress) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./utils/progress', () => mockProgress) } catch (_) { /* */ }

@@ -1,4 +1,3 @@
-import { versions } from 'process';
 import { mockFetchResponse } from './__mocks__/global_fetch';
 
 

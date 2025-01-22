@@ -4,8 +4,8 @@ console.error = jest.fn(() => { });
 
 // Import all necessary mocks
 const { progress } = await import('./utils/__mocks__/progress');
-const { } = await import('./files/__mocks__/filedb-asset');
-const { } = await import('./files/__mocks__/filedb-static');
+await import('./files/__mocks__/filedb-asset');
+await import('./files/__mocks__/filedb-static');
 const { FileDBs } = await import('./files/__mocks__/filedbs');
 const { loadFrontendConfigs } = await import('./frontend/__mocks__/load');
 const { Frontend } = await import('./frontend/__mocks__/frontend');

@@ -8,7 +8,7 @@ export const mockReleaseVersion: jest.Mocked<typeof import('../release_version')
 export const getLatestGithubReleaseVersion = mockReleaseVersion.getLatestGithubReleaseVersion;
 export const getLatestNPMReleaseVersion = mockReleaseVersion.getLatestNPMReleaseVersion;
 
-try { jest.unstable_mockModule('./release_version', () => mockReleaseVersion) } catch (e) { }
-try { jest.unstable_mockModule('../release_version', () => mockReleaseVersion) } catch (e) { }
-try { jest.unstable_mockModule('./utils/release_version', () => mockReleaseVersion) } catch (e) { }
-try { jest.unstable_mockModule('../utils/release_version', () => mockReleaseVersion) } catch (e) { }
+try { jest.unstable_mockModule('./release_version', () => mockReleaseVersion) } catch (_) { /* */ }
+try { jest.unstable_mockModule('../release_version', () => mockReleaseVersion) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./utils/release_version', () => mockReleaseVersion) } catch (_) { /* */ }
+try { jest.unstable_mockModule('../utils/release_version', () => mockReleaseVersion) } catch (_) { /* */ }

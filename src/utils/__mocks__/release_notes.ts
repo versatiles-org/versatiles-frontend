@@ -11,6 +11,6 @@ const instance = {
 
 export default instance;
 
-try { jest.unstable_mockModule('../release_notes', () => ({ default: instance })) } catch (e) { }
-try { jest.unstable_mockModule('./release_notes', () => ({ default: instance })) } catch (e) { }
-try { jest.unstable_mockModule('./utils/release_notes', () => ({ default: instance })) } catch (e) { }
+try { jest.unstable_mockModule('../release_notes', () => ({ default: instance })) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./release_notes', () => ({ default: instance })) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./utils/release_notes', () => ({ default: instance })) } catch (_) { /* */ }

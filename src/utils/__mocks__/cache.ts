@@ -6,6 +6,6 @@ export const mockCache: jest.Mocked<typeof import('../cache')> = {
 	}),
 };
 
-try { jest.unstable_mockModule('../cache', () => mockCache) } catch (e) { }
-try { jest.unstable_mockModule('./cache', () => mockCache) } catch (e) { }
-try { jest.unstable_mockModule('./utils/cache', () => mockCache) } catch (e) { }
+try { jest.unstable_mockModule('../cache', () => mockCache) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./cache', () => mockCache) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./utils/cache', () => mockCache) } catch (_) { /* */ }

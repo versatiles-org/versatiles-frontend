@@ -18,6 +18,6 @@ const mockedClass = {
 	File
 }
 
-try { jest.unstable_mockModule('../file', () => mockedClass) } catch (e) { }
-try { jest.unstable_mockModule('./file', () => mockedClass) } catch (e) { }
-try { jest.unstable_mockModule('./files/file', () => mockedClass) } catch (e) { }
+try { jest.unstable_mockModule('../file', () => mockedClass) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./file', () => mockedClass) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./files/file', () => mockedClass) } catch (_) { /* */ }

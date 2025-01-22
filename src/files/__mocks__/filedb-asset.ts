@@ -6,7 +6,7 @@ export class AssetFileDB extends OriginalAssetFileDB {
 	constructor() {
 		super();
 	}
-	public static async build(config: AssetFileDBConfig): Promise<AssetFileDB> {
+	public static async build(_config: AssetFileDBConfig): Promise<AssetFileDB> {
 		return new AssetFileDB()
 	}
 	public enterWatchMode(): void {
@@ -17,7 +17,7 @@ const mockedClass = {
 	AssetFileDB
 }
 
-try { jest.unstable_mockModule('../filedb-asset', () => mockedClass) } catch (e) { }
-try { jest.unstable_mockModule('./filedb-asset', () => mockedClass) } catch (e) { }
-try { jest.unstable_mockModule('./files/filedb-asset', () => mockedClass) } catch (e) { }
+try { jest.unstable_mockModule('../filedb-asset', () => mockedClass) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./filedb-asset', () => mockedClass) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./files/filedb-asset', () => mockedClass) } catch (_) { /* */ }
 

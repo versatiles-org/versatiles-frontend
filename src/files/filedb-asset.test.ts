@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 
 // Mock progress
-const { } = await import('../utils/__mocks__/progress');
+await import('../utils/__mocks__/progress');
 const { Curl } = await import('../utils/__mocks__/curl');
 const { getLatestGithubReleaseVersion, getLatestNPMReleaseVersion } = await import('../utils/__mocks__/release_version');
 const { AssetFileDB } = await import('./filedb-asset');

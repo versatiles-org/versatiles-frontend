@@ -11,11 +11,11 @@ export const mockedCurlInstance = jest.mocked({
 	getBuffer: jest.fn(async () => Buffer.from('mocked buffer')),
 }) as unknown as jest.Mocked<CurlType>;
 
-export const Curl = jest.fn((fileDB: StaticFileDB, url: string) => mockedCurlInstance);
+export const Curl = jest.fn((_fileDB: StaticFileDB, _url: string) => mockedCurlInstance);
 
 const mockedModule = { Curl };
 
-try { jest.unstable_mockModule('./curl', () => mockedModule) } catch (e) { }
-try { jest.unstable_mockModule('../curl', () => mockedModule) } catch (e) { }
-try { jest.unstable_mockModule('./utils/curl', () => mockedModule) } catch (e) { }
-try { jest.unstable_mockModule('../utils/curl', () => mockedModule) } catch (e) { }
+try { jest.unstable_mockModule('./curl', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('../curl', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./utils/curl', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('../utils/curl', () => mockedModule) } catch (_) { /* */ }

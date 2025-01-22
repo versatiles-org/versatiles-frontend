@@ -16,7 +16,7 @@ progress.disable();
 
 if (!jest.isMockFunction(createWriteStream)) throw Error();
 
-let fileDBConfig = await loadFileDBConfigs();
+const fileDBConfig = await loadFileDBConfigs();
 
 describe('Frontend class', () => {
 	let mockFileDBs: InstanceType<typeof FileDBs>;
@@ -31,7 +31,7 @@ describe('Frontend class', () => {
 		mockFileDBs = new FileDBs(
 			Object.fromEntries(
 				Object.entries(fileDBConfig)
-					.map(([name, config]) => {
+					.map(([name, _config]) => {
 						return [name, { [name + '.html']: 'html content of ' + name }];
 					})
 			)

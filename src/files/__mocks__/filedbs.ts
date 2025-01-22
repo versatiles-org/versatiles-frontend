@@ -21,6 +21,6 @@ export const loadFileDBs = jest.mocked(originalModule.loadFileDBs);
 
 const mockedModule = { FileDBs, loadFileDBConfigs, loadFileDBs }
 
-try { jest.unstable_mockModule('../filedbs', () => mockedModule) } catch (e) { }
-try { jest.unstable_mockModule('./filedbs', () => mockedModule) } catch (e) { }
-try { jest.unstable_mockModule('./files/filedbs', () => mockedModule) } catch (e) { }
+try { jest.unstable_mockModule('../filedbs', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./filedbs', () => mockedModule) } catch (_) { /* */ }
+try { jest.unstable_mockModule('./files/filedbs', () => mockedModule) } catch (_) { /* */ }
