@@ -52,6 +52,8 @@ export class ReleaseNotes {
 	 * @returns The newly created Label instance.
 	 */
 	public add(name: string): Label {
+		if (this.labelMap.has(name)) return this.labelMap.get(name)!;
+		
 		const label = new Label(name);
 		this.labelList.push(label);
 		this.labelMap.set(name, label);
