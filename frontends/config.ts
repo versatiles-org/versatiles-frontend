@@ -4,9 +4,10 @@ import type { FrontendConfig } from '../src/frontend/frontend';
 export const fileDBConfigs = {
 	'external-fonts': { type: 'external', source: 'fonts-all' },
 	'external-fonts-noto': { type: 'external', source: 'fonts-noto' },
-	'external-styles': { type: 'external', source: 'styles' },
 	'external-maplibre': { type: 'external', source: 'maplibre' },
 	'external-maplibre-inspect': { type: 'external', source: 'maplibre-inspect' },
+	'external-mapbox-rtl-text': { type: 'external', source: 'mapbox-rtl-text' },
+	'external-styles': { type: 'external', source: 'styles' },
 
 	'style-selector': { type: 'rollup', path: 'style-selector', url: 'assets/lib/style-selector/style-selector.js', globalVariable: 'StyleSelector' },
 
@@ -26,6 +27,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof fileDBConfigs>[] = [
 			'external-styles',
 			'external-maplibre',
 			'external-maplibre-inspect',
+			'external-mapbox-rtl-text',
 			'style-selector'
 		]
 	},
@@ -38,6 +40,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof fileDBConfigs>[] = [
 			'external-styles',
 			'external-maplibre',
 			'external-maplibre-inspect',
+			'external-mapbox-rtl-text',
 			'style-selector'
 		]
 	},
@@ -48,7 +51,8 @@ export const frontendConfigs: FrontendConfig<keyof typeof fileDBConfigs>[] = [
 			'frontend-min',
 			'external-fonts-noto',
 			'external-styles',
-			'external-maplibre'
+			'external-maplibre',
+			'external-mapbox-rtl-text'
 		],
 		ignore: [
 			'*.d.ts',

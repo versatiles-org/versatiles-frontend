@@ -65,5 +65,13 @@ describe('getAssets', () => {
 				'https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-2.3.4.tgz'
 			]);
 		});
+
+		it('mapbox-rtl-text', async () => {
+			await ExternalFileDB.build({ type: 'external', source: 'mapbox-rtl-text' });
+			expect(getNPMCalls()).toStrictEqual(['@mapbox/mapbox-gl-rtl-text']);
+			expect(getCurlCalls()).toStrictEqual([
+				'https://registry.npmjs.org/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-2.3.4.tgz'
+			]);
+		});
 	})
 });

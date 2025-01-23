@@ -26,6 +26,8 @@
 		const id = new URLSearchParams(window.location.search).get('id');
 		if (!id) throw new Error('id is not defined');
 
+		maplibregl.setRTLTextPlugin('/assets/lib/mapbox-gl-rtl-text/mapbox-gl-rtl-text.js', true);
+
 		const map = new maplibregl.Map({
 			container: 'map',
 			bounds: [-180, -80, 180, 80],

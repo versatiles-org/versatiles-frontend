@@ -23,6 +23,8 @@
 	</a>
 	<div id="map" class="maplibregl-compact" style="position:absolute;top:0;bottom:0;width:100%"></div>
 	<script>
+		maplibregl.setRTLTextPlugin('/assets/lib/mapbox-gl-rtl-text/mapbox-gl-rtl-text.js', true);
+
 		const map = new maplibregl.Map({
 			container: 'map',
 			bounds: [-180, -80, 180, 80],

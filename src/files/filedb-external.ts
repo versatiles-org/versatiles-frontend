@@ -10,7 +10,7 @@ const folderLibrary = 'assets/lib/';
 const folderGlyphs = 'assets/glyphs/';
 const folderSprites = 'assets/sprites/';
 
-type ExternalFileDBSources = 'fonts-all' | 'fonts-noto' | 'styles' | 'maplibre' | 'maplibre-inspect';
+type ExternalFileDBSources = 'fonts-all' | 'fonts-noto' | 'styles' | 'mapbox-rtl-text' | 'maplibre' | 'maplibre-inspect';
 
 export interface ExternalFileDBConfig {
 	type: 'external';
@@ -31,6 +31,7 @@ export class ExternalFileDB extends FileDB {
 			case 'styles': await db.addStyles(); break;
 			case 'maplibre': await db.addMaplibre(); break;
 			case 'maplibre-inspect': await db.addMaplibreInspect(); break;
+			case 'mapbox-rtl-text': await db.addMapboxRTLText(); break;
 			default: throw new Error(`Unknown external file source: ${config.source}`);
 		}
 		return db;
@@ -95,6 +96,19 @@ export class ExternalFileDB extends FileDB {
 		const version = await getLatestNPMReleaseVersion('@maplibre/maplibre-gl-inspect');
 		label.setVersion(version);
 		await new Curl(this, `https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-${version}.tgz`)
+			.ungzipUntar(f => /package\/dist\/.*\.(js|css|map)$/.test(f) && join(folder, basename(f)));
+	}
+
+	/**
+	 * Adds MapLibre GL Inspect plugin to the project by downloading and saving the necessary JavaScript and CSS files.
+	 * 
+	 */
+	private async addMapboxRTLText(): Promise<void> {
+		const folder = join(folderLibrary, 'mapbox-gl-rtl-text');
+		const label = notes.add('[Mapbox GL RTL Text](https://github.com/mapbox/mapbox-gl-rtl-text)');
+		const version = await getLatestNPMReleaseVersion('@mapbox/mapbox-gl-rtl-text');
+		label.setVersion(version);
+		await new Curl(this, `https://registry.npmjs.org/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-${version}.tgz`)
 			.ungzipUntar(f => /package\/dist\/.*\.(js|css|map)$/.test(f) && join(folder, basename(f)));
 	}
 
