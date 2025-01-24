@@ -80,7 +80,8 @@ export class StyleSelector {
 	}
 
 	private updateStyle() {
-		this.map.setStyle(this.currentStyle(this.config));
+		const style = this.currentStyle(this.config);
+		this.map.setStyle(style);
 	}
 
 	private onDocumentClickHandler(event: MouseEvent) {
