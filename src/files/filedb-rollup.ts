@@ -68,7 +68,7 @@ export class RollupFileDB extends FileDB {
 			if ('code' in output) {
 				content = Buffer.from(output.code);
 			} else if ('source' in output) {
-				content = Buffer.from(output.source);
+				content = Buffer.from(output.source as string);
 			} else continue;
 
 			const filename = normalize(`${baseDirname}/${output.fileName}`);
