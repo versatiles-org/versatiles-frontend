@@ -106,14 +106,6 @@ D["filedb.ts"]
 F["file.ts"]
 G["filedb-rollup.ts"]
 H["filedb-static.ts"]
-subgraph P["__mocks__"]
-Q["file.ts"]
-R["filedb-external.ts"]
-S["filedb-rollup.ts"]
-T["filedb-static.ts"]
-U["filedb.ts"]
-V["filedbs.ts"]
-end
 end
 subgraph 4["utils"]
 5["async.ts"]
@@ -124,34 +116,15 @@ A["utils.ts"]
 B["release_notes.ts"]
 C["release_version.ts"]
 E["parallel.ts"]
-subgraph 11["__mocks__"]
-12["cache.ts"]
-13["curl.ts"]
-14["express.ts"]
-15["global_fetch.ts"]
-16["node_fs.ts"]
-17["node_fs_promises.ts"]
-18["progress.ts"]
-19["release_notes.ts"]
-1A["release_version.ts"]
-1B["utils.ts"]
-end
 end
 subgraph I["frontend"]
 J["generate.ts"]
 K["frontend.ts"]
 L["load.ts"]
-subgraph W["__mocks__"]
-X["frontend.ts"]
-Y["load.ts"]
-end
 end
 M["dev.ts"]
 subgraph N["server"]
 O["server.ts"]
-subgraph Z["__mocks__"]
-10["server.ts"]
-end
 end
 end
 1-->3
@@ -187,19 +160,12 @@ M-->L
 M-->O
 M-->5
 M-->6
-U-->Q
-V-->U
-13-->T
 
 style 0 fill-opacity:0.2
 style 2 fill-opacity:0.2
-style P fill-opacity:0.2
 style 4 fill-opacity:0.2
-style 11 fill-opacity:0.2
 style I fill-opacity:0.2
-style W fill-opacity:0.2
 style N fill-opacity:0.2
-style Z fill-opacity:0.2
 ```
 
 ## Resources
