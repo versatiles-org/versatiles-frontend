@@ -10,39 +10,40 @@ VersaTiles Frontend provides pre-packaged web assets to serve interactive maps, 
 ## Available Frontends
 
 1. Standard Frontend
+
 - Files: `frontend.*`
 - Features: Includes all assets (styles, sprites, fonts, libraries) required for a standard map server.
 - Assumes: Shortbread tiles are served under `/tiles/osm`.
 
 2. Minimal Frontend
+
 - Files: `frontend-min.*`
 - Features: Reduced asset footprint, ideal for limited resources.
 - Assumes: Shortbread tiles are served under `/tiles/osm`.
 
 3. Development Frontend
+
 - Files: `frontend-dev.*`
 - Features: Includes all assets plus additional tools for development.
 - index.html: Lists available map sources.
-- preview.html: Previews individual map sources.
+- preview\.html: Previews individual map sources.
 
 ## Download the latest release.
 
-You can [download the packaged frontends as the latest release](https://github.com/versatiles-org/versatiles-frontend/releases/latest/). Packages ending with `*.tar.gz` contain the original web frontend files. Packages ending with `*.br.tar.gz` contain the web frontend files pre-compressed with Brotli for faster serving. 
+You can [download the packaged frontends as the latest release](https://github.com/versatiles-org/versatiles-frontend/releases/latest/). Packages ending with `*.tar.gz` contain the original web frontend files. Packages ending with `*.br.tar.gz` contain the web frontend files pre-compressed with Brotli for faster serving.
 
 ## Improve the frontends
 
 ### Clone and Build
 
 Clone the repository, install dependencies and build:
+
 ```bash
 git clone git@github.com:versatiles-org/versatiles-frontend.git
 cd versatiles-frontend
 npm install
 npm run build
 ```
-
-
-
 
 This will generate all three frontends: `frontend`, `frontend-dev` and `frontend-min`.
 
@@ -70,10 +71,12 @@ npm run dev frontend
 ```
 
 Features:
-- Serves at http://localhost:8080/.
+
+- Serves at <http://localhost:8080/>.
 - Proxies tile requests to tiles.versatiles.org.
 - Watches for file changes and auto-rebuilds.
 - You can also use a local tile server from a different local port by running:
+
 ```sh
 versatiles serve -p 8081 osm.versatiles overlay.versatiles
 # then run this in another shell
@@ -81,14 +84,128 @@ npm run dev -- -l 8081 frontend-dev
 ```
 
 ## Project Structure
+
 - **cache/**: Caches requests, compresses files.
 - **frontends/**: Contains static files (HTML, CSS, JS).
 - **release/**: Packaged frontend files.
 - **src/**: TypeScript code for frontend generation and local serving.
 
+### Dependency Graph
+
+<!--- This chapter is generated automatically --->
+
+```mermaid
+flowchart TB
+
+subgraph 0["src"]
+1["build.ts"]
+subgraph 2["files"]
+3["filedbs.ts"]
+7["filedb-external.ts"]
+D["filedb.ts"]
+F["file.ts"]
+G["filedb-rollup.ts"]
+H["filedb-static.ts"]
+subgraph P["__mocks__"]
+Q["file.ts"]
+R["filedb-external.ts"]
+S["filedb-rollup.ts"]
+T["filedb-static.ts"]
+U["filedb.ts"]
+V["filedbs.ts"]
+end
+end
+subgraph 4["utils"]
+5["async.ts"]
+6["progress.ts"]
+8["curl.ts"]
+9["cache.ts"]
+A["utils.ts"]
+B["release_notes.ts"]
+C["release_version.ts"]
+E["parallel.ts"]
+subgraph 11["__mocks__"]
+12["cache.ts"]
+13["curl.ts"]
+14["express.ts"]
+15["global_fetch.ts"]
+16["node_fs.ts"]
+17["node_fs_promises.ts"]
+18["progress.ts"]
+19["release_notes.ts"]
+1A["release_version.ts"]
+1B["utils.ts"]
+end
+end
+subgraph I["frontend"]
+J["generate.ts"]
+K["frontend.ts"]
+L["load.ts"]
+subgraph W["__mocks__"]
+X["frontend.ts"]
+Y["load.ts"]
+end
+end
+M["dev.ts"]
+subgraph N["server"]
+O["server.ts"]
+subgraph Z["__mocks__"]
+10["server.ts"]
+end
+end
+end
+1-->3
+1-->J
+1-->5
+1-->6
+1-->B
+1-->A
+3-->5
+3-->6
+3-->7
+3-->G
+3-->H
+5-->6
+7-->8
+7-->B
+7-->C
+7-->D
+8-->9
+9-->A
+D-->E
+D-->F
+F-->9
+G-->D
+H-->D
+J-->5
+J-->6
+J-->K
+J-->L
+M-->3
+M-->K
+M-->L
+M-->O
+M-->5
+M-->6
+U-->Q
+V-->U
+13-->T
+
+style 0 fill-opacity:0.2
+style 2 fill-opacity:0.2
+style P fill-opacity:0.2
+style 4 fill-opacity:0.2
+style 11 fill-opacity:0.2
+style I fill-opacity:0.2
+style W fill-opacity:0.2
+style N fill-opacity:0.2
+style Z fill-opacity:0.2
+```
+
 ## Resources
 
 VersaTiles Frontend uses several external resources and libraries, including:
+
 - Fonts from [VersaTiles Fonts](https://github.com/versatiles-org/versatiles-fonts)
 - Styles and sprites from [VersaTiles Style](https://github.com/versatiles-org/versatiles-style)
 - MapLibre GL JS from [MapLibre GL JS GitHub](https://github.com/maplibre/maplibre-gl-js)

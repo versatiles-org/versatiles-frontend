@@ -10,6 +10,7 @@
     "build": "tsx --env-file-if-exists=.env src/build.ts",
     "check": "npm run lint && npm run test",
     "dev": "tsx --env-file-if-exists=.env src/dev.ts",
+    "doc-graph": "vrt deps-graph | vrt doc-insert README.md '### Dependency Graph'",
     "lint": "eslint . --color",
     "prepack": "npm run build",
     "release": "vrt release-npm",
