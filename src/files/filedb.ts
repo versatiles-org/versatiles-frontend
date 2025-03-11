@@ -15,26 +15,23 @@ export abstract class FileDB {
 	/**
 	 * Compresses all files in the system that are not already compressed, optionally reporting progress.
 	 * 
-	 * @param callback - Optional callback to report compression progress.
+	 * @param cbProgress - Optional callback to report compression progress.
 	 */
-	public async compress(callback: (sizePos: number, sizeSum: number) => void): Promise<void> {
-		let sizeSum = 0;
-		let sizePos = 0;
+	public async compress(cbProgress: (sizePos: number, sizeSum: number) => void): Promise<void> {
+
+		const files = Array.from(this.iterate().filter(file => file.bufferBr == null));
 
 		// Calculate total size for progress calculation if callback provided.
-		for (const file of this.iterate()) {
-			if (file.bufferBr) continue;
-			sizeSum += file.bufferRaw.length;
-		}
-		callback(0, sizeSum);
+		const sizeSum = files.reduce((s, f) => s + f.bufferRaw.length, 0);
+		cbProgress(0, sizeSum);
 
-		await forEachAsync(this.iterate(), async file => {
-			if (file.bufferBr) return;
+		let sizePos = 0;
+		await forEachAsync(files, async file => {
 			await file.compress();
 			sizePos += file.bufferRaw.length;
-			callback(sizePos, sizeSum);
+			cbProgress(sizePos, sizeSum);
 		});
-		if (callback) callback(sizeSum, sizeSum);
+		cbProgress(sizeSum, sizeSum);
 	}
 
 	/**
