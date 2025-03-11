@@ -23,7 +23,7 @@
   "license": "MIT",
   "dependencies": {
     "@rollup/plugin-typescript": "^12.1.2",
-    "@versatiles/style": "^5.5.1",
+    "@versatiles/style": "^5.5.2",
     "arg": "^5.0.2",
     "escape-html": "^1.0.3",
     "express": "^4.21.2",
@@ -41,7 +41,7 @@
     "unzipper": "^0.12.3"
   },
   "devDependencies": {
-    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.1",
     "@types/escape-html": "^1.0.4",
     "@types/express": "^5.0.0",
     "@types/jest": "^29.5.14",
