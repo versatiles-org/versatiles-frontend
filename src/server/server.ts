@@ -61,7 +61,7 @@ export class Server {
 	public constructor(frontend: Frontend, config?: DevConfig) {
 		this.app = express();
 
-		this.app.get('*', (req, res) => {
+		this.app.get(/.*/, (req, res) => {
 			// Attempt to serve the request from the file system.
 			if (tryFrontend(req.path)) return;
 
