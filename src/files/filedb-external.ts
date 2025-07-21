@@ -1,5 +1,5 @@
 import { Curl } from '../utils/curl';
-import { basename, join } from 'node:path';
+import { basename, join } from 'path';
 import notes from '../utils/release_notes';
 import { FileDB } from './filedb';
 import { getLatestGithubReleaseVersion, getLatestNPMReleaseVersion } from '../utils/release_version';

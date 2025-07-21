@@ -1,6 +1,6 @@
-import { existsSync, readdirSync, readFileSync, statSync, watch } from 'node:fs';
+import { existsSync, readdirSync, readFileSync, statSync, watch } from 'fs';
 import { FileDB } from './filedb';
-import { basename, relative, resolve } from 'node:path';
+import { basename, relative, resolve } from 'path';
 
 export interface StaticFileDBConfig {
 	type: 'static';

@@ -1,7 +1,7 @@
-import { resolve } from 'node:path';
-import { createGzip } from 'node:zlib';
-import { createWriteStream } from 'node:fs';
-import { pipeline } from 'node:stream/promises';
+import { resolve } from 'path';
+import { createGzip } from 'zlib';
+import { createWriteStream } from 'fs';
+import { pipeline } from 'stream/promises';
 import ignore from 'ignore';
 import tar from 'tar-stream';
 import type { File } from '../files/file';

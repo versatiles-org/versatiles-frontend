@@ -1,7 +1,7 @@
 import typescript from '@rollup/plugin-typescript';
 import { nodeResolve } from '@rollup/plugin-node-resolve';
-import { existsSync, watch } from 'node:fs';
-import { basename, dirname, normalize } from 'node:path';
+import { existsSync, watch } from 'fs';
+import { basename, dirname, normalize } from 'path';
 import { rollup } from 'rollup';
 import css from 'rollup-plugin-import-css';
 import { FileDB } from './filedb';

@@ -1,5 +1,5 @@
-import { createGunzip } from 'node:zlib';
-import { finished } from 'node:stream/promises';
+import { createGunzip } from 'zlib';
+import { finished } from 'stream/promises';
 import * as tar from 'tar';
 import unzipper from 'unzipper';
 import type { Entry } from 'unzipper';

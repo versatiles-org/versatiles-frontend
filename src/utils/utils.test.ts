@@ -1,8 +1,8 @@
 import { jest } from '@jest/globals';
 
 const { mockFs } = await import('./__mocks__/node_fs');
-jest.unstable_mockModule('node:fs', () => mockFs);
-const { existsSync, mkdirSync, rmSync } = await import('node:fs');
+jest.unstable_mockModule('fs', () => mockFs);
+const { existsSync, mkdirSync, rmSync } = await import('fs');
 
 const utils = await import('./utils');
 

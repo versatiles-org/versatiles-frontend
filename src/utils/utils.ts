@@ -1,5 +1,5 @@
-import { existsSync, mkdirSync, rmSync } from 'node:fs';
-import { dirname } from 'node:path';
+import { existsSync, mkdirSync, rmSync } from 'fs';
+import { dirname } from 'path';
 
 /**
  * Deletes the contents of a folder recursively and recreates it.

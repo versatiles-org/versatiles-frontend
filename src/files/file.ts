@@ -1,4 +1,4 @@
-import { brotliCompress, constants } from 'node:zlib';
+import { brotliCompress, constants } from 'zlib';
 import { cache } from '../utils/cache';
 
 /**

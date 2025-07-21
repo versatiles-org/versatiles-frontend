@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import type { StaticFileDBConfig } from './filedb-static';
 
-jest.unstable_mockModule('node:fs', () => {
+jest.unstable_mockModule('fs', () => {
 	const mockFileSystem = new Map<string, string | false>([
 		['/test/path', false],
 		['/test/path/file1.txt', 'Content of file1'],
@@ -41,7 +41,7 @@ jest.unstable_mockModule('node:fs', () => {
 	};
 });
 
-const fs = await import('node:fs');
+const fs = await import('fs');
 const { StaticFileDB } = await import('./filedb-static');
 
 describe('StaticFileDB', () => {

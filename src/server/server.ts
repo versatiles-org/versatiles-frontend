@@ -1,7 +1,7 @@
 import express from 'express';
 import escapeHtml from 'escape-html';
 import type { Express } from 'express';
-import { resolve } from 'node:url';
+import { resolve } from 'url';
 import { lookup } from 'mrmime';
 import { Frontend } from '../frontend/frontend';
 

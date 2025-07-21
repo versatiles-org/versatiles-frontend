@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
 import { mockFetchResponse } from './__mocks__/global_fetch';
 import { FileDB } from '../files/__mocks__/filedb';
-import { join } from 'node:path';
+import { join } from 'path';
 
 const { cache } = await import('./__mocks__/cache');
 

@@ -9,7 +9,7 @@ jest.mock('rollup', () => ({
 	})),
 }));
 
-jest.mock('node:fs', () => ({
+jest.mock('fs', () => ({
 	existsSync: jest.fn(() => true),
 	watch: jest.fn(),
 }));

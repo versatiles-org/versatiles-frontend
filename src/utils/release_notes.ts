@@ -1,4 +1,4 @@
-import { writeFileSync } from 'node:fs';
+import { writeFileSync } from 'fs';
 
 /**
  * Represents a single label or component within the release notes, with an optional version.

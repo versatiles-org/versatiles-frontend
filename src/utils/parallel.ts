@@ -1,4 +1,4 @@
-import os from 'node:os';
+import os from 'os';
 
 export function forEachAsync<I>(
 	items: Iterable<I> | AsyncIterable<I> | Iterator<I> | AsyncIterator<I> | IterableIterator<I>,

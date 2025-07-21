@@ -1,13 +1,13 @@
 import { jest } from '@jest/globals';
 
-// Mock node:fs and node:path modules
-jest.unstable_mockModule('node:fs', () => ({
+// Mock fs and path modules
+jest.unstable_mockModule('fs', () => ({
 	existsSync: jest.fn(),
 	mkdirSync: jest.fn(),
 	readFileSync: jest.fn(),
 	writeFileSync: jest.fn(),
 }));
-jest.unstable_mockModule('node:path', () => ({
+jest.unstable_mockModule('path', () => ({
 	resolve: jest.fn((...args: string[]) => args.join('/')),
 }));
 jest.unstable_mockModule('./utils.js', () => ({
@@ -15,7 +15,7 @@ jest.unstable_mockModule('./utils.js', () => ({
 }));
 
 const { cache } = await import('./cache.js');
-const fs = await import('node:fs');
+const fs = await import('fs');
 
 describe('cache function', () => {
 	beforeEach(() => {

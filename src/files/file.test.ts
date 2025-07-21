@@ -1,7 +1,7 @@
 import { jest } from '@jest/globals';
-import type { InputType, BrotliOptions, CompressCallback } from 'node:zlib';
+import type { InputType, BrotliOptions, CompressCallback } from 'zlib';
 
-jest.unstable_mockModule('node:zlib', () => ({
+jest.unstable_mockModule('zlib', () => ({
 	brotliCompress: jest.fn((_buf: InputType, _options: BrotliOptions, callback: CompressCallback): void => {
 		callback(null, Buffer.from('compressed-data'));
 	}),
@@ -11,7 +11,7 @@ jest.unstable_mockModule('node:zlib', () => ({
 	},
 }));
 
-const { brotliCompress, constants } = await import('node:zlib');
+const { brotliCompress, constants } = await import('zlib');
 const { cache } = await import('../utils/__mocks__/cache');
 const { File } = await import('./file');
 
