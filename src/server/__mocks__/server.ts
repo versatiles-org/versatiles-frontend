@@ -11,5 +11,4 @@ export const Server = jest.fn(() => serverInstance);
 
 const mockedModule = { parseDevConfig, Server };
 
-try { jest.unstable_mockModule('./server/server', () => mockedModule) } catch (_) { /* */ }
-try { jest.unstable_mockModule('../server/server', () => mockedModule) } catch (_) { /* */ }
+jest.unstable_mockModule('../server', () => mockedModule);
