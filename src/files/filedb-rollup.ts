@@ -58,7 +58,6 @@ export class RollupFileDB extends FileDB {
 			name: globalVariable,
 			sourcemap: true,
 			globals: { 'maplibregl': 'maplibre-gl' },
-			file: baseFilename + '.js'
 		});
 
 		const now = Date.now();
