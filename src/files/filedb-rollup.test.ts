@@ -32,9 +32,9 @@ describe('RollupFileDB', () => {
 		expect(filedbs).toBeInstanceOf(FileDB);
 		const files = Array.from(filedbs.iterate()).map(file => file.name).sort();
 		expect(files).toStrictEqual([
+			'assets/lib/style-selector/index.js',
+			'assets/lib/style-selector/index.js.map',
 			'assets/lib/style-selector/style-selector.css',
-			'assets/lib/style-selector/style-selector.js',
-			'assets/lib/style-selector/style-selector.js.map',
 		]);
 	});
 });
