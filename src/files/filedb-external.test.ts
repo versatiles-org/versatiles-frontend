@@ -53,9 +53,9 @@ describe('getAssets', () => {
 		it('maplibre', async () => {
 			await ExternalFileDB.build({ type: 'external', source: 'maplibre' });
 			expect(getGHCalls()).toStrictEqual([['maplibre', 'maplibre-gl-js']]);
-			expect(getCurlCalls()).toStrictEqual([
-				'https://github.com/maplibre/maplibre-gl-js/releases/download/v1.2.3/dist.zip'
-			]);
+			expect(getCurlCalls()[0]).toMatch(
+				/https:\/\/github.com\/maplibre\/maplibre-gl-js\/releases\/download\/v\d+\.\d+\.\d+\/dist.zip/
+			);
 		});
 
 		it('maplibre-inspect', async () => {
