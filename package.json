@@ -54,7 +54,7 @@
     "@versatiles/release-tool": "^2.4.3",
     "eslint": "^9.34.0",
     "jest": "^30.1.3",
-    "jest-extended": "^6.0.0",
+    "jest-extended": "^7.0.0",
     "jest-fetch-mock": "^3.0.3",
     "ts-jest": "^29.4.1",
     "ts-node": "^10.9.2",
