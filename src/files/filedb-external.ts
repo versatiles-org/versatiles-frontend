@@ -10,7 +10,7 @@ const folderLibrary = 'assets/lib/';
 const folderGlyphs = 'assets/glyphs/';
 const folderSprites = 'assets/sprites/';
 
-type ExternalFileDBSources = 'fonts-all' | 'fonts-noto' | 'styles' | 'mapbox-rtl-text' | 'maplibre' | 'maplibre-inspect';
+type ExternalFileDBSources = 'fonts-all' | 'fonts-noto' | 'styles' | 'mapbox-rtl-text' | 'maplibre' | 'maplibre-inspect' | 'maplibre-versatiles-styler';
 
 export interface ExternalFileDBConfig {
 	type: 'external';
@@ -31,6 +31,7 @@ export class ExternalFileDB extends FileDB {
 			case 'styles': await db.addStyles(); break;
 			case 'maplibre': await db.addMaplibre(); break;
 			case 'maplibre-inspect': await db.addMaplibreInspect(); break;
+			case 'maplibre-versatiles-styler': await db.addMaplibreVersatilesStyler(); break;
 			case 'mapbox-rtl-text': await db.addMapboxRTLText(); break;
 			default: throw new Error(`Unknown external file source: ${config.source}`);
 		}
@@ -89,6 +90,16 @@ export class ExternalFileDB extends FileDB {
 		label.setVersion(version);
 		await new Curl(this, `https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-${version}.tgz`)
 			.ungzipUntar(f => /package\/dist\/.*\.(js|css|map)$/.test(f) && join(folder, basename(f)));
+	}
+
+	// Adds MapLibre VersaTiles Styler to the project by downloading and saving the necessary JavaScript and CSS files.
+	private async addMaplibreVersatilesStyler(): Promise<void> {
+		const folder = join(folderLibrary, 'maplibre-versatiles-styler');
+		const label = notes.add('[MapLibre VersaTiles Styler](https://github.com/versatiles-org/maplibre-versatiles-styler)');
+		const version = await getLatestGithubReleaseVersion('versatiles-org', 'maplibre-versatiles-styler');
+		label.setVersion(version);
+		await new Curl(this, `https://github.com/versatiles-org/maplibre-versatiles-styler/releases/download/v${version}/maplibre-versatiles-styler.tar.gz`)
+			.ungzipUntar(f => join(folder, basename(f)));
 	}
 
 	// Adds MapLibre GL Inspect plugin to the project by downloading and saving the necessary JavaScript and CSS files.
