@@ -45,16 +45,16 @@
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@types/escape-html": "^1.0.4",
     "@types/express": "^5.0.6",
-    "@types/node": "^24.10.1",
+    "@types/node": "^24.10.2",
     "@types/tar-stream": "^3.1.4",
     "@types/unzipper": "^0.10.11",
-    "@typescript-eslint/eslint-plugin": "^8.48.1",
-    "@typescript-eslint/parser": "^8.48.1",
+    "@typescript-eslint/eslint-plugin": "^8.49.0",
+    "@typescript-eslint/parser": "^8.49.0",
     "@versatiles/release-tool": "^2.5.0",
     "dotenv": "^17.2.3",
     "eslint": "^9.39.1",
     "ts-node": "^10.9.2",
-    "typescript-eslint": "^8.48.1",
+    "typescript-eslint": "^8.49.0",
     "vitest": "^4.0.15"
   }
 }
