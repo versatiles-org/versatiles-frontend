@@ -12,6 +12,7 @@
     "dev": "tsx --env-file-if-exists=.env src/dev.ts",
     "doc": "npm run doc-graph",
     "doc-graph": "vrt deps-graph | vrt doc-insert README.md '### Dependency Graph'",
+    "format": "prettier --write .",
     "lint": "eslint . --color",
     "prepack": "npm run build",
     "release": "vrt release-npm",
@@ -54,6 +55,7 @@
     "@vitest/coverage-v8": "^4.0.15",
     "dotenv": "^17.2.3",
     "eslint": "^9.39.1",
+    "prettier": "^3.7.4",
     "ts-node": "^10.9.2",
     "typescript-eslint": "^8.49.0",
     "vitest": "^4.0.15"
