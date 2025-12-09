@@ -3,9 +3,9 @@ name: CI
 on:
   push:
     branches:
-      - "**"
+      - '**'
     tags:
-      - "!**" # Don't run twice on commits with tags
+      - '!**' # Don't run twice on commits with tags
   pull_request:
   workflow_dispatch:
 

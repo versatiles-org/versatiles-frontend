@@ -20,7 +20,7 @@ describe('Build Process', () => {
 	it('executes the build process correctly', async () => {
 		const progress = new Progress();
 		progress.disable();
-		
+
 		await import('./build');
 
 		// Validate the cleanup of the destination folder
@@ -29,7 +29,7 @@ describe('Build Process', () => {
 		// Ensure progress tracking is properly set up and concluded
 		expect(progress.setHeader).toHaveBeenCalledWith('Building Release');
 		expect(progress.finish).toHaveBeenCalled();
-		expect(vi.mocked(Frontend).mock.calls.map(call => call[1].name)).toEqual([
+		expect(vi.mocked(Frontend).mock.calls.map((call) => call[1].name)).toEqual([
 			'frontend',
 			'frontend-dev',
 			'frontend-min',

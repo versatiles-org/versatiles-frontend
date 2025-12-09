@@ -14,14 +14,10 @@ export default [
 			'frontends/**/*.js',
 			'release/**/*.*',
 			'rollups/**/*.js',
-		]
+		],
 	},
 	{
-		files: [
-			'src/**/*.ts',
-			'frontends/**/*.ts',
-			'rollups/**/*.ts',
-		],
+		files: ['src/**/*.ts', 'frontends/**/*.ts', 'rollups/**/*.ts'],
 		languageOptions: {
 			ecmaVersion: 'latest',
 			sourceType: 'module',
@@ -48,9 +44,9 @@ export default [
 				{
 					argsIgnorePattern: '^_',
 					varsIgnorePattern: '^_',
-					caughtErrorsIgnorePattern: '^_'
-				}
+					caughtErrorsIgnorePattern: '^_',
+				},
 			],
-		}
-	}
+		},
+	},
 ];

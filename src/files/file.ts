@@ -15,7 +15,7 @@ export class File {
 
 	/**
 	 * Constructs a File instance.
-	 * 
+	 *
 	 * @param name - Name of the file.
 	 * @param modificationTime - Last modification time, used in generating the hash.
 	 * @param bufferRaw - Raw buffer content of the file.
@@ -34,19 +34,22 @@ export class File {
 		this.bufferBr = await cache(
 			'compress',
 			this.hash,
-			async () => new Promise((res, rej) => brotliCompress(
-				this.bufferRaw,
-				{
-					params: {
-						[constants.BROTLI_PARAM_QUALITY]: 11,
-						[constants.BROTLI_PARAM_SIZE_HINT]: this.bufferRaw.length,
-					},
-				},
-				(error, buffer) => {
-					if (error) return rej(error);;
-					res(buffer);
-				},
-			)),
+			async () =>
+				new Promise((res, rej) =>
+					brotliCompress(
+						this.bufferRaw,
+						{
+							params: {
+								[constants.BROTLI_PARAM_QUALITY]: 11,
+								[constants.BROTLI_PARAM_SIZE_HINT]: this.bufferRaw.length,
+							},
+						},
+						(error, buffer) => {
+							if (error) return rej(error);
+							res(buffer);
+						}
+					)
+				)
 		);
 	}
 }

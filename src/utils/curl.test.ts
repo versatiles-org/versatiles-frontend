@@ -14,8 +14,14 @@ describe('Curl', () => {
 	const testUrl = 'http://example.com/resource.tar.gz';
 	const testFolder = '/test/folder';
 	const testFilename = 'resource.tar.gz';
-	const testGzipTar = Buffer.from('H4sIAOVA1WUCA+3TQQrDIBCFYY/iCcqMVXOeUCKR2k1iocevSaCr0l1DQ/8P4SHMQtGXchn0VB/VfI+IRO/tkl0Ma4rb9hsNVn2IwZ2jSmdFvXdirJgd3OfaT+0ot3wZ+6FcpyGXd3NtLKXPl2zsKw+ijnm2baXlHxj8m+Xd3S/1X3Xtv3r6v3f/HXUAAAAAAAAAAAAAAAA4nCfDsvruACgAAA==', 'base64');
-	const testZip = Buffer.from('UEsDBAoAAgAAABwHVVgLvTyiDQAAAA0AAAAJABwAZmlsZTEudHh0VVQJAANHPNVlSDzVZXV4CwABBPUBAAAEFAAAAHRoaXMgaXMgZmlsZTFQSwMECgACAAAAHQdVWLHsNTsNAAAADQAAAAkAHABmaWxlMi50eHRVVAkAA0k81WVLPNVldXgLAAEE9QEAAAQUAAAAdGhpcyBpcyBmaWxlMlBLAQIeAwoAAgAAABwHVVgLvTyiDQAAAA0AAAAJABgAAAAAAAEAAACkgQAAAABmaWxlMS50eHRVVAUAA0c81WV1eAsAAQT1AQAABBQAAABQSwECHgMKAAIAAAAdB1VYsew1Ow0AAAANAAAACQAYAAAAAAABAAAApIFQAAAAZmlsZTIudHh0VVQFAANJPNVldXgLAAEE9QEAAAQUAAAAUEsFBgAAAAACAAIAngAAAKAAAAAAAA==', 'base64');
+	const testGzipTar = Buffer.from(
+		'H4sIAOVA1WUCA+3TQQrDIBCFYY/iCcqMVXOeUCKR2k1iocevSaCr0l1DQ/8P4SHMQtGXchn0VB/VfI+IRO/tkl0Ma4rb9hsNVn2IwZ2jSmdFvXdirJgd3OfaT+0ot3wZ+6FcpyGXd3NtLKXPl2zsKw+ijnm2baXlHxj8m+Xd3S/1X3Xtv3r6v3f/HXUAAAAAAAAAAAAAAAA4nCfDsvruACgAAA==',
+		'base64'
+	);
+	const testZip = Buffer.from(
+		'UEsDBAoAAgAAABwHVVgLvTyiDQAAAA0AAAAJABwAZmlsZTEudHh0VVQJAANHPNVlSDzVZXV4CwABBPUBAAAEFAAAAHRoaXMgaXMgZmlsZTFQSwMECgACAAAAHQdVWLHsNTsNAAAADQAAAAkAHABmaWxlMi50eHRVVAkAA0k81WVLPNVldXgLAAEE9QEAAAQUAAAAdGhpcyBpcyBmaWxlMlBLAQIeAwoAAgAAABwHVVgLvTyiDQAAAA0AAAAJABgAAAAAAAEAAACkgQAAAABmaWxlMS50eHRVVAUAA0c81WV1eAsAAQT1AQAABBQAAABQSwECHgMKAAIAAAAdB1VYsew1Ow0AAAANAAAACQAYAAAAAAABAAAApIFQAAAAZmlsZTIudHh0VVQFAANJPNVldXgLAAEE9QEAAAQUAAAAUEsFBgAAAAACAAIAngAAAKAAAAAAAA==',
+		'base64'
+	);
 
 	beforeEach(() => {
 		// Reset mocks before each test
@@ -28,14 +34,24 @@ describe('Curl', () => {
 
 	it('should fetch and ungzip/untar a resource', async () => {
 		mockFetchResponse(testGzipTar);
-		await curl.ungzipUntar(f => join(testFolder, f));
+		await curl.ungzipUntar((f) => join(testFolder, f));
 
 		expect(cache).toHaveBeenCalledTimes(1);
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
 
 		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledTimes(2);
-		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(1, '/test/folder/file1.txt', 1708473415000, expect.any(Buffer));
-		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(2, '/test/folder/file2.txt', 1708473417000, expect.any(Buffer));
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(
+			1,
+			'/test/folder/file1.txt',
+			1708473415000,
+			expect.any(Buffer)
+		);
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(
+			2,
+			'/test/folder/file2.txt',
+			1708473417000,
+			expect.any(Buffer)
+		);
 	});
 
 	it('should save a resource directly to a file', async () => {
@@ -49,7 +65,7 @@ describe('Curl', () => {
 	it('should fetch, unzip, and save contents based on filter callback', async () => {
 		mockFetchResponse(testZip);
 
-		await curl.unzip(filename => filename.endsWith('.txt') && join('/unzipped/', filename));
+		await curl.unzip((filename) => filename.endsWith('.txt') && join('/unzipped/', filename));
 
 		expect(cache).toHaveBeenCalledTimes(1);
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));

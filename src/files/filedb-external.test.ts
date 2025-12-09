@@ -17,7 +17,7 @@ describe('getAssets', () => {
 	}
 
 	function getNPMCalls() {
-		const calls = getLatestNPMReleaseVersion.mock.calls.map(e => e[0]);
+		const calls = getLatestNPMReleaseVersion.mock.calls.map((e) => e[0]);
 		calls.sort((a, b) => a.localeCompare(b));
 		return calls;
 	}
@@ -36,10 +36,7 @@ describe('getAssets', () => {
 
 		it('fonts', async () => {
 			await ExternalFileDB.build({ type: 'external', source: 'fonts-all' });
-			expect(getGHCalls()).toStrictEqual([[
-				'versatiles-org',
-				'versatiles-fonts',
-			]]);
+			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-fonts']]);
 			expect(getCurlCalls()).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.2.3/fonts.tar.gz',
 			]);
@@ -47,9 +44,7 @@ describe('getAssets', () => {
 
 		it('styles', async () => {
 			await ExternalFileDB.build({ type: 'external', source: 'styles' });
-			expect(getGHCalls()).toStrictEqual([
-				['versatiles-org', 'versatiles-style', true],
-			]);
+			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-style', true]]);
 			expect(getCurlCalls()).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/sprites.tar.gz',
 				'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/styles.tar.gz',
@@ -59,20 +54,16 @@ describe('getAssets', () => {
 
 		it('maplibre', async () => {
 			await ExternalFileDB.build({ type: 'external', source: 'maplibre' });
-			expect(getGHCalls()).toStrictEqual([
-				['maplibre', 'maplibre-gl-js'],
-			]);
+			expect(getGHCalls()).toStrictEqual([['maplibre', 'maplibre-gl-js']]);
 			const calls = getCurlCalls();
 			expect(calls[0]).toMatch(
-				/https:\/\/github.com\/maplibre\/maplibre-gl-js\/releases\/download\/v\d+\.\d+\.\d+\/dist.zip/,
+				/https:\/\/github.com\/maplibre\/maplibre-gl-js\/releases\/download\/v\d+\.\d+\.\d+\/dist.zip/
 			);
 		});
 
 		it('maplibre-inspect', async () => {
 			await ExternalFileDB.build({ type: 'external', source: 'maplibre-inspect' });
-			expect(getNPMCalls()).toStrictEqual([
-				'@maplibre/maplibre-gl-inspect',
-			]);
+			expect(getNPMCalls()).toStrictEqual(['@maplibre/maplibre-gl-inspect']);
 			expect(getCurlCalls()).toStrictEqual([
 				'https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-2.3.4.tgz',
 			]);
@@ -80,9 +71,7 @@ describe('getAssets', () => {
 
 		it('mapbox-rtl-text', async () => {
 			await ExternalFileDB.build({ type: 'external', source: 'mapbox-rtl-text' });
-			expect(getNPMCalls()).toStrictEqual([
-				'@mapbox/mapbox-gl-rtl-text',
-			]);
+			expect(getNPMCalls()).toStrictEqual(['@mapbox/mapbox-gl-rtl-text']);
 			expect(getCurlCalls()).toStrictEqual([
 				'https://registry.npmjs.org/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-2.3.4.tgz',
 			]);

@@ -45,10 +45,7 @@ describe('cache function', () => {
 
 		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key$/));
 		expect(fs.readFileSync).not.toHaveBeenCalled();
-		expect(fs.writeFileSync).toHaveBeenCalledWith(
-			expect.stringMatching(/\/action\/key$/),
-			mockBuffer
-		);
+		expect(fs.writeFileSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key$/), mockBuffer);
 		expect(result).toBe(mockBuffer);
 	});
 

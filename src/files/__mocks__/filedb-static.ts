@@ -3,7 +3,7 @@ import type { StaticFileDB as StaticFileDBType, StaticFileDBConfig } from '../fi
 
 export const StaticFileDB = vi.fn();
 
-vi.mock('../filedb-static', async importOriginal => {
+vi.mock('../filedb-static', async (importOriginal) => {
 	const original = await importOriginal<typeof import('../filedb-static')>();
 	const BaseStaticFileDB = original.StaticFileDB as typeof StaticFileDBType;
 

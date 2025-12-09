@@ -1,108 +1,109 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+	<head>
+		<meta charset="utf-8" />
+		<title>VersaTiles - Overview</title>
+		<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="icon" type="image/png" href="/assets/images/versatiles-logo.png" />
 
-<head>
-	<meta charset="utf-8" />
-	<title>VersaTiles - Overview</title>
-	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
-	<link rel="icon" type="image/png" href="/assets/images/versatiles-logo.png">
+		<style>
+			body {
+				font-family: sans-serif;
+				margin: 20px 20px;
+				background-color: #0a0a0a;
+				color: #888;
+			}
 
-	<style>
-		body {
-			font-family: sans-serif;
-			margin: 20px 20px;
-			background-color: #0a0a0a;
-			color: #888;
-		}
+			article {
+				width: 600px;
+				max-width: 100%;
+				margin: auto;
+				box-sizing: border-box;
+				color: #ccc;
+			}
 
-		article {
-			width: 600px;
-			max-width: 100%;
-			margin: auto;
-			box-sizing: border-box;
-			color: #ccc;
-		}
+			h1,
+			h2,
+			p {
+				text-align: center;
+				margin: 0 0 1em;
+			}
 
-		h1,
-		h2,
-		p {
-			text-align: center;
-			margin: 0 0 1em;
-		}
+			h1 {
+				font-weight: 400;
+				font-size: 4em;
+				color: #fff;
+			}
 
-		h1 {
-			font-weight: 400;
-			font-size: 4em;
-			color: #fff;
-		}
+			h2 {
+				font-weight: 400;
+				font-size: 1.5em;
+			}
 
-		h2 {
-			font-weight: 400;
-			font-size: 1.5em;
-		}
+			.box {
+				border: 1px solid #fff4;
+				border-radius: 3px;
+				padding: 1.5em;
+				margin: 2em 0;
+				background: #222;
+				box-sizing: border-box;
+				display: block;
+			}
 
-		.box {
-			border: 1px solid #fff4;
-			border-radius: 3px;
-			padding: 1.5em;
-			margin: 2em 0;
-			background: #222;
-			box-sizing: border-box;
-			display: block;
-		}
+			.box:hover {
+				border: 1px solid #fff;
+			}
 
-		.box:hover {
-			border: 1px solid #fff;
-		}
+			a {
+				text-decoration: none !important;
+				color: inherit !important;
+			}
 
-		a {
-			text-decoration: none !important;
-			color: inherit !important;
-		}
+			.row {
+				display: flex;
+				flex-wrap: nowrap;
+				gap: 10px;
+				opacity: 0.5;
+			}
 
-		.row {
-			display: flex;
-			flex-wrap: nowrap;
-			gap: 10px;
-			opacity: 0.5;
-		}
+			.row > div:first-child {
+				flex-basis: 20%;
+				text-align: right;
+				font-weight: bold;
+			}
 
-		.row>div:first-child {
-			flex-basis: 20%;
-			text-align: right;
-			font-weight: bold;
-		}
+			.row > div:last-child {
+				flex-basis: 80%;
+				text-align: left;
+			}
 
-		.row>div:last-child {
-			flex-basis: 80%;
-			text-align: left;
-		}
+			.box:hover .row {
+				opacity: 1;
+			}
+		</style>
+		<script>
+			addEventListener('load', async (start) => {
+				let tileSources = (await getJSON('/tiles/index.json')).map((id) => ({ id }));
 
-		.box:hover .row {
-			opacity: 1;
-		}
-	</style>
-	<script>
-		addEventListener('load', async start => {
-			let tileSources = (await getJSON('/tiles/index.json')).map(id => ({ id }))
-
-			draw();
-
-			Promise.all(tileSources.map(async s => {
-				const m = (await getJSON(`/tiles/${s.id}/tiles.json`));
-				s.name = m.name;
-				s.description = m.description;
-				s.type = m.type;
-				s.format = m.format;
-				s.minzoom = m.minzoom;
-				s.maxzoom = m.maxzoom;
 				draw();
-			}));
 
-			function draw() {
-				let html = [];
-				for (let s of tileSources) {
-					html.push(`
+				Promise.all(
+					tileSources.map(async (s) => {
+						const m = await getJSON(`/tiles/${s.id}/tiles.json`);
+						s.name = m.name;
+						s.description = m.description;
+						s.type = m.type;
+						s.format = m.format;
+						s.minzoom = m.minzoom;
+						s.maxzoom = m.maxzoom;
+						draw();
+					})
+				);
+
+				function draw() {
+					let html = [];
+					for (let s of tileSources) {
+						html.push(`
 						<a class="box" href="preview.html?id=${s.id}">
 							<h2>${s.name ?? '?'}</h2>
 							<div class="row"><div>url:</div><div>/tiles/${s.id ?? '?'}</div></div>
@@ -111,25 +112,23 @@
 							<div class="row"><div>zoom:</div><div>${s.minzoom ?? '?'}-${s.maxzoom ?? '?'}</div></div>
 						</a>
 					`);
+					}
+					document.getElementById('list').innerHTML = html.join('\n');
 				}
-				document.getElementById("list").innerHTML = html.join('\n');
-			}
 
-			async function getJSON(url) {
-				return await (await fetch(url)).json()
-			}
-		})
-	</script>
-</head>
+				async function getJSON(url) {
+					return await (await fetch(url)).json();
+				}
+			});
+		</script>
+	</head>
 
-<body>
-	<h1>
-		<img src="/assets/images/versatiles-logo.png" style="height:48px; vertical-align: baseline;">
-		VersaTiles
-	</h1>
-	<p>available tile sources:</p>
-	<article id="list">
-	</article>
-</body>
-
+	<body>
+		<h1>
+			<img src="/assets/images/versatiles-logo.png" style="height: 48px; vertical-align: baseline" />
+			VersaTiles
+		</h1>
+		<p>available tile sources:</p>
+		<article id="list"></article>
+	</body>
 </html>

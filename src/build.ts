@@ -14,7 +14,6 @@ import { FileDBs, loadFileDBs } from './files/filedbs';
 const projectFolder = new URL('..', import.meta.url).pathname;
 const dstFolder = resolve(projectFolder, 'release');
 
-
 const frontendVersion = String(JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')).version);
 notes.setVersion(frontendVersion);
 
@@ -26,15 +25,12 @@ cleanupFolder(dstFolder);
 
 // Run the main build tasks sequentially: fetch assets, compress files, and generate frontends.
 const fileDBs = new FileDBs();
-await PromiseFunction.run(PromiseFunction.sequential(
-	loadFileDBs(fileDBs),
-	fileDBs.precompress(),
-	generateFrontends(fileDBs, dstFolder),
-));
+await PromiseFunction.run(
+	PromiseFunction.sequential(loadFileDBs(fileDBs), fileDBs.precompress(), generateFrontends(fileDBs, dstFolder))
+);
 
 // Save release notes in the destination folder.
 notes.save(resolve(dstFolder, 'notes.md'));
 
 // Signal the end of the build process in the progress display.
 progress.finish();
-

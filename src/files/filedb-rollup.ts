@@ -41,28 +41,23 @@ export class RollupFileDB extends FileDB {
 
 		const bundle = await rollup({
 			input,
-			plugins: [
-				nodeResolve(),
-				css({ output: baseFilename + '.css' }),
-				typescript({ tsconfig })
-			],
+			plugins: [nodeResolve(), css({ output: baseFilename + '.css' }), typescript({ tsconfig })],
 			external: ['maplibregl'],
 			onLog(level, log, handler) {
 				if (log.code === 'CIRCULAR_DEPENDENCY') return;
 				handler(level, log);
-			}
+			},
 		});
 
 		const result = await bundle.generate({
 			format: 'iife',
 			name: globalVariable,
 			sourcemap: true,
-			globals: { 'maplibregl': 'maplibre-gl' },
+			globals: { maplibregl: 'maplibre-gl' },
 		});
 
 		const now = Date.now();
 		for (const output of result.output) {
-
 			let content: Buffer;
 			if ('code' in output) {
 				content = Buffer.from(output.code);
@@ -80,6 +75,6 @@ export class RollupFileDB extends FileDB {
 		watch(path, { recursive: true }, (event, filename) => {
 			if (!filename || (event !== 'change' && event !== 'rename')) return;
 			this.rollup();
-		})
+		});
 	}
 }

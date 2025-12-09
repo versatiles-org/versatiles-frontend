@@ -8,7 +8,7 @@ export interface StaticFileDBConfig {
 }
 
 export class StaticFileDB extends FileDB {
-	private path: string
+	private path: string;
 
 	constructor(path: string) {
 		super();
@@ -26,7 +26,7 @@ export class StaticFileDB extends FileDB {
 
 			const stat = statSync(path);
 			if (stat.isDirectory()) {
-				readdirSync(path).forEach(name => addPath(resolve(path, name)));
+				readdirSync(path).forEach((name) => addPath(resolve(path, name)));
 			} else {
 				db.setFileFromFilename(path);
 			}
@@ -37,14 +37,10 @@ export class StaticFileDB extends FileDB {
 		watch(this.path, { recursive: true }, (event, filename) => {
 			if (!filename || (event !== 'change' && event !== 'rename')) return;
 			this.setFileFromFilename(resolve(this.path, filename));
-		})
+		});
 	}
 
 	private setFileFromFilename(filename: string): void {
-		this.setFileFromBuffer(
-			relative(this.path, filename),
-			statSync(filename).mtimeMs,
-			readFileSync(filename),
-		);
+		this.setFileFromBuffer(relative(this.path, filename), statSync(filename).mtimeMs, readFileSync(filename));
 	}
 }

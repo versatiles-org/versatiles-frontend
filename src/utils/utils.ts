@@ -3,7 +3,7 @@ import { dirname } from 'path';
 
 /**
  * Deletes the contents of a folder recursively and recreates it.
- * 
+ *
  * @param path - The path to the folder to clean up.
  */
 export function cleanupFolder(path: string): void {
@@ -17,7 +17,7 @@ export function cleanupFolder(path: string): void {
 
 /**
  * Ensures that a folder exists, creating it (and any necessary parent directories) if it does not.
- * 
+ *
  * @param path - The path to the folder to ensure.
  */
 export function ensureFolder(path: string): void {

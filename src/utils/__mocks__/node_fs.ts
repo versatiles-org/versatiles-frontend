@@ -4,7 +4,7 @@ import { vi } from 'vitest';
 
 export const createWriteStream = vi.fn();
 
-vi.mock('fs', async originalImport => {
+vi.mock('fs', async (originalImport) => {
 	const originalFs = await originalImport<typeof import('fs')>();
 
 	createWriteStream.mockImplementation(() => {
@@ -18,6 +18,6 @@ vi.mock('fs', async originalImport => {
 		createWriteStream,
 		mkdirSync: vi.fn(),
 		existsSync: vi.fn(),
-		rmSync: vi.fn()
-	}
+		rmSync: vi.fn(),
+	};
 });

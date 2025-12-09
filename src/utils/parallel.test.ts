@@ -4,7 +4,7 @@ import { vi, describe, it, expect } from 'vitest';
 describe('forEachAsync', () => {
 	it('should call the callback for each item in the list', async () => {
 		const list = [1, 2, 3, 4];
-		const callback = vi.fn(async () => { });
+		const callback = vi.fn(async () => {});
 
 		await forEachAsync(list, callback);
 
@@ -17,7 +17,7 @@ describe('forEachAsync', () => {
 
 	it('should handle empty lists without error', async () => {
 		const list: number[] = [];
-		const callback = vi.fn(async () => { });
+		const callback = vi.fn(async () => {});
 
 		await forEachAsync(list, callback);
 
@@ -66,10 +66,14 @@ describe('forEachAsync', () => {
 			await randomWait(10);
 		});
 
-		await forEachAsync(list, async (item, index) => {
-			list[index] = item + 2;
-			await randomWait(10);
-		}, 3);
+		await forEachAsync(
+			list,
+			async (item, index) => {
+				list[index] = item + 2;
+				await randomWait(10);
+			},
+			3
+		);
 
 		expect(list).toEqual([5, 5, 6, 7, 9]);
 	});
@@ -81,7 +85,7 @@ describe('forEachAsync', () => {
 			yield 3;
 		}
 
-		const callback = vi.fn(async () => { });
+		const callback = vi.fn(async () => {});
 		await forEachAsync(syncGenerator(), callback);
 
 		expect(callback).toHaveBeenCalledTimes(3);
@@ -97,7 +101,7 @@ describe('forEachAsync', () => {
 			yield 3;
 		}
 
-		const callback = vi.fn(async () => { });
+		const callback = vi.fn(async () => {});
 		await forEachAsync(asyncGenerator(), callback);
 
 		expect(callback).toHaveBeenCalledTimes(3);
@@ -108,7 +112,7 @@ describe('forEachAsync', () => {
 
 	it('should process items from an iterator', async () => {
 		const iterator = [1, 2, 3][Symbol.iterator]();
-		const callback = vi.fn(async () => { });
+		const callback = vi.fn(async () => {});
 
 		await forEachAsync(iterator, callback);
 
@@ -125,7 +129,7 @@ describe('forEachAsync', () => {
 			throw new Error('Generator error');
 		}
 
-		const callback = vi.fn(async () => { });
+		const callback = vi.fn(async () => {});
 
 		await expect(forEachAsync(asyncErrorGenerator(), callback)).rejects.toThrow('Generator error');
 		expect(callback).toHaveBeenCalledTimes(2); // Should only process up to the error
@@ -133,5 +137,5 @@ describe('forEachAsync', () => {
 });
 
 function randomWait(maxTime: number): Promise<void> {
-	return new Promise(res => setTimeout(res, Math.random() * maxTime));
+	return new Promise((res) => setTimeout(res, Math.random() * maxTime));
 }

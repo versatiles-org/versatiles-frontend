@@ -12,17 +12,20 @@ describe('Progress', () => {
 		// Clear all mocks before each test
 		vi.clearAllMocks();
 		progress = new Progress();
-		write = vi.spyOn(progress, 'write').mockImplementation(() => { });
+		write = vi.spyOn(progress, 'write').mockImplementation(() => {});
 		progress.setAnsi(true);
 	});
 
 	function getNewWriteCalls(): string[] {
-		const newLines = write.mock.calls.flatMap(call => {
+		const newLines = write.mock.calls.flatMap((call) => {
 			const line = String(call[0]);
-			return line.split('\n')
-				// eslint-disable-next-line no-control-regex
-				.map(line => line.replace(/(\x1b(\d|\[(\d[JmK]|H))?)+/g, () => '°')) // Remove ANSI codes
-				.filter(line => line.length > 0);
+			return (
+				line
+					.split('\n')
+					// eslint-disable-next-line no-control-regex
+					.map((line) => line.replace(/(\x1b(\d|\[(\d[JmK]|H))?)+/g, () => '°')) // Remove ANSI codes
+					.filter((line) => line.length > 0)
+			);
 		});
 		write.mockClear();
 		return newLines;
@@ -34,9 +37,9 @@ describe('Progress', () => {
 		progress.setHeader('Test Header');
 		expect(getNewWriteCalls()).toStrictEqual(['°', '°Test Header°']);
 		const label = progress.add('Test Label ANSI', 1);
-		expect(getNewWriteCalls()).toStrictEqual(['°Test Header°', '°    - Test Label ANSI°',]);
+		expect(getNewWriteCalls()).toStrictEqual(['°Test Header°', '°    - Test Label ANSI°']);
 		label.start();
-		expect(getNewWriteCalls()).toStrictEqual(['°Test Header°', '°    - Test Label ANSI°',]);
+		expect(getNewWriteCalls()).toStrictEqual(['°Test Header°', '°    - Test Label ANSI°']);
 		label.end();
 		expect(getNewWriteCalls()).toStrictEqual(['°Test Header°', '°    - Test Label ANSI°']);
 		progress.finish();
@@ -83,6 +86,6 @@ describe('Progress', () => {
 		expect(getNewWriteCalls()).toStrictEqual(['°', '°', '°    - Finishing Label°']);
 
 		progress.finish();
-		expect(getNewWriteCalls()).toStrictEqual(['°', '°    - Finishing Label°', '°Finished°',]);
+		expect(getNewWriteCalls()).toStrictEqual(['°', '°    - Finishing Label°', '°Finished°']);
 	});
 });

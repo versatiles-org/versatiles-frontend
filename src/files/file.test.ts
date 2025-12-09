@@ -44,11 +44,7 @@ describe('File', () => {
 
 		await file.compress();
 
-		expect(cache).toHaveBeenCalledWith(
-			'compress',
-			file.hash,
-			expect.any(Function)
-		);
+		expect(cache).toHaveBeenCalledWith('compress', file.hash, expect.any(Function));
 		expect(brotliCompress).toHaveBeenCalledWith(
 			mockBufferRaw,
 			{
@@ -63,7 +59,11 @@ describe('File', () => {
 	});
 
 	it('should handle Brotli compression errors gracefully', async () => {
-		vi.mocked(brotliCompress).mockImplementationOnce(((_buf: InputType, _options: BrotliOptions, callback: CompressCallback): void => {
+		vi.mocked(brotliCompress).mockImplementationOnce(((
+			_buf: InputType,
+			_options: BrotliOptions,
+			callback: CompressCallback
+		): void => {
 			callback(new Error('Compression failed'), Buffer.alloc(0));
 		}) as typeof brotliCompress);
 

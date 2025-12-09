@@ -11,15 +11,15 @@ vi.mock('fs', () => {
 	]);
 
 	return {
-		existsSync: vi.fn(path => mockFileSystem.has(String(path))),
+		existsSync: vi.fn((path) => mockFileSystem.has(String(path))),
 		mkdirSync: vi.fn(),
 		rmSync: vi.fn(),
 		readdirSync: vi.fn((path: string) => {
 			return Array.from(mockFileSystem.keys())
-				.filter(key => key.startsWith(String(path) + '/'))
-				.map(key => key.slice(String(path).length + 1).split('/')[0]);
+				.filter((key) => key.startsWith(String(path) + '/'))
+				.map((key) => key.slice(String(path).length + 1).split('/')[0]);
 		}),
-		readFileSync: vi.fn(path => Buffer.from(mockFileSystem.get(String(path)) || '')),
+		readFileSync: vi.fn((path) => Buffer.from(mockFileSystem.get(String(path)) || '')),
 		statSync: vi.fn((path: string) => ({
 			isDirectory: () => mockFileSystem.get(String(path)) === false,
 			isFile: () => mockFileSystem.has(String(path)),

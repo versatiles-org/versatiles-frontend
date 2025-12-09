@@ -7,11 +7,7 @@ describe('cleanupFolder', () => {
 	it('should remove and recreate the folder', () => {
 		vi.clearAllMocks();
 
-
-		vi.mocked(existsSync)
-			.mockReturnValueOnce(true)
-			.mockReturnValueOnce(false)
-			.mockReturnValueOnce(true);
+		vi.mocked(existsSync).mockReturnValueOnce(true).mockReturnValueOnce(false).mockReturnValueOnce(true);
 
 		cleanupFolder('/test/folder');
 
@@ -30,9 +26,7 @@ describe('ensureFolder', () => {
 	it('should create the folder if it does not exist', () => {
 		vi.clearAllMocks();
 
-		vi.mocked(existsSync)
-			.mockReturnValueOnce(false)
-			.mockReturnValueOnce(true);
+		vi.mocked(existsSync).mockReturnValueOnce(false).mockReturnValueOnce(true);
 
 		ensureFolder('/test/folder');
 

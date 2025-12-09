@@ -1,7 +1,7 @@
 import { vi } from 'vitest';
 import type { RollupFileDB as RollupFileDBType, RollupFileDBConfig } from '../filedb-rollup';
 
-vi.mock('../filedb-rollup', async importOriginal => {
+vi.mock('../filedb-rollup', async (importOriginal) => {
 	const original = await importOriginal<typeof import('../filedb-rollup')>();
 	const BaseRollupFileDB = original.RollupFileDB as typeof RollupFileDBType;
 

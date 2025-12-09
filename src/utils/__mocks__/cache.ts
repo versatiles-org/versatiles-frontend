@@ -5,10 +5,26 @@ export const cache = vi.fn(async (action: string, key: string, cbBuffer: () => P
 });
 
 const mockedModule = {
-	cache
-}
+	cache,
+};
 
-try { vi.mock('./cache', () => mockedModule) } catch (_) { /* */ }
-try { vi.mock('../cache', () => mockedModule) } catch (_) { /* */ }
-try { vi.mock('./utils/cache', () => mockedModule) } catch (_) { /* */ }
-try { vi.mock('../utils/cache', () => mockedModule) } catch (_) { /* */ }
+try {
+	vi.mock('./cache', () => mockedModule);
+} catch (_) {
+	/* */
+}
+try {
+	vi.mock('../cache', () => mockedModule);
+} catch (_) {
+	/* */
+}
+try {
+	vi.mock('./utils/cache', () => mockedModule);
+} catch (_) {
+	/* */
+}
+try {
+	vi.mock('../utils/cache', () => mockedModule);
+} catch (_) {
+	/* */
+}

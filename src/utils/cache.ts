@@ -32,6 +32,9 @@ export async function cache(action: string, key: string, cbBuffer: () => Promise
 	return buffer;
 
 	function sanitize(key: string): string {
-		return key.replace(/[^a-z0-9-_. ]/gi, c => ' x' + c.charCodeAt(0) + ' ').trim().replace(/\s+/g, '_');
+		return key
+			.replace(/[^a-z0-9-_. ]/gi, (c) => ' x' + c.charCodeAt(0) + ' ')
+			.trim()
+			.replace(/\s+/g, '_');
 	}
 }

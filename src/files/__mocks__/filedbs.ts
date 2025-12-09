@@ -4,7 +4,7 @@ import { FileDB } from '../filedb';
 
 export const FileDBs = vi.fn();
 
-vi.mock('../filedbs', async importOriginal => {
+vi.mock('../filedbs', async (importOriginal) => {
 	const original = await importOriginal<typeof import('../filedbs')>();
 	const BaseFileDBs = original.FileDBs;
 

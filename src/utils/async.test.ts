@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, Mock } from 'vitest';
-import './__mocks__/progress'
+import './__mocks__/progress';
 import type { ProgressLabel } from './progress';
 import progress from './progress';
 
@@ -7,7 +7,7 @@ const PromiseFunctions = (await import('./async')).default;
 
 function getAsyncMock(): Mock<() => Promise<void>> {
 	return vi.fn(async (): Promise<void> => {
-		await new Promise(res => setTimeout(res, Math.random() * 50));
+		await new Promise((res) => setTimeout(res, Math.random() * 50));
 	});
 }
 
@@ -35,10 +35,12 @@ describe('PromiseFunction', () => {
 			const mockInit2 = getAsyncMock();
 			const mockRun2 = getAsyncMock();
 
-			await PromiseFunctions.run(PromiseFunctions.parallel(
-				PromiseFunctions.single(mockInit1, mockRun1),
-				PromiseFunctions.single(mockInit2, mockRun2),
-			));
+			await PromiseFunctions.run(
+				PromiseFunctions.parallel(
+					PromiseFunctions.single(mockInit1, mockRun1),
+					PromiseFunctions.single(mockInit2, mockRun2)
+				)
+			);
 
 			// Verify, that every function was executed once
 			expect(mockInit1).toHaveBeenCalledTimes(1);
@@ -60,10 +62,12 @@ describe('PromiseFunction', () => {
 			const mockInit2 = getAsyncMock();
 			const mockRun2 = getAsyncMock();
 
-			await PromiseFunctions.run(PromiseFunctions.sequential(
-				PromiseFunctions.single(mockInit1, mockRun1),
-				PromiseFunctions.single(mockInit2, mockRun2),
-			));
+			await PromiseFunctions.run(
+				PromiseFunctions.sequential(
+					PromiseFunctions.single(mockInit1, mockRun1),
+					PromiseFunctions.single(mockInit2, mockRun2)
+				)
+			);
 
 			// Verify, that every function was executed once
 			expect(mockInit1).toHaveBeenCalledTimes(1);
@@ -85,7 +89,9 @@ describe('PromiseFunction', () => {
 			const mockInit = getAsyncMock();
 			const mockRun = getAsyncMock();
 
-			await PromiseFunctions.run(PromiseFunctions.wrapProgress('Test Progress', PromiseFunctions.single(mockInit, mockRun)));
+			await PromiseFunctions.run(
+				PromiseFunctions.wrapProgress('Test Progress', PromiseFunctions.single(mockInit, mockRun))
+			);
 
 			const progressLabel = vi.mocked(progress.add).mock.results[0].value as ProgressLabel;
 

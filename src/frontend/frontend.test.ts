@@ -6,7 +6,7 @@ import { FileDBs } from '../files/__mocks__/filedbs';
 await import('../utils/__mocks__/cache');
 
 const { loadFileDBConfigs } = await import('../files/filedbs');
-const { Frontend, } = await import('./frontend');
+const { Frontend } = await import('./frontend');
 const { loadFrontendConfigs } = await import('./load');
 const { generateFrontends } = await import('./generate');
 const progress = (await import('../utils/progress')).default;
@@ -28,10 +28,9 @@ describe('Frontend class', () => {
 		vi.clearAllMocks(); // Clear mocks before each test
 		mockFileDBs = new FileDBs(
 			Object.fromEntries(
-				Object.entries(fileDBConfig)
-					.map(([name, _config]) => {
-						return [name, { [name + '.html']: 'html content of ' + name }];
-					})
+				Object.entries(fileDBConfig).map(([name, _config]) => {
+					return [name, { [name + '.html']: 'html content of ' + name }];
+				})
 			)
 		);
 	});
@@ -56,9 +55,7 @@ describe('Frontend class', () => {
 
 	it('loads frontend configurations correctly', async () => {
 		const configs = await loadFrontendConfigs();
-		expect(configs).toContainEqual(expect.objectContaining(
-			{ name: expect.any(String), fileDBs: expect.any(Array) },
-		));
+		expect(configs).toContainEqual(expect.objectContaining({ name: expect.any(String), fileDBs: expect.any(Array) }));
 	});
 
 	it('generates frontends', async () => {
@@ -66,7 +63,10 @@ describe('Frontend class', () => {
 
 		expect(createWriteStream).toHaveBeenCalledTimes(6);
 
-		const calledFilenames = vi.mocked(createWriteStream).mock.calls.map(call => String(call[0])).sort();
+		const calledFilenames = vi
+			.mocked(createWriteStream)
+			.mock.calls.map((call) => String(call[0]))
+			.sort();
 		expect(calledFilenames).toStrictEqual([
 			'/tmp/frontend-dev.br.tar.gz',
 			'/tmp/frontend-dev.tar.gz',

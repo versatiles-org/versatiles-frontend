@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { mockFetchResponse } from './__mocks__/global_fetch';
 
-
 const { getLatestGithubReleaseVersion, getLatestNPMReleaseVersion } = await import('../utils/release_version');
 
 describe('getLatestGithubReleaseVersion', () => {
@@ -14,7 +13,10 @@ describe('getLatestGithubReleaseVersion', () => {
 		const version = await getLatestGithubReleaseVersion(owner, repo);
 
 		expect(version).toBe('12.7.3');
-		expect(global.fetch).toHaveBeenCalledWith(`https://api.github.com/repos/${owner}/${repo}/releases`, expect.anything());
+		expect(global.fetch).toHaveBeenCalledWith(
+			`https://api.github.com/repos/${owner}/${repo}/releases`,
+			expect.anything()
+		);
 	});
 });
 
@@ -27,7 +29,7 @@ describe('getLatestNPMReleaseVersion', () => {
 				a: { version: '1.7.3' },
 				b: { version: '12.7.3' },
 				c: { version: '1.7.3' },
-			}
+			},
 		});
 
 		const version = await getLatestNPMReleaseVersion(packageName);

@@ -26,7 +26,7 @@ export class StyleSelector {
 
 		this.currentStyle = this.knownStyles.colorful; // Default style
 
-		const container = this.container = createElementFromHTML('<div></div>');
+		const container = (this.container = createElementFromHTML('<div></div>'));
 
 		document.addEventListener('click', this.onDocumentClickHandler);
 
@@ -35,7 +35,9 @@ export class StyleSelector {
 		container.appendChild(buttonContainer);
 
 		// Create style toggle button
-		this.button = createElementFromHTML('<button type="button" class="maplibregl-ctrl-icon maplibregl-style-switcher"></button>');
+		this.button = createElementFromHTML(
+			'<button type="button" class="maplibregl-ctrl-icon maplibregl-style-switcher"></button>'
+		);
 		buttonContainer.appendChild(this.button);
 
 		// Toggle style list display
@@ -44,7 +46,9 @@ export class StyleSelector {
 		});
 
 		// Create list container
-		const listContainer = this.listContainer = createElementFromHTML('<div class="maplibregl-ctrl maplibregl-ctrl-group"></div>');
+		const listContainer = (this.listContainer = createElementFromHTML(
+			'<div class="maplibregl-ctrl maplibregl-ctrl-group"></div>'
+		));
 		container.appendChild(listContainer);
 		listContainer.style.display = 'none';
 
@@ -63,7 +67,7 @@ export class StyleSelector {
 
 				listContainer.style.display = 'none';
 				this.button.style.display = 'block';
-				listContainer.querySelectorAll('.active').forEach(el => el.classList.remove('active'));
+				listContainer.querySelectorAll('.active').forEach((el) => el.classList.remove('active'));
 				target.classList.add('active');
 
 				this.currentStyle = style;
@@ -91,11 +95,8 @@ export class StyleSelector {
 	}
 }
 
-
 export function createElementFromHTML(htmlString: string): HTMLElement {
 	const parser = new DOMParser();
 	const doc = parser.parseFromString(htmlString, 'text/html');
 	return doc.body.firstChild as HTMLElement; // Returns the first element
 }
-
-

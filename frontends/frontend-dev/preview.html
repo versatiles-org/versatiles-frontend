@@ -1,50 +1,76 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
+	<head>
+		<meta charset="utf-8" />
+		<title>VersaTiles - Preview</title>
+		<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
+		<link rel="icon" type="image/png" href="/assets/images/versatiles-logo.png" />
 
-<head>
-	<meta charset="utf-8">
-	<title>VersaTiles - Preview</title>
-	<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no">
-	<link rel="icon" type="image/png" href="/assets/images/versatiles-logo.png">
+		<script src="/assets/lib/maplibre-gl/maplibre-gl.js"></script>
+		<link href="/assets/lib/maplibre-gl/maplibre-gl.css" rel="stylesheet" />
 
-	<script src="/assets/lib/maplibre-gl/maplibre-gl.js"></script>
-	<link href="/assets/lib/maplibre-gl/maplibre-gl.css" rel="stylesheet">
+		<script src="/assets/lib/style-selector/style-selector.js"></script>
+		<link href="/assets/lib/style-selector/style-selector.css" rel="stylesheet" />
 
-	<script src="/assets/lib/style-selector/style-selector.js"></script>
-	<link href="/assets/lib/style-selector/style-selector.css" rel="stylesheet">
+		<script src="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.js"></script>
+		<link href="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet" />
+	</head>
 
-	<script src="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.js"></script>
-	<link href="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet">
-</head>
+	<body style="margin: 0; height: 100%">
+		<a href="https://versatiles.org" style="position: absolute; top: 1em; left: 1em; z-index: 1">
+			<img src="/assets/images/versatiles-logo.png" alt="VersaTiles" width="32" />
+		</a>
+		<div id="map" class="maplibregl-compact" style="position: absolute; top: 0; bottom: 0; width: 100%"></div>
+		<script>
+			const id = new URLSearchParams(window.location.search).get('id');
+			if (!id) throw new Error('id is not defined');
 
-<body style="margin:0;height:100%;">
-	<a href="https://versatiles.org" style="position:absolute;top:1em;left:1em;z-index:1">
-		<img src="/assets/images/versatiles-logo.png" alt="VersaTiles" width="32">
-	</a>
-	<div id="map" class="maplibregl-compact" style="position:absolute;top:0;bottom:0;width:100%"></div>
-	<script>
-		const id = new URLSearchParams(window.location.search).get('id');
-		if (!id) throw new Error('id is not defined');
+			maplibregl.setRTLTextPlugin('/assets/lib/mapbox-gl-rtl-text/mapbox-gl-rtl-text.js', true);
 
-		maplibregl.setRTLTextPlugin('/assets/lib/mapbox-gl-rtl-text/mapbox-gl-rtl-text.js', true);
+			const map = new maplibregl.Map({
+				container: 'map',
+				bounds: [-180, -80, 180, 80],
+				zoom: 5,
+				maxZoom: 20,
+				hash: true,
+				maxPitch: 0,
+				dragRotate: false,
+			});
 
-		const map = new maplibregl.Map({
-			container: 'map',
-			bounds: [-180, -80, 180, 80],
-			zoom: 5,
-			maxZoom: 20,
-			hash: true,
-			maxPitch: 0,
-			dragRotate: false,
-		});
+			map.addControl(new maplibregl.NavigationControl(), 'top-right');
+			map.addControl(
+				new MaplibreInspect({
+					sources: {
+						'versatiles-shortbread': [
+							'addresses',
+							'boundaries',
+							'boundary_labels',
+							'bridges',
+							'buildings',
+							'dam_lines',
+							'dam_polygons',
+							'ferries',
+							'land',
+							'ocean',
+							'pier_lines',
+							'pier_polygons',
+							'place_labels',
+							'pois',
+							'public_transport',
+							'sites',
+							'street_labels',
+							'street_polygons',
+							'streets',
+							'water_lines',
+							'water_polygons',
+						],
+					},
+				})
+			);
+			map.addControl(new StyleSelector.Control({ tiles: [`tiles/${id}/{z}/{x}/{y}`] }));
 
-		map.addControl(new maplibregl.NavigationControl(), 'top-right');
-		map.addControl(new MaplibreInspect({ sources: { 'versatiles-shortbread': ['addresses', 'boundaries', 'boundary_labels', 'bridges', 'buildings', 'dam_lines', 'dam_polygons', 'ferries', 'land', 'ocean', 'pier_lines', 'pier_polygons', 'place_labels', 'pois', 'public_transport', 'sites', 'street_labels', 'street_polygons', 'streets', 'water_lines', 'water_polygons'], } }));
-		map.addControl(new StyleSelector.Control({ tiles: [`tiles/${id}/{z}/{x}/{y}`] }));
-
-		// collapse attribution control
-		document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');
-	</script>
-</body>
-
+			// collapse attribution control
+			document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');
+		</script>
+	</body>
 </html>

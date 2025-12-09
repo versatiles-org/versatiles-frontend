@@ -20,7 +20,7 @@ describe('RollupFileDB', () => {
 		type: 'rollup',
 		path: 'style-selector',
 		url: 'assets/lib/style-selector/style-selector.js',
-		globalVariable: 'StyleSelector'
+		globalVariable: 'StyleSelector',
 	};
 	const frontendFolder = new URL('../../frontends', import.meta.url).pathname;
 
@@ -31,9 +31,9 @@ describe('RollupFileDB', () => {
 	it('should rollup files', async () => {
 		const filedbs = await RollupFileDB.build(mockConfig, frontendFolder);
 		expect(filedbs).toBeInstanceOf(FileDB);
-		const files = Array.from(filedbs.iterate()).map(file => file.name).sort();
-		expect(files).toStrictEqual([
-			'assets/lib/style-selector/test.js',
-		]);
+		const files = Array.from(filedbs.iterate())
+			.map((file) => file.name)
+			.sort();
+		expect(files).toStrictEqual(['assets/lib/style-selector/test.js']);
 	});
 });

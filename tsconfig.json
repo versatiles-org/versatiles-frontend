@@ -1,8 +1,6 @@
 {
 	"compilerOptions": {
-		"lib": [
-			"ESNext"
-		],
+		"lib": ["ESNext"],
 		"module": "ESNext",
 		"moduleResolution": "node",
 		"target": "ES2022",
@@ -15,8 +13,5 @@
 		"forceConsistentCasingInFileNames": true,
 		"sourceMap": true
 	},
-	"include": [
-		"src/**/*.ts",
-		"frontends/config.ts"
-	]
+	"include": ["src/**/*.ts", "frontends/config.ts"]
 }

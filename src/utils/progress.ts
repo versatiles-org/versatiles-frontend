@@ -18,7 +18,7 @@ export class ProgressLabel {
 
 	/**
 	 * Constructs a ProgressLabel instance.
-	 * 
+	 *
 	 * @param progress - The parent Progress instance.
 	 * @param label - The text label for this progress item.
 	 * @param indent - The indentation level for this item.
@@ -32,7 +32,7 @@ export class ProgressLabel {
 
 	/**
 	 * Updates the text label and triggers a redraw of the progress display.
-	 * 
+	 *
 	 * @param label - The new text label.
 	 */
 	public updateLabel(label: string): void {
@@ -67,7 +67,7 @@ export class ProgressLabel {
 
 	/**
 	 * Generates ANSI-colored output for this progress item.
-	 * 
+	 *
 	 * @returns A string with ANSI escape codes for coloring based on the item's status.
 	 */
 	public getOutputAnsi(): string {
@@ -85,7 +85,7 @@ export class ProgressLabel {
 
 	/**
 	 * Generates a plain text output for this progress item, suitable for non-ANSI terminals.
-	 * 
+	 *
 	 * @returns A plain text string representation of this progress item.
 	 */
 	public getOutputText(): string {
@@ -141,7 +141,7 @@ export class Progress {
 
 	/**
 	 * Sets the header text for the progress display and triggers a redraw.
-	 * 
+	 *
 	 * @param header - The header text to set.
 	 */
 	public setHeader(header: string): void {
@@ -167,7 +167,7 @@ export class Progress {
 
 	/**
 	 * Adds a new ProgressLabel to the collection and triggers a redraw of the progress display.
-	 * 
+	 *
 	 * @param name - The text label for the new progress item.
 	 * @param indent - The indentation level for the new item.
 	 * @returns The newly created ProgressLabel instance.
@@ -194,17 +194,19 @@ export class Progress {
 		}
 
 		// Re-draw the progress display, including the header and all labels.
-		this.write([
-			'\x1b8', // Restore cursor position.
-			`\x1b[${this.finished ? 2 : 1}m${this.header ?? ''}\x1b[0m\n`, // Optionally set header with styling.
-			...this.labelList.map(l => l.getOutputAnsi()), // Generate ANSI output for each label.
-			this.finished ? '\x1b[2mFinished\x1b[0m\n' : '', // Optionally mark as finished.
-		].join(''));
+		this.write(
+			[
+				'\x1b8', // Restore cursor position.
+				`\x1b[${this.finished ? 2 : 1}m${this.header ?? ''}\x1b[0m\n`, // Optionally set header with styling.
+				...this.labelList.map((l) => l.getOutputAnsi()), // Generate ANSI output for each label.
+				this.finished ? '\x1b[2mFinished\x1b[0m\n' : '', // Optionally mark as finished.
+			].join('')
+		);
 	}
 
 	/**
 	 * Writes a line of text to the terminal, bypassing ANSI styling.
-	 * 
+	 *
 	 * @param line - The line of text to write.
 	 */
 	public writeLine(line: string): void {

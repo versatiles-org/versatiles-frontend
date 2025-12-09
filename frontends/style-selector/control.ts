@@ -1,12 +1,10 @@
-
 import type { Map, IControl, ControlPosition, Evented as EventedClass } from 'maplibre-gl';
 import { StyleSelector, StyleSelectorConfig } from './style-selector';
 
 // @ts-expect-error don't know how to fix this
 const Evented = maplibregl.Evented as EventedClass;
 
-type StyleSelectorControlOptions = StyleSelectorConfig & {
-}
+type StyleSelectorControlOptions = StyleSelectorConfig & {};
 
 /**
  * StyleSelectorControl is a custom control for MapLibre GL JS maps that allows users to switch between different map styles.

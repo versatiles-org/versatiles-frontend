@@ -14,7 +14,7 @@ export default class PromiseFunction {
 
 	/**
 	 * Protected constructor to prevent direct instantiation, use static factory methods instead.
-	 * 
+	 *
 	 * @param init - An asynchronous function to initialize the operation.
 	 * @param run - The main asynchronous function to execute.
 	 */
@@ -25,7 +25,7 @@ export default class PromiseFunction {
 
 	/**
 	 * Creates a single asynchronous operation.
-	 * 
+	 *
 	 * @param init - Initialization function.
 	 * @param run - Main execution function.
 	 * @returns A new PromiseFunction instance.
@@ -36,7 +36,7 @@ export default class PromiseFunction {
 
 	/**
 	 * Combines multiple PromiseFunctions to run in parallel.
-	 * 
+	 *
 	 * @param pfs - An array of PromiseFunction instances.
 	 * @returns A new PromiseFunction instance that runs the provided instances in parallel.
 	 */
@@ -46,14 +46,14 @@ export default class PromiseFunction {
 				for (const pf of pfs) await pf.init();
 			},
 			async () => {
-				await Promise.all(pfs.map(async pf => pf.run()));
-			},
+				await Promise.all(pfs.map(async (pf) => pf.run()));
+			}
 		);
 	}
 
 	/**
 	 * Combines multiple PromiseFunctions to run sequentially.
-	 * 
+	 *
 	 * @param pfs - An array of PromiseFunction instances.
 	 * @returns A new PromiseFunction instance that runs the provided instances sequentially.
 	 */
@@ -64,13 +64,13 @@ export default class PromiseFunction {
 			},
 			async () => {
 				for (const pf of pfs) await pf.run();
-			},
+			}
 		);
 	}
 
 	/**
 	 * Initializes and then runs a given PromiseFunction.
-	 * 
+	 *
 	 * @param pf - The PromiseFunction to execute.
 	 */
 	public static async run(pf: PromiseFunction): Promise<void> {
@@ -80,7 +80,7 @@ export default class PromiseFunction {
 
 	/**
 	 * Wraps a PromiseFunction with progress tracking.
-	 * 
+	 *
 	 * @param message - The message to display for progress tracking.
 	 * @param pf - The PromiseFunction to wrap.
 	 * @returns A new PromiseFunction instance with progress tracking.
@@ -96,13 +96,13 @@ export default class PromiseFunction {
 				s.start();
 				await pf.run();
 				s.end();
-			},
+			}
 		);
 	}
 
 	/**
 	 * Wraps an asynchronous function with progress tracking, creating a PromiseFunction.
-	 * 
+	 *
 	 * @param message - The progress message.
 	 * @param indent - Indentation level for progress display.
 	 * @param af - The asynchronous function to wrap.
@@ -118,7 +118,7 @@ export default class PromiseFunction {
 				s.start();
 				await af();
 				s.end();
-			},
+			}
 		);
 	}
 

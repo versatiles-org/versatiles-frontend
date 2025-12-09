@@ -28,7 +28,7 @@ export class Frontend {
 
 	/**
 	 * Constructs a Frontend instance.
-	 * 
+	 *
 	 * @param fileSystem - A FileSystem instance for managing file operations.
 	 * @param config - Configuration for the frontend, including paths and ignore patterns.
 	 * @param frontendsPath - The root path to the frontend assets.
@@ -45,7 +45,7 @@ export class Frontend {
 
 	/**
 	 * Saves the frontend as a Gzip-compressed tarball.
-	 * 
+	 *
 	 * @param folder - The destination folder for the tarball.
 	 */
 	public async saveAsTarGz(folder: string): Promise<void> {
@@ -55,16 +55,12 @@ export class Frontend {
 		}
 		pack.finalize();
 
-		await pipeline(
-			pack,
-			createGzip({ level: 9 }),
-			createWriteStream(resolve(folder, this.config.name + '.tar.gz')),
-		);
+		await pipeline(pack, createGzip({ level: 9 }), createWriteStream(resolve(folder, this.config.name + '.tar.gz')));
 	}
 
 	/**
 	 * Saves the frontend as a Brotli-compressed tarball.
-	 * 
+	 *
 	 * @param folder - The destination folder for the tarball.
 	 */
 	public async saveAsBrTarGz(folder: string): Promise<void> {
@@ -75,11 +71,7 @@ export class Frontend {
 		}
 		pack.finalize();
 
-		await pipeline(
-			pack,
-			createGzip({ level: 9 }),
-			createWriteStream(resolve(folder, this.config.name + '.br.tar.gz')),
-		);
+		await pipeline(pack, createGzip({ level: 9 }), createWriteStream(resolve(folder, this.config.name + '.br.tar.gz')));
 	}
 
 	/**

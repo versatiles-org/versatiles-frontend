@@ -16,7 +16,7 @@ export interface DevConfig {
 /**
  * Parses and validates a development configuration object,
  * ensuring it meets the expected structure for `DevConfig`.
- * 
+ *
  * @param configDef - The configuration object to parse.
  * @returns A validated `DevConfig` object.
  */
@@ -24,20 +24,25 @@ export function parseDevConfig(configDef: unknown): DevConfig {
 	const config: DevConfig = {};
 	// Validate that configDef is an object.
 	if (typeof configDef !== 'object' || configDef == null) {
-		throw new Error('Invalid \'dev\' property, must be an object');
+		throw new Error("Invalid 'dev' property, must be an object");
 	}
 
 	// Check for and validate the 'proxy' property if present.
 	if ('proxy' in configDef) {
 		const { proxy } = configDef;
-		if (!Array.isArray(proxy) || !proxy.every((p: unknown) => {
-			// Ensure each proxy rule is an object with 'from' and 'to' string properties.
-			if (typeof p !== 'object' || p == null) return false;
-			if (!('from' in p) || !('to' in p)) return false;
-			if (typeof p.from !== 'string' || typeof p.to !== 'string') return false;
-			return true;
-		})) {
-			throw new Error('Invalid \'proxy\' configuration, each proxy must be an object with \'from\' and \'to\' string properties');
+		if (
+			!Array.isArray(proxy) ||
+			!proxy.every((p: unknown) => {
+				// Ensure each proxy rule is an object with 'from' and 'to' string properties.
+				if (typeof p !== 'object' || p == null) return false;
+				if (!('from' in p) || !('to' in p)) return false;
+				if (typeof p.from !== 'string' || typeof p.to !== 'string') return false;
+				return true;
+			})
+		) {
+			throw new Error(
+				"Invalid 'proxy' configuration, each proxy must be an object with 'from' and 'to' string properties"
+			);
 		}
 
 		config.proxy = proxy as [{ from: string; to: string }];
@@ -54,7 +59,7 @@ export class Server {
 
 	/**
 	 * Constructs a Server instance.
-	 * 
+	 *
 	 * @param fileSystem - The file system from which to serve files.
 	 * @param config - Optional development configuration for the server.
 	 */
@@ -69,7 +74,7 @@ export class Server {
 			if (tryFrontend(resolve(req.path + '/', 'index.html'))) return;
 
 			// Attempt to proxy the request based on configuration.
-			void tryProxy(req.path).then(value => {
+			void tryProxy(req.path).then((value) => {
 				if (value) return;
 				// Respond with 404 if the file was not found in the file system and no proxy rule matched.
 				res.status(404).end(`path "${escapeHtml(req.path)}" not found.`);
@@ -77,7 +82,7 @@ export class Server {
 
 			/**
 			 * Attempts to serve a file from the file system.
-			 * 
+			 *
 			 * @param path - The request path.
 			 * @returns True if the file was served, false otherwise.
 			 */
@@ -94,14 +99,14 @@ export class Server {
 
 			/**
 			 * Attempts to proxy the request based on development configuration.
-			 * 
+			 *
 			 * @param path - The request path.
 			 * @returns A promise that resolves to true if the request was proxied, false otherwise.
 			 */
 			async function tryProxy(path: string): Promise<boolean> {
 				if (!config?.proxy) return false;
 
-				const proxy = config.proxy.find(p => path.startsWith(p.from));
+				const proxy = config.proxy.find((p) => path.startsWith(p.from));
 				if (!proxy) return false;
 
 				const url = proxy.to + path.slice(proxy.from.length);
@@ -114,10 +119,7 @@ export class Server {
 				const buffer = Buffer.from(await response.arrayBuffer());
 				if (buffer.length === 0) return false;
 
-				res
-					.header('content-type', contentType.toString())
-					.status(200)
-					.end(buffer);
+				res.header('content-type', contentType.toString()).status(200).end(buffer);
 				return true;
 			}
 		});
@@ -127,9 +129,11 @@ export class Server {
 	 * Starts the server on a specified port, logging a message once it's running.
 	 */
 	public async start(): Promise<void> {
-		return new Promise(res => this.app.listen(8080, () => {
-			console.log('Server started: http://localhost:8080/');
-			res();
-		}));
+		return new Promise((res) =>
+			this.app.listen(8080, () => {
+				console.log('Server started: http://localhost:8080/');
+				res();
+			})
+		);
 	}
 }

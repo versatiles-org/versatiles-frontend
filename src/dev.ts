@@ -13,20 +13,23 @@ import { FileDBs, loadFileDBs } from './files/filedbs';
 const frontendConfigs = await loadFrontendConfigs();
 
 // parse arguments
-const args = arg({
-	'--local-proxy-port': Number,
-	'-l': '--local-proxy-port',
-},
+const args = arg(
+	{
+		'--local-proxy-port': Number,
+		'-l': '--local-proxy-port',
+	},
 	{
 		permissive: false,
-		argv: process.argv.slice(2)
+		argv: process.argv.slice(2),
 	}
-)
+);
 
 // Retrieves the name of the frontend to be developed from command line arguments.
 const frontendName = args._[0];
 if (frontendName == null) {
-	console.error(`set a frontend name as first argument, e.g.: ${frontendConfigs.map(config => config.name).join(', ')}`);
+	console.error(
+		`set a frontend name as first argument, e.g.: ${frontendConfigs.map((config) => config.name).join(', ')}`
+	);
 	process.exit(1);
 }
 
@@ -41,7 +44,7 @@ await Pf.run(loadFileDBs(fileDBs));
 progress.finish();
 
 // Finds the configuration for the specified frontend.
-const frontendConfig = frontendConfigs.find(config => config.name === frontendName);
+const frontendConfig = frontendConfigs.find((config) => config.name === frontendName);
 if (!frontendConfig) {
 	console.error(`unknown frontend "${frontendName}"`);
 	process.exit(1);
@@ -53,13 +56,14 @@ fileDBs.enterWatchMode();
 
 // Starts a development server for the frontend, utilizing its file system and any dev-specific configurations.
 const devConfig = {
-	proxy: [{
-		from: '/tiles/',
-		to:
-			args['--local-proxy-port']
+	proxy: [
+		{
+			from: '/tiles/',
+			to: args['--local-proxy-port']
 				? `http://localhost:${args['--local-proxy-port']}/tiles/`
 				: 'https://tiles.versatiles.org/tiles/',
-	}]
+		},
+	],
 };
 const server = new Server(frontend, devConfig);
 await server.start();

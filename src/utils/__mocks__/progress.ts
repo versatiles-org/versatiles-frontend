@@ -1,8 +1,8 @@
 import { vi } from 'vitest';
 import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../progress';
 
-vi.mock('../progress', async originalImport => {
-	const originalModule = await originalImport() as typeof import('../progress');
+vi.mock('../progress', async (originalImport) => {
+	const originalModule = (await originalImport()) as typeof import('../progress');
 	originalModule.default.disable();
 
 	function mockProgressLabel(progressLabel: ProgressLabelType) {
@@ -29,7 +29,7 @@ vi.mock('../progress', async originalImport => {
 			this.add = ((name: string, indent = 0): ProgressLabelType => {
 				const progressLabel = originalAdd(name, indent);
 				mockProgressLabel(progressLabel);
-				return progressLabel
+				return progressLabel;
 			}) as ProgressType['add'];
 		}
 	}
@@ -44,8 +44,10 @@ vi.mock('../progress', async originalImport => {
 	vi.spyOn(progress, 'write');
 
 	return {
-		Progress: vi.fn(function () { return progress; }),
+		Progress: vi.fn(function () {
+			return progress;
+		}),
 		default: progress,
 		ProgressLabel,
 	};
-})
+});

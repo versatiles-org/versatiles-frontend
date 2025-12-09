@@ -10,7 +10,7 @@ class Label {
 
 	/**
 	 * Constructs a Label instance.
-	 * 
+	 *
 	 * @param name - The name of the label or component.
 	 */
 	public constructor(name: string) {
@@ -19,7 +19,7 @@ class Label {
 
 	/**
 	 * Sets the version for the label or component.
-	 * 
+	 *
 	 * @param version - The version to be set.
 	 */
 	public setVersion(version: string): void {
@@ -47,13 +47,13 @@ export class ReleaseNotes {
 
 	/**
 	 * Adds a new label to the release notes.
-	 * 
+	 *
 	 * @param name - The name of the new label or component.
 	 * @returns The newly created Label instance.
 	 */
 	public add(name: string): Label {
 		if (this.labelMap.has(name)) return this.labelMap.get(name)!;
-		
+
 		const label = new Label(name);
 		this.labelList.push(label);
 		this.labelMap.set(name, label);
@@ -63,7 +63,7 @@ export class ReleaseNotes {
 
 	/**
 	 * Sets the version of the release.
-	 * 
+	 *
 	 * @param version - The version of the release to be set.
 	 */
 	public setVersion(version: string): void {
@@ -72,7 +72,7 @@ export class ReleaseNotes {
 
 	/**
 	 * Saves the release notes to a specified file.
-	 * 
+	 *
 	 * @param filename - The name of the file where the release notes should be saved.
 	 */
 	public save(filename: string): void {
@@ -83,7 +83,7 @@ export class ReleaseNotes {
 			`## VersaTiles Frontend ${this.version}`,
 			'',
 			'contains:',
-			...this.labelList.map(l => `- ${l.name}: ${l.version || '?.?.?'}`),
+			...this.labelList.map((l) => `- ${l.name}: ${l.version || '?.?.?'}`),
 		].join('\n');
 
 		// Write the compiled release notes to the specified file.

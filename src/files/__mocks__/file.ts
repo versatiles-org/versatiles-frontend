@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-vi.mock('../file', async originalImport => {
+vi.mock('../file', async (originalImport) => {
 	const original = await originalImport<typeof import('../file')>();
 	const BaseFile = original.File;
 
