@@ -1,14 +1,15 @@
-import { jest } from '@jest/globals';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { mockFetchResponse } from './__mocks__/global_fetch';
-import { FileDB } from '../files/__mocks__/filedb';
+import '../files/__mocks__/filedb';
 import { join } from 'path';
 
 const { cache } = await import('./__mocks__/cache');
-
+const { FileDB } = await import('../files/filedb');
 const { Curl } = await import('./curl');
 
 describe('Curl', () => {
 	let curl: InstanceType<typeof Curl>;
+	// @ts-expect-error TS is not aware of the mock implementation
 	const mockFileDB = new FileDB();
 	const testUrl = 'http://example.com/resource.tar.gz';
 	const testFolder = '/test/folder';
@@ -18,10 +19,11 @@ describe('Curl', () => {
 
 	beforeEach(() => {
 		// Reset mocks before each test
-		jest.clearAllMocks();
+		vi.clearAllMocks();
+
 		// Initialize Curl with mocked FileDB and URL
 		curl = new Curl(mockFileDB, testUrl);
-		jest.spyOn(mockFileDB, 'setFileFromBuffer');
+		vi.spyOn(mockFileDB, 'setFileFromBuffer');
 	});
 
 	it('should fetch and ungzip/untar a resource', async () => {

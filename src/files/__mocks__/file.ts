@@ -1,23 +1,20 @@
-import { jest } from '@jest/globals';
-import type { File as FileType } from '../file';
+import { vi } from 'vitest';
 
-const { File: OriginalFile } = await import('../file?' + Math.random()) as { File: typeof FileType };
+vi.mock('../file', async originalImport => {
+	const original = await originalImport<typeof import('../file')>();
+	const BaseFile = original.File;
 
-const compressed = Buffer.from('compressed');
-
-export class File extends OriginalFile {
-	constructor(name: string, modificationTime: number, bufferRaw: Buffer) {
-		super(name, modificationTime, bufferRaw);
+	class File extends BaseFile {
+		constructor(name: string, modificationTime: number, bufferRaw: Buffer) {
+			super(name, modificationTime, bufferRaw);
+		}
+		async compress(): Promise<void> {
+			this.bufferBr = Buffer.from('compressed');
+		}
 	}
-	public async compress(): Promise<void> {
-		this.bufferBr = compressed;
-	}
-}
 
-const mockedClass = {
-	File
-}
-
-try { jest.unstable_mockModule('../file', () => mockedClass) } catch (_) { /* */ }
-try { jest.unstable_mockModule('./file', () => mockedClass) } catch (_) { /* */ }
-try { jest.unstable_mockModule('./files/file', () => mockedClass) } catch (_) { /* */ }
+	return {
+		...original,
+		File,
+	};
+});

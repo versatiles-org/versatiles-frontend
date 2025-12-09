@@ -1,12 +1,7 @@
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 
-const OriginalModule = await import('../../frontend/load?' + Math.random()) as typeof import('../../frontend/load');
-
-export const loadFrontendConfigs = jest.fn(OriginalModule.loadFrontendConfigs);
-
-const mockedModule = { loadFrontendConfigs }
-
-try { jest.unstable_mockModule('./load', () => mockedModule) } catch (_) { /* */ }
-try { jest.unstable_mockModule('../load', () => mockedModule) } catch (_) { /* */ }
-try { jest.unstable_mockModule('./frontend/load', () => mockedModule) } catch (_) { /* */ }
-try { jest.unstable_mockModule('../frontend/load', () => mockedModule) } catch (_) { /* */ }
+vi.mock('../load', async originalImport => {
+	const originalModule = await originalImport() as typeof import('../load');
+	vi.spyOn(originalModule, 'loadFrontendConfigs');
+	return originalModule;
+})

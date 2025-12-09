@@ -78,7 +78,7 @@ export class ExternalFileDB extends FileDB {
 	 * 
 	 */
 	private async addMaplibre(): Promise<void> {
-		const version = '5.7.3';
+		const version = '5.14.0';
 		const folder = join(folderLibrary, 'maplibre-gl');
 		const label = notes.add('[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)');
 		const new_version = await getLatestGithubReleaseVersion('maplibre', 'maplibre-gl-js');

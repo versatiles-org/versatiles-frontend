@@ -1,12 +1,12 @@
-import { jest } from '@jest/globals';
+import { Mocked, vi } from 'vitest';
 
 const instance = {
-	get: jest.fn(),
-	listen: jest.fn((port, callback: () => void) => {
+	get: vi.fn(),
+	listen: vi.fn((port, callback: () => void) => {
 		callback();
 	}),
 };
 
 export const mockExpress = {
-	default: jest.fn(() => instance),
-} as unknown as jest.Mocked<typeof import('express')>;
+	default: vi.fn(() => instance),
+} as unknown as Mocked<typeof import('express')>;

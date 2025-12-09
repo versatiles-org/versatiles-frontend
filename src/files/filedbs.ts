@@ -54,7 +54,7 @@ export class FileDBs {
 
 
 export async function loadFileDBConfigs(): Promise<Record<string, FileDBConfig>> {
-	return (await import('../../frontends/config.ts?' + Date.now())).fileDBConfigs;
+	return (await import('../../frontends/config')).fileDBConfigs;
 }
 
 export function loadFileDBs(fileDBs: FileDBs): PromiseFunction {

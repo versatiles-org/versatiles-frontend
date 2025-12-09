@@ -1,22 +1,34 @@
-import { jest } from '@jest/globals';
-import type { StaticFileDB as StaticFileDBType,StaticFileDBConfig } from '../filedb-static';
-const { StaticFileDB: OriginalStaticFileDB } = await import('../filedb-static?' + Math.random()) as { StaticFileDB: typeof StaticFileDBType };
+import { vi } from 'vitest';
+import type { StaticFileDB as StaticFileDBType, StaticFileDBConfig } from '../filedb-static';
 
-export class StaticFileDB extends OriginalStaticFileDB {
-	constructor() {
-		super('');
-	}
-	public static async build(_config: StaticFileDBConfig, _frontendFolder: string): Promise<StaticFileDB> {
-		return new StaticFileDB()
-	}
-	public enterWatchMode(): void {
-	}
-}
+export const StaticFileDB = vi.fn();
 
-const mockedModule = {
-	StaticFileDB
-}
+vi.mock('../filedb-static', async importOriginal => {
+	const original = await importOriginal<typeof import('../filedb-static')>();
+	const BaseStaticFileDB = original.StaticFileDB as typeof StaticFileDBType;
 
-try { jest.unstable_mockModule('../filedb-static', () => mockedModule) } catch (_) { /* */ }
-try { jest.unstable_mockModule('./filedb-static', () => mockedModule)} catch (_) { /* */ }
-try { jest.unstable_mockModule('./files/filedb-static', () => mockedModule)} catch (_) { /* */ }
+	class MockStaticFileDB extends BaseStaticFileDB {
+		constructor() {
+			super('');
+		}
+
+		public static async build(_config: StaticFileDBConfig, _frontendFolder: string): Promise<MockStaticFileDB> {
+			return new MockStaticFileDB();
+		}
+
+		public enterWatchMode(): void {
+			// no-op in tests
+		}
+	}
+
+	StaticFileDB.mockImplementation(() => {
+		return new MockStaticFileDB();
+	});
+	// @ts-expect-error - override for testing
+	StaticFileDB.build = vi.fn(MockStaticFileDB.build);
+
+	return {
+		...original,
+		StaticFileDB,
+	};
+});

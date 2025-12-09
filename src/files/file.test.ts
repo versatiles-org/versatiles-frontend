@@ -1,8 +1,8 @@
-import { jest } from '@jest/globals';
+import { vi, describe, it, expect } from 'vitest';
 import type { InputType, BrotliOptions, CompressCallback } from 'zlib';
 
-jest.unstable_mockModule('zlib', () => ({
-	brotliCompress: jest.fn((_buf: InputType, _options: BrotliOptions, callback: CompressCallback): void => {
+vi.mock('zlib', () => ({
+	brotliCompress: vi.fn((_buf: InputType, _options: BrotliOptions, callback: CompressCallback): void => {
 		callback(null, Buffer.from('compressed-data'));
 	}),
 	constants: {
@@ -63,7 +63,7 @@ describe('File', () => {
 	});
 
 	it('should handle Brotli compression errors gracefully', async () => {
-		jest.mocked(brotliCompress).mockImplementationOnce(((_buf: InputType, _options: BrotliOptions, callback: CompressCallback): void => {
+		vi.mocked(brotliCompress).mockImplementationOnce(((_buf: InputType, _options: BrotliOptions, callback: CompressCallback): void => {
 			callback(new Error('Compression failed'), Buffer.alloc(0));
 		}) as typeof brotliCompress);
 

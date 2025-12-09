@@ -1,11 +1,11 @@
-import { jest } from '@jest/globals';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { FrontendConfig } from './frontend';
+import { createWriteStream } from '../utils/__mocks__/node_fs';
+import { FileDBs } from '../files/__mocks__/filedbs';
 
 await import('../utils/__mocks__/cache');
 
-const { createWriteStream } = await import('../utils/__mocks__/node_fs');
-
-const { FileDBs, loadFileDBConfigs } = await import('../files/__mocks__/filedbs');
+const { loadFileDBConfigs } = await import('../files/filedbs');
 const { Frontend, } = await import('./frontend');
 const { loadFrontendConfigs } = await import('./load');
 const { generateFrontends } = await import('./generate');
@@ -13,8 +13,6 @@ const progress = (await import('../utils/progress')).default;
 const PromiseFunction = (await import('../utils/async')).default;
 
 progress.disable();
-
-if (!jest.isMockFunction(createWriteStream)) throw Error();
 
 const fileDBConfig = await loadFileDBConfigs();
 
@@ -27,7 +25,7 @@ describe('Frontend class', () => {
 	} as const satisfies FrontendConfig;
 
 	beforeEach(() => {
-		jest.clearAllMocks(); // Clear mocks before each test
+		vi.clearAllMocks(); // Clear mocks before each test
 		mockFileDBs = new FileDBs(
 			Object.fromEntries(
 				Object.entries(fileDBConfig)
@@ -68,7 +66,7 @@ describe('Frontend class', () => {
 
 		expect(createWriteStream).toHaveBeenCalledTimes(6);
 
-		const calledFilenames = createWriteStream.mock.calls.map(call => call[0] as string).sort();
+		const calledFilenames = vi.mocked(createWriteStream).mock.calls.map(call => String(call[0])).sort();
 		expect(calledFilenames).toStrictEqual([
 			'/tmp/frontend-dev.br.tar.gz',
 			'/tmp/frontend-dev.tar.gz',

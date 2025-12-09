@@ -1,10 +1,10 @@
 import { forEachAsync } from './parallel';
-import { jest } from '@jest/globals';
+import { vi, describe, it, expect } from 'vitest';
 
 describe('forEachAsync', () => {
 	it('should call the callback for each item in the list', async () => {
 		const list = [1, 2, 3, 4];
-		const callback = jest.fn(async () => { });
+		const callback = vi.fn(async () => { });
 
 		await forEachAsync(list, callback);
 
@@ -17,7 +17,7 @@ describe('forEachAsync', () => {
 
 	it('should handle empty lists without error', async () => {
 		const list: number[] = [];
-		const callback = jest.fn(async () => { });
+		const callback = vi.fn(async () => { });
 
 		await forEachAsync(list, callback);
 
@@ -30,7 +30,7 @@ describe('forEachAsync', () => {
 		let concurrentTasks = 0;
 		let maxConcurrentTasks = 0;
 
-		const callback = jest.fn(async () => {
+		const callback = vi.fn(async () => {
 			concurrentTasks++;
 			maxConcurrentTasks = Math.max(maxConcurrentTasks, concurrentTasks);
 			await randomWait(30);
@@ -44,7 +44,7 @@ describe('forEachAsync', () => {
 
 	it('should reject if any callback call rejects', async () => {
 		const list = [1, 2, 3];
-		const callback = jest.fn(async (item: number) => {
+		const callback = vi.fn(async (item: number) => {
 			if (item === 2) throw new Error('Test error');
 		});
 
@@ -53,7 +53,7 @@ describe('forEachAsync', () => {
 
 	it('should resolve successfully when all callbacks are resolved', async () => {
 		const list = [1, 2, 3];
-		const callback = jest.fn(async () => await randomWait(10));
+		const callback = vi.fn(async () => await randomWait(10));
 
 		await expect(forEachAsync(list, callback)).resolves.toBeUndefined();
 	});
@@ -81,7 +81,7 @@ describe('forEachAsync', () => {
 			yield 3;
 		}
 
-		const callback = jest.fn(async () => { });
+		const callback = vi.fn(async () => { });
 		await forEachAsync(syncGenerator(), callback);
 
 		expect(callback).toHaveBeenCalledTimes(3);
@@ -97,7 +97,7 @@ describe('forEachAsync', () => {
 			yield 3;
 		}
 
-		const callback = jest.fn(async () => { });
+		const callback = vi.fn(async () => { });
 		await forEachAsync(asyncGenerator(), callback);
 
 		expect(callback).toHaveBeenCalledTimes(3);
@@ -108,7 +108,7 @@ describe('forEachAsync', () => {
 
 	it('should process items from an iterator', async () => {
 		const iterator = [1, 2, 3][Symbol.iterator]();
-		const callback = jest.fn(async () => { });
+		const callback = vi.fn(async () => { });
 
 		await forEachAsync(iterator, callback);
 
@@ -125,7 +125,7 @@ describe('forEachAsync', () => {
 			throw new Error('Generator error');
 		}
 
-		const callback = jest.fn(async () => { });
+		const callback = vi.fn(async () => { });
 
 		await expect(forEachAsync(asyncErrorGenerator(), callback)).rejects.toThrow('Generator error');
 		expect(callback).toHaveBeenCalledTimes(2); // Should only process up to the error

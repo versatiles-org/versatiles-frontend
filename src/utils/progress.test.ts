@@ -1,18 +1,18 @@
-import { jest } from '@jest/globals';
+import { vi, describe, it, expect, Mock, beforeEach } from 'vitest';
 import type { Progress as ProgressType } from './progress';
 
-jest.unstable_mockModule('supports-color', () => ({ default: { stdout: true } }));
+vi.mock('supports-color', () => ({ default: { stdout: true } }));
 const { Progress } = await import('./progress');
 
 describe('Progress', () => {
 	let progress: ProgressType;
-	let write: jest.SpiedFunction<(text: string) => void>;
+	let write: Mock<(text: string) => void>;
 
 	beforeEach(() => {
 		// Clear all mocks before each test
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 		progress = new Progress();
-		write = jest.spyOn(progress, 'write').mockImplementation(() => { });
+		write = vi.spyOn(progress, 'write').mockImplementation(() => { });
 		progress.setAnsi(true);
 	});
 

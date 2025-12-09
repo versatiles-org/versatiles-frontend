@@ -6,5 +6,5 @@ import type { FrontendConfig } from './frontend';
  * @returns An array of FrontendConfig objects.
  */
 export async function loadFrontendConfigs(): Promise<FrontendConfig[]> {
-	return (await import('../../frontends/config.ts?' + Date.now())).frontendConfigs;
+	return (await import('../../frontends/config')).frontendConfigs;
 }

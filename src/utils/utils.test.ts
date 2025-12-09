@@ -1,22 +1,19 @@
-import { jest } from '@jest/globals';
-
-const { mockFs } = await import('./__mocks__/node_fs');
-jest.unstable_mockModule('fs', () => mockFs);
-const { existsSync, mkdirSync, rmSync } = await import('fs');
-
-const utils = await import('./utils');
-
+import { vi, describe, it, expect } from 'vitest';
+import './__mocks__/node_fs';
+import { existsSync, mkdirSync, rmSync } from 'fs';
+import { cleanupFolder, ensureFolder } from './utils';
 
 describe('cleanupFolder', () => {
 	it('should remove and recreate the folder', () => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 
-		jest.mocked(existsSync)
+
+		vi.mocked(existsSync)
 			.mockReturnValueOnce(true)
 			.mockReturnValueOnce(false)
 			.mockReturnValueOnce(true);
 
-		utils.cleanupFolder('/test/folder');
+		cleanupFolder('/test/folder');
 
 		expect(existsSync).toHaveBeenCalledTimes(3);
 		expect(existsSync).toHaveBeenNthCalledWith(1, '/test/folder');
@@ -31,13 +28,13 @@ describe('cleanupFolder', () => {
 
 describe('ensureFolder', () => {
 	it('should create the folder if it does not exist', () => {
-		jest.clearAllMocks();
+		vi.clearAllMocks();
 
-		jest.mocked(existsSync)
+		vi.mocked(existsSync)
 			.mockReturnValueOnce(false)
 			.mockReturnValueOnce(true);
 
-		utils.ensureFolder('/test/folder');
+		ensureFolder('/test/folder');
 
 		expect(existsSync).toHaveBeenCalledTimes(2);
 		expect(existsSync).toHaveBeenNthCalledWith(1, '/test/folder');

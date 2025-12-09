@@ -1,46 +1,51 @@
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../progress';
 
-const originalModule = await import('../progress?' + Math.random());
-originalModule.default.disable();
+vi.mock('../progress', async originalImport => {
+	const originalModule = await originalImport() as typeof import('../progress');
+	originalModule.default.disable();
 
-function mockProgressLabel(progressLabel: ProgressLabelType): ProgressLabelType {
-	jest.spyOn(progressLabel, 'updateLabel');
-	jest.spyOn(progressLabel, 'start');
-	jest.spyOn(progressLabel, 'end');
-	jest.spyOn(progressLabel, 'getOutputAnsi');
-	jest.spyOn(progressLabel, 'getOutputText');
-	return progressLabel;
-}
+	function mockProgressLabel(progressLabel: ProgressLabelType) {
+		vi.spyOn(progressLabel, 'updateLabel');
+		vi.spyOn(progressLabel, 'start');
+		vi.spyOn(progressLabel, 'end');
+		vi.spyOn(progressLabel, 'getOutputAnsi');
+		vi.spyOn(progressLabel, 'getOutputText');
+	}
 
-export const ProgressLabel = jest.fn((progress: ProgressType, label: string, indent: number) => {
-	return mockProgressLabel(new originalModule.ProgressLabel(progress, label, indent));
-});
+	class ProgressLabel extends originalModule.ProgressLabel {
+		constructor(progress: ProgressType, label: string, indent: number) {
+			super(progress, label, indent);
+			mockProgressLabel(this);
+		}
+	}
 
-export const Progress = jest.fn(() => {
-	const progress = new originalModule.Progress();
-	jest.spyOn(progress, 'setAnsi');
-	jest.spyOn(progress, 'disable');
-	jest.spyOn(progress, 'setHeader');
-	jest.spyOn(progress, 'finish');
-	jest.spyOn(progress, 'redraw');
-	jest.spyOn(progress, 'write');
+	class Progress extends originalModule.Progress {
+		constructor() {
+			super();
 
+			// Wrap the original add method so we can spy on the returned ProgressLabel as well
+			const originalAdd = this.add.bind(this);
+			this.add = ((name: string, indent = 0): ProgressLabelType => {
+				const progressLabel = originalAdd(name, indent);
+				mockProgressLabel(progressLabel);
+				return progressLabel
+			}) as ProgressType['add'];
+		}
+	}
 
-	progress._add = progress.add;
-	progress.add = jest.fn((name: string, indent = 0): ProgressLabelType => {
-		return mockProgressLabel(progress._add(name, indent));
-	});
-	return progress;
-});
+	const progress = new Progress();
+	vi.spyOn(progress, 'add');
+	vi.spyOn(progress, 'disable');
+	vi.spyOn(progress, 'finish');
+	vi.spyOn(progress, 'redraw');
+	vi.spyOn(progress, 'setAnsi');
+	vi.spyOn(progress, 'setHeader');
+	vi.spyOn(progress, 'write');
 
-export const progress = new Progress();
-progress.disable();
-
-const mockProgress = {
-	ProgressLabel, Progress, default: progress,
-} as unknown as jest.Mocked<typeof import('../progress')>;
-
-try { jest.unstable_mockModule('../progress', () => mockProgress) } catch (_) { /* */ }
-try { jest.unstable_mockModule('./progress', () => mockProgress) } catch (_) { /* */ }
-try { jest.unstable_mockModule('./utils/progress', () => mockProgress) } catch (_) { /* */ }
+	return {
+		Progress: vi.fn(function () { return progress; }),
+		default: progress,
+		ProgressLabel,
+	};
+})

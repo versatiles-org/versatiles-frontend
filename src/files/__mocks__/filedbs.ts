@@ -1,26 +1,41 @@
-import { jest } from '@jest/globals';
-import { FileDB } from './filedb';
+import { vi } from 'vitest';
+import './filedb';
+import { FileDB } from '../filedb';
 
-const originalModule = await import('../filedbs?' + Math.random()) as typeof import('../filedbs');;
+export const FileDBs = vi.fn();
 
-export class FileDBs extends originalModule.FileDBs {
-	constructor(testFileDBs?: Record<string, Record<string, string>>) {
-		super();
-		if (testFileDBs) {
-			Object.entries(testFileDBs).forEach(([name, testFiles]) => {
-				this.fileDBs.set(name, new FileDB(testFiles));
-			});
+vi.mock('../filedbs', async importOriginal => {
+	const original = await importOriginal<typeof import('../filedbs')>();
+	const BaseFileDBs = original.FileDBs;
+
+	class MockFileDBs extends BaseFileDBs {
+		constructor(testFileDBs?: Record<string, Record<string, string>>) {
+			super();
+			if (testFileDBs) {
+				Object.entries(testFileDBs).forEach(([name, testFiles]) => {
+					// @ts-expect-error - override for testing
+					this.fileDBs.set(name, new FileDB(testFiles));
+				});
+			}
+		}
+
+		public enterWatchMode(): void {
+			// no-op in tests
 		}
 	}
-	public enterWatchMode(): void {
-	}
-}
 
-export const loadFileDBConfigs = jest.mocked(originalModule.loadFileDBConfigs);
-export const loadFileDBs = jest.mocked(originalModule.loadFileDBs);
+	FileDBs.mockImplementation(function (testFileDBs?: Record<string, Record<string, string>>) {
+		return new MockFileDBs(testFileDBs);
+	});
 
-const mockedModule = { FileDBs, loadFileDBConfigs, loadFileDBs }
+	// Wrap the original loader functions in vi.fn so tests can assert on calls
+	const loadFileDBConfigs = vi.fn(original.loadFileDBConfigs);
+	const loadFileDBs = vi.fn(original.loadFileDBs);
 
-try { jest.unstable_mockModule('../filedbs', () => mockedModule) } catch (_) { /* */ }
-try { jest.unstable_mockModule('./filedbs', () => mockedModule) } catch (_) { /* */ }
-try { jest.unstable_mockModule('./files/filedbs', () => mockedModule) } catch (_) { /* */ }
+	return {
+		...original,
+		FileDBs,
+		loadFileDBConfigs,
+		loadFileDBs,
+	};
+});

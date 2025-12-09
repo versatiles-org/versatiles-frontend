@@ -1,15 +1,12 @@
-import { jest } from '@jest/globals';
-import { toHaveBeenCalledBefore } from 'jest-extended';
+import { vi, describe, it, expect, Mock } from 'vitest';
+import './__mocks__/progress'
 import type { ProgressLabel } from './progress';
-expect.extend({ toHaveBeenCalledBefore });
-
-const { progress } = await import('./__mocks__/progress');
+import progress from './progress';
 
 const PromiseFunctions = (await import('./async')).default;
 
-function getAsyncMock(): jest.Mock<() => Promise<void>> {
-
-	return jest.fn(async (): Promise<void> => {
+function getAsyncMock(): Mock<() => Promise<void>> {
+	return vi.fn(async (): Promise<void> => {
 		await new Promise(res => setTimeout(res, Math.random() * 50));
 	});
 }
@@ -83,14 +80,14 @@ describe('PromiseFunction', () => {
 
 	describe('wrapProgress', () => {
 		it('wraps a PromiseFunction with progress tracking', async () => {
-			jest.clearAllMocks();
+			vi.clearAllMocks();
 
 			const mockInit = getAsyncMock();
 			const mockRun = getAsyncMock();
 
 			await PromiseFunctions.run(PromiseFunctions.wrapProgress('Test Progress', PromiseFunctions.single(mockInit, mockRun)));
 
-			const progressLabel = jest.mocked(progress.add).mock.results[0].value as ProgressLabel;
+			const progressLabel = vi.mocked(progress.add).mock.results[0].value as ProgressLabel;
 
 			expect(progress.add).toHaveBeenCalledTimes(1);
 			expect(mockInit).toHaveBeenCalledTimes(1);
@@ -101,21 +98,21 @@ describe('PromiseFunction', () => {
 			expect(progress.add).toHaveBeenCalledWith('Test Progress');
 
 			expect(progress.add).toHaveBeenCalledBefore(mockInit);
-			expect(mockInit).toHaveBeenCalledBefore(jest.mocked(progressLabel.start));
+			expect(mockInit).toHaveBeenCalledBefore(vi.mocked(progressLabel.start));
 			expect(progressLabel.start).toHaveBeenCalledBefore(mockRun);
-			expect(mockRun).toHaveBeenCalledBefore(jest.mocked(progressLabel.end));
+			expect(mockRun).toHaveBeenCalledBefore(vi.mocked(progressLabel.end));
 		});
 	});
 
 	describe('wrapAsync', () => {
 		it('wraps a async function with progress tracking', async () => {
-			jest.clearAllMocks();
+			vi.clearAllMocks();
 
 			const mockAsync = getAsyncMock();
 
 			await PromiseFunctions.run(PromiseFunctions.wrapAsync('Test Progress', 3, mockAsync));
 
-			const progressLabel = jest.mocked(progress.add).mock.results[0].value as ProgressLabel;
+			const progressLabel = vi.mocked(progress.add).mock.results[0].value as ProgressLabel;
 
 			expect(progress.add).toHaveBeenCalledTimes(1);
 			expect(mockAsync).toHaveBeenCalledTimes(1);
@@ -124,9 +121,9 @@ describe('PromiseFunction', () => {
 
 			expect(progress.add).toHaveBeenCalledWith('Test Progress', 3);
 
-			expect(progress.add).toHaveBeenCalledBefore(jest.mocked(progressLabel.start));
+			expect(progress.add).toHaveBeenCalledBefore(vi.mocked(progressLabel.start));
 			expect(progressLabel.start).toHaveBeenCalledBefore(mockAsync);
-			expect(mockAsync).toHaveBeenCalledBefore(jest.mocked(progressLabel.end));
+			expect(mockAsync).toHaveBeenCalledBefore(vi.mocked(progressLabel.end));
 		});
 	});
 });

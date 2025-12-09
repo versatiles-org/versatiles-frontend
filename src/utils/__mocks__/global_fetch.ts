@@ -1,8 +1,8 @@
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 
 export function mockFetchResponse(data: unknown): void {
 	// @ts-expect-error too lazy
-	global.fetch = jest.fn(async () => Promise.resolve({
+	global.fetch = vi.fn(async () => Promise.resolve({
 		arrayBuffer: async () => Promise.resolve(getAsBuffer()),
 		 
 		headers: new Headers({ 'content-type': 'text/plain' }),

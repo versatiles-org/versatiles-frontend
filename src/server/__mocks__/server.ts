@@ -1,14 +1,18 @@
-import { jest } from '@jest/globals';
+import { vi } from 'vitest';
 
-const originalModule = await import('../server?' + Math.random()) as typeof import('../server');
+// Stubbed parseDevConfig that tests can override with vi.mocked(...).mockResolvedValue(...)
+export const parseDevConfig = vi.fn();
 
-const serverInstance = {
-	start: jest.fn().mockReturnValue(Promise.resolve(undefined)),
+// A simple server instance with a mocked start method
+export const serverInstance = {
+	start: vi.fn().mockResolvedValue(undefined),
 };
 
-export const parseDevConfig = jest.fn(originalModule.parseDevConfig);
-export const Server = jest.fn(() => serverInstance);
+// Factory for creating (or returning) the mocked server instance
+export const Server = vi.fn(() => serverInstance);
 
-const mockedModule = { parseDevConfig, Server };
-
-jest.unstable_mockModule('../server', () => mockedModule);
+// Default export to roughly match the module shape if imported as default
+export default {
+	parseDevConfig,
+	Server,
+};

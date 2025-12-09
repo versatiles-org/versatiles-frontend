@@ -1,7 +1,7 @@
-import { jest } from '@jest/globals';
+import { vi, describe, it, expect, afterAll } from 'vitest';
 import type { StaticFileDBConfig } from './filedb-static';
 
-jest.unstable_mockModule('fs', () => {
+vi.mock('fs', () => {
 	const mockFileSystem = new Map<string, string | false>([
 		['/test/path', false],
 		['/test/path/file1.txt', 'Content of file1'],
@@ -11,16 +11,16 @@ jest.unstable_mockModule('fs', () => {
 	]);
 
 	return {
-		existsSync: jest.fn(path => mockFileSystem.has(String(path))),
-		mkdirSync: jest.fn(),
-		rmSync: jest.fn(),
-		readdirSync: jest.fn((path: string) => {
+		existsSync: vi.fn(path => mockFileSystem.has(String(path))),
+		mkdirSync: vi.fn(),
+		rmSync: vi.fn(),
+		readdirSync: vi.fn((path: string) => {
 			return Array.from(mockFileSystem.keys())
 				.filter(key => key.startsWith(String(path) + '/'))
 				.map(key => key.slice(String(path).length + 1).split('/')[0]);
 		}),
-		readFileSync: jest.fn(path => Buffer.from(mockFileSystem.get(String(path)) || '')),
-		statSync: jest.fn((path: string) => ({
+		readFileSync: vi.fn(path => Buffer.from(mockFileSystem.get(String(path)) || '')),
+		statSync: vi.fn((path: string) => ({
 			isDirectory: () => mockFileSystem.get(String(path)) === false,
 			isFile: () => mockFileSystem.has(String(path)),
 			mtimeMs: 1234567890,
@@ -29,15 +29,15 @@ jest.unstable_mockModule('fs', () => {
 			ctime: new Date(),
 			birthtime: new Date(),
 		})),
-		watch: jest.fn(() => ({
-			close: jest.fn(),
-			ref: jest.fn(),
-			unref: jest.fn(),
-			addListener: jest.fn(),
-			on: jest.fn(),
-			removeListener: jest.fn(),
+		watch: vi.fn(() => ({
+			close: vi.fn(),
+			ref: vi.fn(),
+			unref: vi.fn(),
+			addListener: vi.fn(),
+			on: vi.fn(),
+			removeListener: vi.fn(),
 		})),
-		writeFileSync: jest.fn(),
+		writeFileSync: vi.fn(),
 	};
 });
 
@@ -46,10 +46,10 @@ const { StaticFileDB } = await import('./filedb-static');
 
 describe('StaticFileDB', () => {
 	afterAll(() => {
-		jest.restoreAllMocks();
+		vi.restoreAllMocks();
 	});
 
-	test('build() should correctly populate the database', async () => {
+	it('build() should correctly populate the database', async () => {
 		const config: StaticFileDBConfig = { type: 'static', path: '/test/path' };
 		const db = await StaticFileDB.build(config, '/');
 
@@ -58,15 +58,15 @@ describe('StaticFileDB', () => {
 		expect(db.getFile('subdir/file3.txt')).toEqual(Buffer.from('Content of file3'));
 	});
 
-	test('build() should throw an error if path does not exist', async () => {
+	it('build() should throw an error if path does not exist', async () => {
 		const config: StaticFileDBConfig = { type: 'static', path: '/invalid/path' };
 
 		await expect(StaticFileDB.build(config, '/')).rejects.toThrow('path "/invalid/path" does not exist');
 	});
 
-	test('enterWatchMode() should set up a file watcher', () => {
+	it('enterWatchMode() should set up a file watcher', () => {
 		const db = new StaticFileDB('/test/path');
-		const watchSpy = jest.spyOn(fs, 'watch');
+		const watchSpy = vi.spyOn(fs, 'watch');
 
 		db.enterWatchMode();
 

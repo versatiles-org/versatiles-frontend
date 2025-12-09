@@ -14,7 +14,6 @@ export default [
 			'frontends/**/*.js',
 			'release/**/*.*',
 			'rollups/**/*.js',
-			'_archive/**/*.*',
 		]
 	},
 	{

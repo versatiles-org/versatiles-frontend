@@ -1,13 +1,13 @@
-import { jest } from '@jest/globals';
+import { Mocked, vi } from 'vitest';
 
-export const cleanupFolder = jest.fn().mockReturnValue(undefined);
-export const ensureFolder = jest.fn().mockReturnValue(undefined);
+export const cleanupFolder = vi.fn().mockReturnValue(undefined);
+export const ensureFolder = vi.fn().mockReturnValue(undefined);
 
 export const mockUtils = {
   cleanupFolder,
   ensureFolder,
-} as const satisfies jest.Mocked<typeof import('../utils')>;
+} as const satisfies Mocked<typeof import('../utils')>;
 
-try { jest.unstable_mockModule('../utils', () => mockUtils) } catch (_) { /* */ }
-try { jest.unstable_mockModule('./utils', () => mockUtils) } catch (_) { /* */ }
-try { jest.unstable_mockModule('./utils/utils', () => mockUtils) } catch (_) { /* */ }
+try { vi.mock('../utils', () => mockUtils) } catch (_) { /* */ }
+try { vi.mock('./utils', () => mockUtils) } catch (_) { /* */ }
+try { vi.mock('./utils/utils', () => mockUtils) } catch (_) { /* */ }
