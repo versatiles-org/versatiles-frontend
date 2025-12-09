@@ -10,13 +10,6 @@ export const fileDBConfigs = {
 	'external-mapbox-rtl-text': { type: 'external', source: 'mapbox-rtl-text' },
 	'external-styles': { type: 'external', source: 'styles' },
 
-	'style-selector': {
-		type: 'rollup',
-		path: 'style-selector',
-		url: 'assets/lib/style-selector/style-selector.js',
-		globalVariable: 'StyleSelector',
-	},
-
 	all: { type: 'static', path: 'all' },
 	frontend: { type: 'static', path: 'frontend' },
 	'frontend-dev': { type: 'static', path: 'frontend-dev' },
@@ -34,7 +27,6 @@ export const frontendConfigs: FrontendConfig<keyof typeof fileDBConfigs>[] = [
 			'external-maplibre',
 			'external-maplibre-inspect',
 			'external-mapbox-rtl-text',
-			'style-selector',
 		],
 	},
 	{
@@ -47,7 +39,6 @@ export const frontendConfigs: FrontendConfig<keyof typeof fileDBConfigs>[] = [
 			'external-maplibre',
 			'external-maplibre-inspect',
 			'external-mapbox-rtl-text',
-			'style-selector',
 		],
 	},
 	{
