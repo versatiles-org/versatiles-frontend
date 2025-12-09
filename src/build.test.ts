@@ -1,13 +1,13 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import './utils/__mocks__/progress';
-import { Progress } from './utils/progress';
 import './frontend/__mocks__/frontend';
+import './files/__mocks__/filedb-external';
+import './files/__mocks__/filedb-rollup';
+import './files/__mocks__/filedb-static';
+import './utils/__mocks__/cache';
+import './utils/__mocks__/release_version';
 
-await import('./files/__mocks__/filedb-external');
-await import('./files/__mocks__/filedb-rollup');
-await import('./files/__mocks__/filedb-static');
-await import('./utils/__mocks__/cache');
-await import('./utils/__mocks__/release_version');
+import { Progress } from './utils/progress';
 const { Frontend } = await import('./frontend/frontend');
 const { default: notes } = await import('./utils/__mocks__/release_notes');
 const { cleanupFolder } = await import('./utils/__mocks__/utils');
@@ -19,6 +19,8 @@ describe('Build Process', () => {
 
 	it('executes the build process correctly', async () => {
 		const progress = new Progress();
+		progress.disable();
+		
 		await import('./build');
 
 		// Validate the cleanup of the destination folder
