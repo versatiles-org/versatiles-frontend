@@ -39,10 +39,7 @@ export class ExternalFileDB extends FileDB {
 
 
 
-	/**
-	 * Adds fonts to the project by downloading and extracting them from the specified release.
-	 *
-	 */
+	// Adds fonts to the project by downloading and extracting them from the specified release.
 	private async addFonts(name: 'fonts' | 'noto_sans'): Promise<void> {
 		const label = notes.add('[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)');
 		const version = await getLatestGithubReleaseVersion('versatiles-org', 'versatiles-fonts');
@@ -55,10 +52,7 @@ export class ExternalFileDB extends FileDB {
 			});
 	}
 
-	/**
-	 * Adds styles and sprites to the project by downloading and extracting them from the specified releases.
-	 * 
-	 */
+	// Adds styles and sprites to the project by downloading and extracting them from the specified releases.
 	private async addStyles(): Promise<void> {
 		const folderLib = join(folderLibrary, 'versatiles-style/');
 		const label = notes.add('[VersaTiles style](https://github.com/versatiles-org/versatiles-style)');
@@ -73,10 +67,7 @@ export class ExternalFileDB extends FileDB {
 			.ungzipUntar(f => join(folderSprites, f));
 	}
 
-	/**
-	 * Adds MapLibre GL JS to the project by downloading and extracting the distribution files from the specified release.
-	 * 
-	 */
+	// Adds MapLibre GL JS to the project by downloading and extracting the distribution files from the specified release.
 	private async addMaplibre(): Promise<void> {
 		const version = '5.14.0';
 		const folder = join(folderLibrary, 'maplibre-gl');
@@ -90,10 +81,7 @@ export class ExternalFileDB extends FileDB {
 			.unzip(f => /dist\/.*\.(js|css|map)$/.test(f) && join(folder, basename(f)));
 	}
 
-	/**
-	 * Adds MapLibre GL Inspect plugin to the project by downloading and saving the necessary JavaScript and CSS files.
-	 * 
-	 */
+	// Adds MapLibre GL Inspect plugin to the project by downloading and saving the necessary JavaScript and CSS files.
 	private async addMaplibreInspect(): Promise<void> {
 		const folder = join(folderLibrary, 'maplibre-gl-inspect');
 		const label = notes.add('[MapLibre GL Inspect](https://github.com/maplibre/maplibre-gl-inspect)');
@@ -103,10 +91,7 @@ export class ExternalFileDB extends FileDB {
 			.ungzipUntar(f => /package\/dist\/.*\.(js|css|map)$/.test(f) && join(folder, basename(f)));
 	}
 
-	/**
-	 * Adds MapLibre GL Inspect plugin to the project by downloading and saving the necessary JavaScript and CSS files.
-	 * 
-	 */
+	// Adds MapLibre GL Inspect plugin to the project by downloading and saving the necessary JavaScript and CSS files.
 	private async addMapboxRTLText(): Promise<void> {
 		const folder = join(folderLibrary, 'mapbox-gl-rtl-text');
 		const label = notes.add('[Mapbox GL RTL Text](https://github.com/mapbox/mapbox-gl-rtl-text)');
