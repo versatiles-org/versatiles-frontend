@@ -6,7 +6,7 @@ export const fileDBConfigs = {
 	'external-fonts-noto': { type: 'external', source: 'fonts-noto' },
 	'external-maplibre': { type: 'external', source: 'maplibre' },
 	'external-maplibre-inspect': { type: 'external', source: 'maplibre-inspect' },
-	'external-maplibre-versatiles': { type: 'external', source: 'maplibre-versatiles-styler' },
+	'external-maplibre-versatiles-styler': { type: 'external', source: 'maplibre-versatiles-styler' },
 	'external-mapbox-rtl-text': { type: 'external', source: 'mapbox-rtl-text' },
 	'external-styles': { type: 'external', source: 'styles' },
 
@@ -26,6 +26,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof fileDBConfigs>[] = [
 			'external-styles',
 			'external-maplibre',
 			'external-maplibre-inspect',
+			'external-maplibre-versatiles-styler',
 			'external-mapbox-rtl-text',
 		],
 	},
@@ -38,6 +39,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof fileDBConfigs>[] = [
 			'external-styles',
 			'external-maplibre',
 			'external-maplibre-inspect',
+			'external-maplibre-versatiles-styler',
 			'external-mapbox-rtl-text',
 		],
 	},
@@ -49,6 +51,8 @@ export const frontendConfigs: FrontendConfig<keyof typeof fileDBConfigs>[] = [
 			'external-fonts-noto',
 			'external-styles',
 			'external-maplibre',
+			'external-maplibre-inspect',
+			'external-maplibre-versatiles-styler',
 			'external-mapbox-rtl-text',
 		],
 		ignore: [
