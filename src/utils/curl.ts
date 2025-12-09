@@ -95,8 +95,12 @@ export class Curl {
 	 */
 	public async getBuffer(): Promise<Buffer> {
 		return cache('getBuffer', this.url, async () => {
-			const response = await fetch(this.url, { redirect: 'follow' });
-			if (response.status !== 200) throw Error(`url "${this.url}" returned error ${response.status}`);
+			const url = this.url;
+			if (!url.startsWith('https://')) {
+				throw Error(`only secure https:// urls are supported, got: ${url}`);
+			}
+			const response = await fetch(url, { redirect: 'follow' });
+			if (response.status !== 200) throw Error(`url "${url}" returned error ${response.status}`);
 			return Buffer.from(await response.arrayBuffer());
 		});
 	}

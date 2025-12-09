@@ -11,7 +11,7 @@ describe('Curl', () => {
 	let curl: InstanceType<typeof Curl>;
 	// @ts-expect-error TS is not aware of the mock implementation
 	const mockFileDB = new FileDB();
-	const testUrl = 'http://example.com/resource.tar.gz';
+	const testUrl = 'https://example.com/resource.tar.gz';
 	const testFolder = '/test/folder';
 	const testFilename = 'resource.tar.gz';
 	const testGzipTar = Buffer.from(
@@ -85,5 +85,11 @@ describe('Curl', () => {
 		expect(fetch).toHaveBeenCalledWith(testUrl, { redirect: 'follow' });
 	});
 
-	// Add more tests as needed for other scenarios and edge cases
+	it('should throw an error for non-HTTPS URLs in getBuffer', async () => {
+		const nonHttpsCurl = new Curl(mockFileDB, 'http://insecure-url.com/resource');
+
+		await expect(nonHttpsCurl.getBuffer()).rejects.toThrow(
+			'only secure https:// urls are supported, got: http://insecure-url.com/resource'
+		);
+	});
 });
