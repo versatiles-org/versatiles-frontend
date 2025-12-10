@@ -36,7 +36,7 @@
     "@typescript-eslint/eslint-plugin": "^8.49.0",
     "@typescript-eslint/parser": "^8.49.0",
     "@versatiles/release-tool": "^2.5.0",
-    "@versatiles/style": "^5.8.3",
+    "@versatiles/style": "^5.8.4",
     "@vitest/coverage-v8": "^4.0.15",
     "arg": "^5.0.2",
     "dotenv": "^17.2.3",
