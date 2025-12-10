@@ -102,70 +102,72 @@ config:
 flowchart TB
 
 subgraph 0["src"]
-1["build.ts"]
-subgraph 2["files"]
-3["filedbs.ts"]
+subgraph 1["async_progress"]
+2["async.ts"]
+3["progress.ts"]
+end
+4["build.ts"]
+subgraph 5["files"]
+6["filedbs.ts"]
 7["filedb-external.ts"]
-D["filedb.ts"]
-F["file.ts"]
-G["filedb-rollup.ts"]
-H["filedb-static.ts"]
+E["filedb.ts"]
+G["file.ts"]
+H["filedb-rollup.ts"]
+I["filedb-static.ts"]
 end
-subgraph 4["utils"]
-5["async.ts"]
-6["progress.ts"]
-8["curl.ts"]
-9["cache.ts"]
-A["utils.ts"]
-B["release_notes.ts"]
-C["release_version.ts"]
-E["parallel.ts"]
+subgraph 8["utils"]
+9["curl.ts"]
+A["cache.ts"]
+B["utils.ts"]
+C["release_notes.ts"]
+D["release_version.ts"]
+F["parallel.ts"]
 end
-subgraph I["frontend"]
-J["generate.ts"]
-K["frontend.ts"]
-L["load.ts"]
+subgraph J["frontend"]
+K["generate.ts"]
+L["frontend.ts"]
+M["load.ts"]
 end
-M["dev.ts"]
-subgraph N["server"]
-O["server.ts"]
+N["dev.ts"]
+subgraph O["server"]
+P["server.ts"]
 end
 end
-1-->3
-1-->J
-1-->5
-1-->6
-1-->B
-1-->A
-3-->5
-3-->6
-3-->7
-3-->G
-3-->H
-5-->6
-7-->8
-7-->B
+2-->3
+4-->2
+4-->3
+4-->6
+4-->K
+4-->C
+4-->B
+6-->2
+6-->3
+6-->7
+6-->H
+6-->I
+7-->9
 7-->C
 7-->D
-8-->9
+7-->E
 9-->A
-D-->E
-D-->F
-F-->9
-G-->D
-H-->D
-J-->5
-J-->6
-J-->K
-J-->L
-M-->3
-M-->K
-M-->L
-M-->O
-M-->5
-M-->6
+A-->B
+E-->F
+E-->G
+G-->A
+H-->E
+I-->E
+K-->2
+K-->3
+K-->L
+K-->M
+N-->2
+N-->3
+N-->6
+N-->L
+N-->M
+N-->P
 
-class 0,2,4,I,N subgraphs;
+class 0,1,5,8,J,O subgraphs;
 classDef subgraphs fill-opacity:0.1, fill:#888, color:#888, stroke:#888;
 ```
 

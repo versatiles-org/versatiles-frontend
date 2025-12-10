@@ -1,7 +1,7 @@
-import Pf from './utils/async';
+import Pf from './async_progress/async';
 import { Frontend } from './frontend/frontend';
 import { loadFrontendConfigs } from './frontend/load';
-import progress from './utils/progress';
+import progress from './async_progress/progress';
 import { Server } from './server/server';
 import arg from 'arg';
 import { FileDBs, loadFileDBs } from './files/filedbs';

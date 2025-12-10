@@ -1,9 +1,9 @@
 import { FileDBs } from '../files/filedbs';
 import type { FrontendConfig } from './frontend';
 import { Frontend } from './frontend';
-import Pf from '../utils/async';
-import progress from '../utils/progress';
-import type { ProgressLabel } from '../utils/progress';
+import Pf from '../async_progress/async';
+import progress from '../async_progress/progress';
+import type { ProgressLabel } from '../async_progress/progress';
 import { loadFrontendConfigs } from './load';
 
 /**

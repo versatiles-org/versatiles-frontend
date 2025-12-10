@@ -9,8 +9,8 @@ const { loadFileDBConfigs } = await import('../files/filedbs');
 const { Frontend } = await import('./frontend');
 const { loadFrontendConfigs } = await import('./load');
 const { generateFrontends } = await import('./generate');
-const progress = (await import('../utils/progress')).default;
-const PromiseFunction = (await import('../utils/async')).default;
+const progress = (await import('../async_progress/progress')).default;
+const PromiseFunction = (await import('../async_progress/async')).default;
 
 progress.disable();
 

@@ -3,8 +3,8 @@ import { readFileSync } from 'fs';
 
 import { cleanupFolder } from './utils/utils';
 import notes from './utils/release_notes';
-import PromiseFunction from './utils/async';
-import progress from './utils/progress';
+import PromiseFunction from './async_progress/async';
+import progress from './async_progress/progress';
 import { generateFrontends } from './frontend/generate';
 import { FileDBs, loadFileDBs } from './files/filedbs';
 

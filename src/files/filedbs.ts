@@ -1,7 +1,7 @@
 import { FileDB } from './filedb';
-import PromiseFunction from '../utils/async';
-import { ProgressLabel } from '../utils/progress';
-import progress from '../utils/progress';
+import PromiseFunction from '../async_progress/async';
+import { ProgressLabel } from '../async_progress/progress';
+import progress from '../async_progress/progress';
 import { StaticFileDB, type StaticFileDBConfig } from './filedb-static';
 import { ExternalFileDB, ExternalFileDBConfig } from './filedb-external';
 import { RollupFileDB, RollupFileDBConfig } from './filedb-rollup';
