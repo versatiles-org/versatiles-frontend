@@ -8,11 +8,12 @@
   },
   "scripts": {
     "build": "tsx --env-file-if-exists=.env src/build.ts",
-    "check": "npm run lint && npm run test",
+    "check": "npm run lint && npm run test && npm run format:check",
     "dev": "tsx --env-file-if-exists=.env src/dev.ts",
     "doc-graph": "vrt deps-graph | vrt doc-insert README.md '### Dependency Graph'",
     "doc": "npm run doc-graph",
     "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "lint": "eslint . --color",
     "prepack": "npm run build",
     "prepare": "husky",
