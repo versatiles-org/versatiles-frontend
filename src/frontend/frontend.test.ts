@@ -2,15 +2,13 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { FrontendConfig } from './frontend';
 import { createWriteStream } from '../utils/__mocks__/node_fs';
 import { FileDBs } from '../files/__mocks__/filedbs';
-
-await import('../utils/__mocks__/cache');
+import '../utils/__mocks__/cache';
+import { progress, PromiseFunction } from '../async_progress';
 
 const { loadFileDBConfigs } = await import('../files/filedbs');
 const { Frontend } = await import('./frontend');
 const { loadFrontendConfigs } = await import('./load');
 const { generateFrontends } = await import('./generate');
-const progress = (await import('../async_progress/progress')).default;
-const PromiseFunction = (await import('../async_progress/async')).default;
 
 progress.disable();
 

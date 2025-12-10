@@ -1,7 +1,6 @@
-import Pf from './async_progress/async';
+import { progress, PromiseFunction } from './async_progress';
 import { Frontend } from './frontend/frontend';
 import { loadFrontendConfigs } from './frontend/load';
-import progress from './async_progress/progress';
 import { Server } from './server/server';
 import arg from 'arg';
 import { FileDBs, loadFileDBs } from './files/filedbs';
@@ -38,7 +37,7 @@ const fileDBs = new FileDBs();
 progress.setHeader('Preparing Server');
 
 // Loads and prepares assets for the frontend using the custom FileSystem.
-await Pf.run(loadFileDBs(fileDBs));
+await PromiseFunction.run(loadFileDBs(fileDBs));
 
 // Indicates completion of the asset preparation stage.
 progress.finish();

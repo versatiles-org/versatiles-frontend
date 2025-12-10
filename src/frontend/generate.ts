@@ -1,9 +1,7 @@
 import { FileDBs } from '../files/filedbs';
 import type { FrontendConfig } from './frontend';
 import { Frontend } from './frontend';
-import Pf from '../async_progress/async';
-import progress from '../async_progress/progress';
-import type { ProgressLabel } from '../async_progress/progress';
+import { PromiseFunction, progress, type ProgressLabel } from '../async_progress';
 import { loadFrontendConfigs } from './load';
 
 /**
@@ -16,16 +14,18 @@ import { loadFrontendConfigs } from './load';
  * @param dstFolder - The destination folder where the generated frontend bundles will be saved.
  * @returns A PromiseFunction instance that encapsulates the asynchronous operations of generating all frontends.
  */
-export function generateFrontends(fileDBs: FileDBs, dstFolder: string): Pf {
+export function generateFrontends(fileDBs: FileDBs, dstFolder: string): PromiseFunction {
 	let s: ProgressLabel;
-	let parallel = Pf.parallel();
+	let parallel = PromiseFunction.parallel();
 
-	return Pf.single(
+	return PromiseFunction.single(
 		async () => {
 			s = progress.add('generate frontends');
 			const configs = await loadFrontendConfigs();
-			const todos = configs.map((config: FrontendConfig): Pf => generateFrontend(config, fileDBs, dstFolder));
-			parallel = Pf.parallel(...todos);
+			const todos = configs.map(
+				(config: FrontendConfig): PromiseFunction => generateFrontend(config, fileDBs, dstFolder)
+			);
+			parallel = PromiseFunction.parallel(...todos);
 			await parallel.init();
 		},
 		async () => {
@@ -36,11 +36,11 @@ export function generateFrontends(fileDBs: FileDBs, dstFolder: string): Pf {
 	);
 }
 
-export function generateFrontend(config: FrontendConfig, fileDBs: FileDBs, dstFolder: string): Pf {
+export function generateFrontend(config: FrontendConfig, fileDBs: FileDBs, dstFolder: string): PromiseFunction {
 	const { name } = config;
 	let s: ProgressLabel, sBr: ProgressLabel, sGz: ProgressLabel;
 
-	return Pf.single(
+	return PromiseFunction.single(
 		async () => {
 			// Initialize progress tracking for each step of the frontend generation.
 			s = progress.add(name, 1);

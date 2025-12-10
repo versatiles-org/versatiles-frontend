@@ -7,7 +7,7 @@ import './files/__mocks__/filedb-static';
 import './utils/__mocks__/cache';
 import './utils/__mocks__/release_version';
 
-import { Progress } from './async_progress/progress';
+import { Progress } from './async_progress';
 const { Frontend } = await import('./frontend/frontend');
 const { default: notes } = await import('./utils/__mocks__/release_notes');
 const { cleanupFolder } = await import('./utils/__mocks__/utils');
