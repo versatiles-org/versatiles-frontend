@@ -2,6 +2,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { FrontendConfig } from './frontend';
 import { tmpdir } from 'os';
 import { resolve } from 'path';
+import { FileDB } from '../files/filedb';
 
 // Mock cache module
 vi.mock('../utils/cache', () => ({
@@ -28,7 +29,44 @@ vi.mock('fs', async (originalImport) => {
 	};
 });
 
-import { FileDBs } from '../files/__mocks__/filedbs';
+// Mock filedbs module
+const FileDBs = vi.fn();
+vi.mock('../files/filedbs', async (importOriginal) => {
+	const original = await importOriginal<typeof import('../files/filedbs')>();
+	const BaseFileDBs = original.FileDBs;
+
+	class MockFileDBs extends BaseFileDBs {
+		constructor(testFileDBs?: Record<string, Record<string, string>>) {
+			super();
+			if (testFileDBs) {
+				Object.entries(testFileDBs).forEach(([name, testFiles]) => {
+					// @ts-expect-error - override for testing
+					this.fileDBs.set(name, new FileDB(testFiles));
+				});
+			}
+		}
+
+		public enterWatchMode(): void {
+			// no-op in tests
+		}
+	}
+
+	FileDBs.mockImplementation(function (testFileDBs?: Record<string, Record<string, string>>) {
+		return new MockFileDBs(testFileDBs);
+	});
+
+	// Wrap the original loader functions in vi.fn so tests can assert on calls
+	const loadFileDBConfigs = vi.fn(original.loadFileDBConfigs);
+	const loadFileDBs = vi.fn(original.loadFileDBs);
+
+	return {
+		...original,
+		FileDBs,
+		loadFileDBConfigs,
+		loadFileDBs,
+	};
+});
+
 import { progress, PromiseFunction } from '../async_progress';
 
 const { loadFileDBConfigs } = await import('../files/filedbs');
