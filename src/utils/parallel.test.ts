@@ -1,5 +1,6 @@
 import { forEachAsync } from './parallel';
 import { vi, describe, it, expect } from 'vitest';
+import os from 'os';
 
 describe('forEachAsync', () => {
 	it('should call the callback for each item in the list', async () => {
@@ -133,6 +134,43 @@ describe('forEachAsync', () => {
 
 		await expect(forEachAsync(asyncErrorGenerator(), callback)).rejects.toThrow('Generator error');
 		expect(callback).toHaveBeenCalledTimes(2); // Should only process up to the error
+	});
+
+	it('should use CPU count as default maxParallel when not specified', async () => {
+		const list = Array.from({ length: 20 }, (_, i) => i);
+		let maxConcurrentTasks = 0;
+		let concurrentTasks = 0;
+
+		const callback = vi.fn(async () => {
+			concurrentTasks++;
+			maxConcurrentTasks = Math.max(maxConcurrentTasks, concurrentTasks);
+			await randomWait(10);
+			concurrentTasks--;
+		});
+
+		await forEachAsync(list, callback);
+
+		// maxConcurrentTasks should be limited by CPU count (not unlimited)
+		expect(maxConcurrentTasks).toBeGreaterThan(0);
+		expect(maxConcurrentTasks).toBeLessThanOrEqual(os.cpus().length);
+	});
+
+	it('should handle async iterator that is already an iterator', async () => {
+		// Create an async iterator directly (not an iterable)
+		const asyncIterator = (async function* () {
+			yield 1;
+			yield 2;
+			yield 3;
+		})();
+
+		const callback = vi.fn(async () => {});
+
+		await forEachAsync(asyncIterator, callback);
+
+		expect(callback).toHaveBeenCalledTimes(3);
+		expect(callback).toHaveBeenNthCalledWith(1, 1, 0);
+		expect(callback).toHaveBeenNthCalledWith(2, 2, 1);
+		expect(callback).toHaveBeenNthCalledWith(3, 3, 2);
 	});
 });
 

@@ -92,4 +92,38 @@ describe('Curl', () => {
 			'only secure https:// urls are supported, got: http://insecure-url.com/resource'
 		);
 	});
+
+	it('should throw an error when HTTP response is not 200', async () => {
+		mockFetchResponse('Error', 404);
+
+		await expect(curl.getBuffer()).rejects.toThrow(`url "${testUrl}" returned error 404`);
+	});
+
+	it('should autodrain unzip entries when filter returns false', async () => {
+		mockFetchResponse(testZip);
+
+		// Filter that rejects all files
+		await curl.unzip(() => false);
+
+		// Should complete without error, but no files should be saved
+		expect(mockFileDB.setFileFromBuffer).not.toHaveBeenCalled();
+	});
+
+	it('should filter files in ungzipUntar when filter returns false', async () => {
+		mockFetchResponse(testGzipTar);
+
+		// Filter that only accepts file1.txt
+		await curl.ungzipUntar((filename) => {
+			if (filename.includes('file1.txt')) return join(testFolder, filename);
+			return false;
+		});
+
+		// Should only save one file
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledTimes(1);
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledWith(
+			'/test/folder/file1.txt',
+			expect.any(Number),
+			expect.any(Buffer)
+		);
+	});
 });
