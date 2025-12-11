@@ -3,9 +3,13 @@ import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } fro
 import type { Curl as CurlType } from '../utils/curl';
 
 // Mock curl module - use vi.hoisted to ensure curlCalls is available when the mock is executed
-const { curlCalls } = vi.hoisted(() => {
+const { curlCalls, filterCallbacks } = vi.hoisted(() => {
 	return {
 		curlCalls: [] as string[],
+		filterCallbacks: {
+			ungzipUntar: null as ((filename: string) => string | false) | null,
+			unzip: null as ((filename: string) => string | false) | null,
+		},
 	};
 });
 
@@ -25,16 +29,18 @@ vi.mock('../utils/curl', () => {
 			this.url = url;
 			curlCalls.push(url);
 
-			this.ungzipUntar = vi.fn(async () => {
-				// no-op in tests
+			this.ungzipUntar = vi.fn(async (filter) => {
+				// Capture the filter callback for testing
+				filterCallbacks.ungzipUntar = filter;
 			}) as CurlInstance['ungzipUntar'];
 
 			this.save = vi.fn(async () => {
 				// no-op in tests
 			}) as CurlInstance['save'];
 
-			this.unzip = vi.fn(async () => {
-				// no-op in tests
+			this.unzip = vi.fn(async (filter) => {
+				// Capture the filter callback for testing
+				filterCallbacks.unzip = filter;
 			}) as CurlInstance['unzip'];
 
 			this.getBuffer = vi.fn(async () => Buffer.from('mocked buffer')) as CurlInstance['getBuffer'];
@@ -177,6 +183,103 @@ describe('getAssets', () => {
 			expect(getCurlCalls()).toStrictEqual([
 				'https://registry.npmjs.org/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-2.3.4.tgz',
 			]);
+		});
+
+		it('fonts-noto', async () => {
+			await ExternalFileDB.build({ type: 'external', source: 'fonts-noto' });
+			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-fonts']]);
+			expect(getCurlCalls()).toStrictEqual([
+				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.2.3/noto_sans.tar.gz',
+			]);
+		});
+
+		it('maplibre-versatiles-styler', async () => {
+			await ExternalFileDB.build({ type: 'external', source: 'maplibre-versatiles-styler' });
+			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'maplibre-versatiles-styler']]);
+			expect(getCurlCalls()).toStrictEqual([
+				'https://github.com/versatiles-org/maplibre-versatiles-styler/releases/download/v1.2.3/maplibre-versatiles-styler.tar.gz',
+			]);
+		});
+	});
+
+	describe('error handling', () => {
+		beforeEach(() => {
+			vi.clearAllMocks();
+			curlCalls.length = 0;
+		});
+
+		it('throws error for unknown source', async () => {
+			await expect(ExternalFileDB.build({ type: 'external', source: 'unknown-source' as never })).rejects.toThrow(
+				'Unknown external file source: unknown-source'
+			);
+		});
+	});
+
+	describe('filter callbacks', () => {
+		beforeEach(() => {
+			vi.clearAllMocks();
+			curlCalls.length = 0;
+			filterCallbacks.ungzipUntar = null;
+			filterCallbacks.unzip = null;
+		});
+
+		it('fonts filter renames fonts.json to index.json', async () => {
+			await ExternalFileDB.build({ type: 'external', source: 'fonts-all' });
+			expect(filterCallbacks.ungzipUntar).toBeTruthy();
+			if (filterCallbacks.ungzipUntar) {
+				expect(filterCallbacks.ungzipUntar('fonts.json')).toBe('assets/glyphs/index.json');
+				expect(filterCallbacks.ungzipUntar('other.json')).toBe('assets/glyphs/other.json');
+			}
+		});
+
+		it('maplibre filter accepts only js, css, and map files', async () => {
+			await ExternalFileDB.build({ type: 'external', source: 'maplibre' });
+			expect(filterCallbacks.unzip).toBeTruthy();
+			if (filterCallbacks.unzip) {
+				expect(filterCallbacks.unzip('dist/maplibre-gl.js')).toContain('maplibre-gl.js');
+				expect(filterCallbacks.unzip('dist/maplibre-gl.css')).toContain('maplibre-gl.css');
+				expect(filterCallbacks.unzip('dist/maplibre-gl.js.map')).toContain('maplibre-gl.js.map');
+				expect(filterCallbacks.unzip('dist/readme.txt')).toBe(false);
+				expect(filterCallbacks.unzip('other/file.js')).toBe(false);
+			}
+		});
+
+		it('maplibre-inspect filter accepts only js, css, and map files from package/dist', async () => {
+			await ExternalFileDB.build({ type: 'external', source: 'maplibre-inspect' });
+			expect(filterCallbacks.ungzipUntar).toBeTruthy();
+			if (filterCallbacks.ungzipUntar) {
+				expect(filterCallbacks.ungzipUntar('package/dist/maplibre-gl-inspect.js')).toContain('maplibre-gl-inspect.js');
+				expect(filterCallbacks.ungzipUntar('package/dist/maplibre-gl-inspect.css')).toContain(
+					'maplibre-gl-inspect.css'
+				);
+				expect(filterCallbacks.ungzipUntar('package/dist/maplibre-gl-inspect.js.map')).toContain(
+					'maplibre-gl-inspect.js.map'
+				);
+				expect(filterCallbacks.ungzipUntar('package/dist/readme.txt')).toBe(false);
+				expect(filterCallbacks.ungzipUntar('package/other/file.js')).toBe(false);
+			}
+		});
+
+		it('maplibre-versatiles-styler filter processes all files', async () => {
+			await ExternalFileDB.build({ type: 'external', source: 'maplibre-versatiles-styler' });
+			expect(filterCallbacks.ungzipUntar).toBeTruthy();
+			if (filterCallbacks.ungzipUntar) {
+				expect(filterCallbacks.ungzipUntar('styler.js')).toContain('styler.js');
+				expect(filterCallbacks.ungzipUntar('path/to/file.css')).toContain('file.css');
+			}
+		});
+
+		it('mapbox-rtl-text filter accepts only js, css, and map files from package/dist', async () => {
+			await ExternalFileDB.build({ type: 'external', source: 'mapbox-rtl-text' });
+			expect(filterCallbacks.ungzipUntar).toBeTruthy();
+			if (filterCallbacks.ungzipUntar) {
+				expect(filterCallbacks.ungzipUntar('package/dist/mapbox-gl-rtl-text.js')).toContain('mapbox-gl-rtl-text.js');
+				expect(filterCallbacks.ungzipUntar('package/dist/mapbox-gl-rtl-text.js.map')).toContain(
+					'mapbox-gl-rtl-text.js.map'
+				);
+				expect(filterCallbacks.ungzipUntar('package/dist/readme.txt')).toBe(false);
+				expect(filterCallbacks.ungzipUntar('package/src/file.js')).toBe(false);
+			}
 		});
 	});
 });
