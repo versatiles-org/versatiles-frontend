@@ -159,7 +159,34 @@ vi.mock('./files/filedb-external', async (importOriginal) => {
 	};
 });
 
-import './frontend/__mocks__/frontend';
+// Mock Frontend
+vi.mock('./frontend/frontend', async (originalImport) => {
+	const originalModule = (await originalImport()) as typeof import('./frontend/frontend');
+	const OriginalFrontend = originalModule.Frontend;
+	type FileDBs = Parameters<typeof OriginalFrontend>[0];
+	type FrontendConfig = Parameters<typeof OriginalFrontend>[1];
+
+	class MockedFrontend extends OriginalFrontend {
+		constructor(fileDBs: FileDBs, config: FrontendConfig) {
+			super(fileDBs, config);
+		}
+		async saveAsTarGz() {
+			// no-op in tests
+		}
+		async saveAsBrTarGz() {
+			// no-op in tests
+		}
+	}
+
+	const Frontend = vi.fn(function (fileDBs: FileDBs, config: FrontendConfig) {
+		return vi.mocked(new MockedFrontend(fileDBs, config));
+	});
+
+	return {
+		...originalModule,
+		Frontend,
+	};
+});
 
 import { Progress } from './async_progress';
 const { Frontend } = await import('./frontend/frontend');
