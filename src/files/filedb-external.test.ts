@@ -1,5 +1,52 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../async_progress/progress';
+import type { Curl as CurlType } from '../utils/curl';
+
+// Mock curl module - use vi.hoisted to ensure curlCalls is available when the mock is executed
+const { curlCalls } = vi.hoisted(() => {
+	return {
+		curlCalls: [] as string[],
+	};
+});
+
+vi.mock('../utils/curl', () => {
+	type CurlInstance = CurlType;
+
+	class Curl {
+		url: string;
+		fileDB: unknown;
+		ungzipUntar: CurlInstance['ungzipUntar'];
+		save: CurlInstance['save'];
+		unzip: CurlInstance['unzip'];
+		getBuffer: CurlInstance['getBuffer'];
+
+		constructor(fileDB: unknown, url: string) {
+			this.fileDB = fileDB;
+			this.url = url;
+			curlCalls.push(url);
+
+			this.ungzipUntar = vi.fn(async () => {
+				// no-op in tests
+			}) as CurlInstance['ungzipUntar'];
+
+			this.save = vi.fn(async () => {
+				// no-op in tests
+			}) as CurlInstance['save'];
+
+			this.unzip = vi.fn(async () => {
+				// no-op in tests
+			}) as CurlInstance['unzip'];
+
+			this.getBuffer = vi.fn(async () => Buffer.from('mocked buffer')) as CurlInstance['getBuffer'];
+		}
+	}
+
+	return {
+		Curl,
+		curlCalls,
+		default: Curl,
+	};
+});
 
 // Mock progress module
 vi.mock('../async_progress/progress', async (originalImport) => {
@@ -53,9 +100,6 @@ vi.mock('../async_progress/progress', async (originalImport) => {
 	};
 });
 
-// Mock curl module
-vi.mock('../utils/curl', async () => await import('../utils/__mocks__/curl'));
-
 // Mock release_version module
 vi.mock('../utils/release_version', () => ({
 	getLatestGithubReleaseVersion: vi.fn<(owner: string, repo: string, allowPrerelease?: boolean) => Promise<string>>(
@@ -65,7 +109,6 @@ vi.mock('../utils/release_version', () => ({
 }));
 
 import { ExternalFileDB } from './filedb-external';
-import { curlCalls } from '../utils/curl';
 import { getLatestGithubReleaseVersion, getLatestNPMReleaseVersion } from '../utils/release_version';
 
 describe('getAssets', () => {
