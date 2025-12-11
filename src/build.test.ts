@@ -5,17 +5,40 @@ vi.mock('./utils/cache', () => ({
 	cache: vi.fn(async (_action: string, _key: string, cbBuffer: () => Promise<Buffer>) => cbBuffer()),
 }));
 
+// Mock release_version module
+vi.mock('./utils/release_version', () => ({
+	getLatestGithubReleaseVersion: vi.fn<(owner: string, repo: string, allowPrerelease?: boolean) => Promise<string>>(
+		async () => '1.2.3'
+	),
+	getLatestNPMReleaseVersion: vi.fn<(packageName: string) => Promise<string>>(async () => '2.3.4'),
+}));
+
+// Mock release_notes module
+const releaseNotesMock = {
+	add: vi.fn(),
+	setVersion: vi.fn(),
+	save: vi.fn(),
+	labelList: [],
+	labelMap: new Map(),
+};
+vi.mock('./utils/release_notes', () => ({ default: releaseNotesMock }));
+
+// Mock utils module
+const cleanupFolder = vi.fn().mockReturnValue(undefined);
+const ensureFolder = vi.fn().mockReturnValue(undefined);
+vi.mock('./utils/utils', () => ({
+	cleanupFolder,
+	ensureFolder,
+}));
+
 import './async_progress/__mocks__/progress';
 import './frontend/__mocks__/frontend';
 import './files/__mocks__/filedb-external';
 import './files/__mocks__/filedb-rollup';
 import './files/__mocks__/filedb-static';
-import './utils/__mocks__/release_version';
 
 import { Progress } from './async_progress';
 const { Frontend } = await import('./frontend/frontend');
-const { default: notes } = await import('./utils/__mocks__/release_notes');
-const { cleanupFolder } = await import('./utils/__mocks__/utils');
 
 describe('Build Process', () => {
 	beforeEach(() => {
@@ -41,6 +64,6 @@ describe('Build Process', () => {
 		]);
 
 		// Confirm that release notes are saved
-		expect(notes.save).toHaveBeenCalledWith(expect.any(String));
+		expect(releaseNotesMock.save).toHaveBeenCalledWith(expect.any(String));
 	});
 });

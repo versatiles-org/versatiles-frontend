@@ -1,9 +1,18 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 
-// Tell Vitest to use our manual mocks for the utility modules used by ExternalFileDB
+// Mock progress module
 vi.mock('../utils/progress', async () => await import('../utils/__mocks__/progress'));
+
+// Mock curl module
 vi.mock('../utils/curl', async () => await import('../utils/__mocks__/curl'));
-vi.mock('../utils/release_version', async () => await import('../utils/__mocks__/release_version'));
+
+// Mock release_version module
+vi.mock('../utils/release_version', () => ({
+	getLatestGithubReleaseVersion: vi.fn<(owner: string, repo: string, allowPrerelease?: boolean) => Promise<string>>(
+		async () => '1.2.3'
+	),
+	getLatestNPMReleaseVersion: vi.fn<(packageName: string) => Promise<string>>(async () => '2.3.4'),
+}));
 
 import { ExternalFileDB } from './filedb-external';
 import { curlCalls } from '../utils/curl';
