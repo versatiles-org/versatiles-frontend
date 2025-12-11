@@ -1,8 +1,13 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { FrontendConfig } from './frontend';
+
+// Mock cache module
+vi.mock('../utils/cache', () => ({
+	cache: vi.fn(async (_action: string, _key: string, cbBuffer: () => Promise<Buffer>) => cbBuffer()),
+}));
+
 import { createWriteStream } from '../utils/__mocks__/node_fs';
 import { FileDBs } from '../files/__mocks__/filedbs';
-import '../utils/__mocks__/cache';
 import { progress, PromiseFunction } from '../async_progress';
 
 const { loadFileDBConfigs } = await import('../files/filedbs');

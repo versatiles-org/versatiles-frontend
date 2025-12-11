@@ -1,10 +1,15 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+
+// Mock cache module
+vi.mock('./utils/cache', () => ({
+	cache: vi.fn(async (_action: string, _key: string, cbBuffer: () => Promise<Buffer>) => cbBuffer()),
+}));
+
 import './async_progress/__mocks__/progress';
 import './frontend/__mocks__/frontend';
 import './files/__mocks__/filedb-external';
 import './files/__mocks__/filedb-rollup';
 import './files/__mocks__/filedb-static';
-import './utils/__mocks__/cache';
 import './utils/__mocks__/release_version';
 
 import { Progress } from './async_progress';

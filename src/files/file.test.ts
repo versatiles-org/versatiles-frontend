@@ -11,8 +11,13 @@ vi.mock('zlib', () => ({
 	},
 }));
 
+// Mock cache module
+vi.mock('../utils/cache', () => ({
+	cache: vi.fn(async (_action: string, _key: string, cbBuffer: () => Promise<Buffer>) => cbBuffer()),
+}));
+
 const { brotliCompress, constants } = await import('zlib');
-const { cache } = await import('../utils/__mocks__/cache');
+const { cache } = await import('../utils/cache');
 const { File } = await import('./file');
 
 describe('File', () => {

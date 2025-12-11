@@ -1,7 +1,29 @@
 import { describe, expect, it, vi } from 'vitest';
-import { mockFetchResponse } from './__mocks__/global_fetch';
 
 const { getLatestGithubReleaseVersion, getLatestNPMReleaseVersion } = await import('../utils/release_version');
+
+// Mock fetch helper
+function mockFetchResponse(data: unknown, status = 200): void {
+	// @ts-expect-error mocking global
+	global.fetch = vi.fn(async () =>
+		Promise.resolve({
+			arrayBuffer: async () => Promise.resolve(getAsBuffer()),
+			headers: new Headers({ 'content-type': 'text/plain' }),
+			json: async () => Promise.resolve(getAsJSON()),
+			status,
+		})
+	);
+
+	function getAsBuffer(): Buffer {
+		if (Buffer.isBuffer(data)) return data;
+		if (typeof data === 'string') return Buffer.from(data);
+		throw Error();
+	}
+
+	function getAsJSON(): unknown {
+		return data;
+	}
+}
 
 describe('getLatestGithubReleaseVersion', () => {
 	it('fetches the latest release version', async () => {
