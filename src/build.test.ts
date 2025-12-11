@@ -84,10 +84,82 @@ vi.mock('./utils/utils', () => ({
 	ensureFolder,
 }));
 
+// Mock StaticFileDB
+vi.mock('./files/filedb-static', async (importOriginal) => {
+	const original = await importOriginal<typeof import('./files/filedb-static')>();
+	const BaseStaticFileDB = original.StaticFileDB;
+
+	class MockStaticFileDB extends BaseStaticFileDB {
+		constructor() {
+			super('');
+		}
+
+		public static async build(_config: unknown, _frontendFolder: string): Promise<MockStaticFileDB> {
+			return new MockStaticFileDB();
+		}
+
+		public enterWatchMode(): void {
+			// no-op in tests
+		}
+	}
+
+	const StaticFileDB = vi.fn(() => new MockStaticFileDB());
+	// @ts-expect-error - override for testing
+	StaticFileDB.build = vi.fn(MockStaticFileDB.build);
+
+	return {
+		...original,
+		StaticFileDB,
+	};
+});
+
+// Mock RollupFileDB
+vi.mock('./files/filedb-rollup', async (importOriginal) => {
+	const original = await importOriginal<typeof import('./files/filedb-rollup')>();
+	const BaseRollupFileDB = original.RollupFileDB;
+
+	class RollupFileDB extends BaseRollupFileDB {
+		public static async build(config: unknown, frontendFolder: string): Promise<RollupFileDB> {
+			return new RollupFileDB(config, frontendFolder);
+		}
+
+		public enterWatchMode(): void {
+			// no-op in tests
+		}
+	}
+
+	return {
+		...original,
+		RollupFileDB,
+	};
+});
+
+// Mock ExternalFileDB
+vi.mock('./files/filedb-external', async (importOriginal) => {
+	const original = await importOriginal<typeof import('./files/filedb-external')>();
+	const BaseExternalFileDB = original.ExternalFileDB;
+
+	class ExternalFileDB extends BaseExternalFileDB {
+		constructor() {
+			super();
+		}
+
+		public static async build(_config: unknown): Promise<ExternalFileDB> {
+			return new ExternalFileDB();
+		}
+
+		public enterWatchMode(): void {
+			// no-op in tests
+		}
+	}
+
+	return {
+		...original,
+		ExternalFileDB,
+	};
+});
+
 import './frontend/__mocks__/frontend';
-import './files/__mocks__/filedb-external';
-import './files/__mocks__/filedb-rollup';
-import './files/__mocks__/filedb-static';
 
 import { Progress } from './async_progress';
 const { Frontend } = await import('./frontend/frontend');

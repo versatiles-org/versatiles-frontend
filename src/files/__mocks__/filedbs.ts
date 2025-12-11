@@ -1,5 +1,4 @@
 import { vi } from 'vitest';
-import './filedb';
 import { FileDB } from '../filedb';
 
 export const FileDBs = vi.fn();
