@@ -1,5 +1,4 @@
 import { vi } from 'vitest';
-import './file';
 import { File } from '../file';
 
 vi.mock('../filedb', async (importOriginal) => {
