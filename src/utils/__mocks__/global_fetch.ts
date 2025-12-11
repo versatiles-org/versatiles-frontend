@@ -1,6 +1,6 @@
 import { vi } from 'vitest';
 
-export function mockFetchResponse(data: unknown): void {
+export function mockFetchResponse(data: unknown, status = 200): void {
 	// @ts-expect-error too lazy
 	global.fetch = vi.fn(async () =>
 		Promise.resolve({
@@ -8,7 +8,7 @@ export function mockFetchResponse(data: unknown): void {
 
 			headers: new Headers({ 'content-type': 'text/plain' }),
 			json: async () => Promise.resolve(getAsJSON()),
-			status: 200,
+			status,
 		})
 	);
 
