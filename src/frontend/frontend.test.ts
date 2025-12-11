@@ -1,12 +1,33 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { FrontendConfig } from './frontend';
+import { tmpdir } from 'os';
+import { resolve } from 'path';
 
 // Mock cache module
 vi.mock('../utils/cache', () => ({
 	cache: vi.fn(async (_action: string, _key: string, cbBuffer: () => Promise<Buffer>) => cbBuffer()),
 }));
 
-import { createWriteStream } from '../utils/__mocks__/node_fs';
+// Mock fs module
+const createWriteStream = vi.fn();
+vi.mock('fs', async (originalImport) => {
+	const originalFs = await originalImport<typeof import('fs')>();
+
+	createWriteStream.mockImplementation(() => {
+		const filename = resolve(tmpdir(), Math.random().toString(36) + '.tmp');
+		const stream = originalFs.createWriteStream(filename);
+		return stream;
+	});
+
+	return {
+		createReadStream: vi.fn(),
+		createWriteStream,
+		mkdirSync: vi.fn(),
+		existsSync: vi.fn(),
+		rmSync: vi.fn(),
+	};
+});
+
 import { FileDBs } from '../files/__mocks__/filedbs';
 import { progress, PromiseFunction } from '../async_progress';
 

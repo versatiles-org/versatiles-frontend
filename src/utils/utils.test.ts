@@ -1,5 +1,14 @@
 import { vi, describe, it, expect } from 'vitest';
-import './__mocks__/node_fs';
+
+// Mock fs module
+vi.mock('fs', () => ({
+	createReadStream: vi.fn(),
+	createWriteStream: vi.fn(),
+	mkdirSync: vi.fn(),
+	existsSync: vi.fn(),
+	rmSync: vi.fn(),
+}));
+
 import { existsSync, mkdirSync, rmSync } from 'fs';
 import { cleanupFolder, ensureFolder } from './utils';
 
