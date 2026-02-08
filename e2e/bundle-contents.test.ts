@@ -92,14 +92,22 @@ describe.skipIf(!hasRelease)('bundle contents', () => {
 		describe('assets/styles/', () => {
 			it('contains exactly the expected style themes', () => {
 				const themes = [...groupByFolder(files('frontend.tar.gz'), 'assets/styles/').keys()].sort();
-				expect(themes).toStrictEqual(['colorful', 'eclipse', 'empty', 'graybeard', 'neutrino', 'shadow']);
+				expect(themes).toStrictEqual(['colorful', 'eclipse', 'empty', 'graybeard', 'neutrino', 'satellite', 'shadow']);
 			});
 
 			it('each non-empty theme has style.json + language variants', () => {
 				const themes = groupByFolder(files('frontend.tar.gz'), 'assets/styles/');
 				for (const [theme, themeFiles] of themes) {
 					expect(themeFiles, `${theme}: must include style.json`).toContain('style.json');
-					if (theme !== 'empty') {
+					if (theme === 'empty') continue;
+					if (theme === 'satellite') {
+						expect(themeFiles.sort(), `${theme}: must have satellite variants`).toStrictEqual([
+							'de.json',
+							'en.json',
+							'nooverlay.json',
+							'style.json',
+						]);
+					} else {
 						expect(themeFiles.sort(), `${theme}: must have language variants`).toStrictEqual([
 							'de.json',
 							'en.json',
@@ -121,9 +129,9 @@ describe.skipIf(!hasRelease)('bundle contents', () => {
 				expect(files('frontend.tar.gz')).toContain('assets/sprites/index.json');
 			});
 
-			it('contains exactly basics and markers sprite sets', () => {
+			it('contains exactly the expected sprite sets', () => {
 				const sets = [...groupByFolder(files('frontend.tar.gz'), 'assets/sprites/').keys()].sort();
-				expect(sets).toStrictEqual(['basics', 'markers']);
+				expect(sets).toStrictEqual(['basics']);
 			});
 
 			it('each sprite set has all resolutions (1x, 2x, 3x, 4x) with .json + .png', () => {
@@ -150,7 +158,7 @@ describe.skipIf(!hasRelease)('bundle contents', () => {
 					'mapbox-gl-rtl-text',
 					'maplibre-gl',
 					'maplibre-gl-inspect',
-					'style-selector',
+					'maplibre-versatiles-styler',
 					'versatiles-style',
 				]);
 			});
@@ -189,10 +197,11 @@ describe.skipIf(!hasRelease)('bundle contents', () => {
 				]);
 			});
 
-			it('style-selector contains expected files', () => {
-				const libFiles = filesInFolder(files('frontend.tar.gz'), 'assets/lib/style-selector/');
+			it('maplibre-versatiles-styler contains expected files', () => {
+				const libFiles = filesInFolder(files('frontend.tar.gz'), 'assets/lib/maplibre-versatiles-styler/');
+				expect(libFiles).toContain('maplibre-versatiles-styler.js');
 				for (const f of libFiles) {
-					expect(f).toMatch(/\.(js|css|map)$/);
+					expect(f).toMatch(/\.(js|cjs|css|map|d\.ts)$/);
 				}
 			});
 		});
@@ -285,9 +294,9 @@ describe.skipIf(!hasRelease)('bundle contents', () => {
 				expect(files('frontend-min.tar.gz')).toContain('assets/sprites/index.json');
 			});
 
-			it('contains exactly basics and markers sprite sets', () => {
+			it('contains exactly the expected sprite sets', () => {
 				const sets = [...groupByFolder(files('frontend-min.tar.gz'), 'assets/sprites/').keys()].sort();
-				expect(sets).toStrictEqual(['basics', 'markers']);
+				expect(sets).toStrictEqual(['basics']);
 			});
 
 			it('each sprite set has only 1x and 2x resolutions', () => {
@@ -306,7 +315,13 @@ describe.skipIf(!hasRelease)('bundle contents', () => {
 		describe('assets/lib/', () => {
 			it('contains exactly the expected (minimal) libraries', () => {
 				const libs = [...groupByFolder(files('frontend-min.tar.gz'), 'assets/lib/').keys()].sort();
-				expect(libs).toStrictEqual(['mapbox-gl-rtl-text', 'maplibre-gl', 'versatiles-style']);
+				expect(libs).toStrictEqual([
+					'mapbox-gl-rtl-text',
+					'maplibre-gl',
+					'maplibre-gl-inspect',
+					'maplibre-versatiles-styler',
+					'versatiles-style',
+				]);
 			});
 
 			it('maplibre-gl contains only .js and .css (no .map)', () => {
@@ -325,6 +340,20 @@ describe.skipIf(!hasRelease)('bundle contents', () => {
 			it('mapbox-gl-rtl-text contains only .js', () => {
 				expect(filesInFolder(files('frontend-min.tar.gz'), 'assets/lib/mapbox-gl-rtl-text/')).toStrictEqual([
 					'mapbox-gl-rtl-text.js',
+				]);
+			});
+
+			it('maplibre-gl-inspect contains only .js and .css (no .map)', () => {
+				expect(filesInFolder(files('frontend-min.tar.gz'), 'assets/lib/maplibre-gl-inspect/')).toStrictEqual([
+					'maplibre-gl-inspect.css',
+					'maplibre-gl-inspect.js',
+				]);
+			});
+
+			it('maplibre-versatiles-styler contains only .js and .cjs (no .map, no .d.ts)', () => {
+				expect(filesInFolder(files('frontend-min.tar.gz'), 'assets/lib/maplibre-versatiles-styler/')).toStrictEqual([
+					'maplibre-versatiles-styler.js',
+					'maplibre-versatiles-styler.umd.cjs',
 				]);
 			});
 		});
