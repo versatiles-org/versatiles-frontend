@@ -16,9 +16,11 @@ env:
   FORCE_COLOR: 1
 
 jobs:
-  release:
+  ci:
     name: Lint and test
     runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
@@ -28,7 +30,7 @@ jobs:
         with:
           node-version: 22
 
-      - name: Cache Node Modules
+      - name: Cache node modules
         id: cache-node-modules
         uses: actions/cache@v5
         with:
@@ -40,21 +42,21 @@ jobs:
         run: npm ci
 
       - name: Check vulnerabilities
-        run: npm audit
+        run: npm audit --audit-level=high
+
+      - name: Check formatting
+        run: npm run format:check
 
       - name: Lint
         run: npm run lint
 
-      - name: Run tests
-        run: npm run test
-
-      - name: build
+      - name: Build
         run: npm run build
 
-      - name: test e2e
+      - name: Run e2e tests
         run: npm run test:e2e
 
-      - name: Generate test coverage
+      - name: Run tests
         run: npm run test-coverage
 
       - name: Upload test coverage
