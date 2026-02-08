@@ -10,6 +10,7 @@ function mockFetchResponse(data: unknown, status = 200): void {
 			arrayBuffer: async () => Promise.resolve(getAsBuffer()),
 			headers: new Headers({ 'content-type': 'text/plain' }),
 			json: async () => Promise.resolve(getAsJSON()),
+			ok: status >= 200 && status < 300,
 			status,
 		})
 	);
@@ -83,16 +84,23 @@ describe('getLatestGithubReleaseVersion', () => {
 	it('throws error when response is not an array', async () => {
 		const owner = 'exampleOrg';
 		const repo = 'exampleRepo';
-		const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
 
 		mockFetchResponse({ error: 'Not Found' });
 
 		await expect(getLatestGithubReleaseVersion(owner, repo)).rejects.toThrow(
-			'wrong response, maybe set environment variable "GH_TOKEN"?'
+			'Unexpected GitHub API response'
 		);
+	});
 
-		expect(consoleLogSpy).toHaveBeenCalledWith({ data: { error: 'Not Found' } });
-		consoleLogSpy.mockRestore();
+	it('throws error when response status is not ok', async () => {
+		const owner = 'exampleOrg';
+		const repo = 'exampleRepo';
+
+		mockFetchResponse({ error: 'Forbidden' }, 403);
+
+		await expect(getLatestGithubReleaseVersion(owner, repo)).rejects.toThrow(
+			'GitHub API returned 403'
+		);
 	});
 
 	it('throws error when no valid version is found', async () => {
