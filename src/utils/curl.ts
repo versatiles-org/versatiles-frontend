@@ -33,27 +33,27 @@ export class Curl {
 	 * @param folder - The target folder where the untarred files will be saved.
 	 */
 	public async ungzipUntar(cbFilter: (filename: string) => string | false): Promise<void> {
-		const streamIn = createGunzip();
-		streamIn.on('error', (error) => {
-			console.log('gunzip error for: ' + this.url);
-			throw error;
-		});
-		streamIn.pipe(
-			tar.t({
+		const buffer = await this.getBuffer();
+		await new Promise<void>((resolve, reject) => {
+			const streamIn = createGunzip();
+			const extract = tar.t({
 				onReadEntry: async (entry) => {
 					if (entry.type !== 'File') return entry.resume();
 					const path = cbFilter(entry.path);
-					if (path != false) {
+					if (path !== false) {
 						const buffers: Buffer[] = [];
-						for await (const buffer of entry) buffers.push(buffer);
-						this.fileDB.setFileFromBuffer(path, Number(entry.mtime ?? Math.random()), Buffer.concat(buffers));
+						for await (const buf of entry) buffers.push(buf);
+						this.fileDB.setFileFromBuffer(path, Number(entry.mtime ?? 0), Buffer.concat(buffers));
 					}
 					entry.resume();
 				},
-			})
-		);
-		streamIn.end(await this.getBuffer());
-		await finished(streamIn);
+			});
+			streamIn.on('error', reject);
+			extract.on('error', reject);
+			extract.on('end', resolve);
+			streamIn.pipe(extract);
+			streamIn.end(buffer);
+		});
 	}
 
 	/**
