@@ -166,8 +166,8 @@ vi.mock('./files/filedb-npm', async (importOriginal) => {
 vi.mock('./frontend/frontend', async (originalImport) => {
 	const originalModule = (await originalImport()) as typeof import('./frontend/frontend');
 	const OriginalFrontend = originalModule.Frontend;
-	type FileDBs = Parameters<typeof OriginalFrontend>[0];
-	type FrontendConfig = Parameters<typeof OriginalFrontend>[1];
+	type FileDBs = ConstructorParameters<typeof OriginalFrontend>[0];
+	type FrontendConfig = ConstructorParameters<typeof OriginalFrontend>[1];
 
 	class MockedFrontend extends OriginalFrontend {
 		constructor(fileDBs: FileDBs, config: FrontendConfig) {
