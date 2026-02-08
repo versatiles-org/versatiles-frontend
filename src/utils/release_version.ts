@@ -17,11 +17,13 @@ export async function getLatestGithubReleaseVersion(
 	if (process.env.GH_TOKEN != null) headers.append('Authorization', 'Bearer ' + process.env.GH_TOKEN);
 
 	const response = await fetch(url, { headers, redirect: 'follow' });
+	if (!response.ok) {
+		throw Error(`GitHub API returned ${response.status} for ${url}, maybe set environment variable "GH_TOKEN"?`);
+	}
 	const data = await response.json();
 	// Validate the response data.
 	if (!Array.isArray(data)) {
-		console.log({ data });
-		throw Error('wrong response, maybe set environment variable "GH_TOKEN"?');
+		throw Error(`Unexpected GitHub API response for ${url}, maybe set environment variable "GH_TOKEN"?`);
 	}
 
 	// Extract and return the latest version, ignoring the 'v' prefix.
