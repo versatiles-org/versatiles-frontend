@@ -63,15 +63,9 @@ export const sourceConfigs = {
 	}),
 
 	'external-maplibre-inspect': npmSource('@maplibre/maplibre-gl-inspect', {
-		assets: [
-			{
-				url: 'https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-${version}.tgz',
-				format: 'tar.gz',
-				include: /package\/dist\/.*\.(js|css|map)$/,
-				flatten: true,
-				dest: 'assets/lib/maplibre-gl-inspect/',
-			},
-		],
+		include: /dist\/.*\.(js|css|map)$/,
+		flatten: true,
+		dest: 'assets/lib/maplibre-gl-inspect/',
 		notes: '[MapLibre GL Inspect](https://github.com/maplibre/maplibre-gl-inspect)',
 	}),
 
@@ -88,15 +82,9 @@ export const sourceConfigs = {
 	}),
 
 	'external-mapbox-rtl-text': npmSource('@mapbox/mapbox-gl-rtl-text', {
-		assets: [
-			{
-				url: 'https://registry.npmjs.org/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-${version}.tgz',
-				format: 'tar.gz',
-				include: /package\/dist\/.*\.(js|css|map)$/,
-				flatten: true,
-				dest: 'assets/lib/mapbox-gl-rtl-text/',
-			},
-		],
+		include: /dist\/.*\.(js|css|map)$/,
+		flatten: true,
+		dest: 'assets/lib/mapbox-gl-rtl-text/',
 		notes: '[Mapbox GL RTL Text](https://github.com/mapbox/mapbox-gl-rtl-text)',
 	}),
 

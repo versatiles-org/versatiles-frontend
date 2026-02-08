@@ -63,7 +63,6 @@ vi.mock('./utils/release_version', () => ({
 	getLatestGithubReleaseVersion: vi.fn<(owner: string, repo: string, allowPrerelease?: boolean) => Promise<string>>(
 		async () => '1.2.3'
 	),
-	getLatestNPMReleaseVersion: vi.fn<(packageName: string) => Promise<string>>(async () => '2.3.4'),
 }));
 
 // Mock release_notes module
@@ -135,6 +134,31 @@ vi.mock('./files/filedb-external', async (importOriginal) => {
 	return {
 		...original,
 		ExternalFileDB,
+	};
+});
+
+// Mock NpmFileDB
+vi.mock('./files/filedb-npm', async (importOriginal) => {
+	const original = await importOriginal<typeof import('./files/filedb-npm')>();
+	const BaseNpmFileDB = original.NpmFileDB;
+
+	class NpmFileDB extends BaseNpmFileDB {
+		constructor() {
+			super();
+		}
+
+		public static async build(_config: unknown): Promise<NpmFileDB> {
+			return new NpmFileDB();
+		}
+
+		public enterWatchMode(): void {
+			// no-op in tests
+		}
+	}
+
+	return {
+		...original,
+		NpmFileDB,
 	};
 });
 

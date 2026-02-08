@@ -2,6 +2,7 @@ import { FileDB } from './filedb';
 import { PromiseFunction, ProgressLabel, progress } from '../async_progress';
 import { StaticFileDB } from './filedb-static';
 import { ExternalFileDB } from './filedb-external';
+import { NpmFileDB } from './filedb-npm';
 import type { SourceConfig } from './source_config';
 
 export type { SourceConfig };
@@ -79,6 +80,9 @@ export function loadFileDBs(fileDBs: FileDBs): PromiseFunction {
 									break;
 								case 'external':
 									fileDB = await ExternalFileDB.build(config);
+									break;
+								case 'npm':
+									fileDB = await NpmFileDB.build(config);
 									break;
 								default:
 									// @ts-expect-error Just to be sure

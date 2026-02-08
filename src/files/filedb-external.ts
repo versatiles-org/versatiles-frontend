@@ -2,7 +2,7 @@ import { Curl } from '../utils/curl';
 import { basename, join } from 'path';
 import notes from '../utils/release_notes';
 import { FileDB } from './filedb';
-import { getLatestGithubReleaseVersion, getLatestNPMReleaseVersion } from '../utils/release_version';
+import { getLatestGithubReleaseVersion } from '../utils/release_version';
 import type { ExternalSourceConfig, AssetConfig } from './source_config';
 
 export class ExternalFileDB extends FileDB {
@@ -23,18 +23,15 @@ export class ExternalFileDB extends FileDB {
 	}
 
 	private async resolveVersion(config: ExternalSourceConfig): Promise<string> {
-		if ('github' in config.version) {
-			const [owner, repo] = config.version.github.split('/');
-			if (config.version.pin) {
-				const latest = await getLatestGithubReleaseVersion(owner, repo, config.version.prerelease);
-				if (latest !== config.version.pin) {
-					console.warn(`Warning: ${repo} ${latest} available (pinned to ${config.version.pin})`);
-				}
-				return config.version.pin;
+		const [owner, repo] = config.version.github.split('/');
+		if (config.version.pin) {
+			const latest = await getLatestGithubReleaseVersion(owner, repo, config.version.prerelease);
+			if (latest !== config.version.pin) {
+				console.warn(`Warning: ${repo} ${latest} available (pinned to ${config.version.pin})`);
 			}
-			return getLatestGithubReleaseVersion(owner, repo, config.version.prerelease);
+			return config.version.pin;
 		}
-		return getLatestNPMReleaseVersion(config.version.npm);
+		return getLatestGithubReleaseVersion(owner, repo, config.version.prerelease);
 	}
 
 	private async fetchAsset(url: string, asset: AssetConfig): Promise<void> {

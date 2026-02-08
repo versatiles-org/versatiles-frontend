@@ -27,6 +27,8 @@
   "author": "Michael Kreil <versatiles@michael-kreil.de>",
   "license": "MIT",
   "devDependencies": {
+    "@mapbox/mapbox-gl-rtl-text": "^0.3.0",
+    "@maplibre/maplibre-gl-inspect": "^1.8.2",
     "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-typescript": "^12.3.0",
     "@types/escape-html": "^1.0.4",
@@ -49,16 +51,16 @@
     "maplibre-gl": "^5.17.0",
     "mrmime": "^2.0.1",
     "prettier": "^3.8.1",
-    "rollup-plugin-import-css": "^4.2.0",
     "rollup": "^4.57.1",
+    "rollup-plugin-import-css": "^4.2.0",
     "supports-color": "^10.2.2",
-    "tar-stream": "^3.1.7",
     "tar": "^7.5.7",
+    "tar-stream": "^3.1.7",
     "ts-node": "^10.9.2",
     "tslib": "^2.8.1",
     "tsx": "^4.21.0",
-    "typescript-eslint": "^8.54.0",
     "typescript": "^5.9.3",
+    "typescript-eslint": "^8.54.0",
     "unzipper": "^0.12.3",
     "vitest": "^4.0.18"
   }

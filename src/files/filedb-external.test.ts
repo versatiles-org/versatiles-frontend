@@ -112,11 +112,10 @@ vi.mock('../utils/release_version', () => ({
 	getLatestGithubReleaseVersion: vi.fn<(owner: string, repo: string, allowPrerelease?: boolean) => Promise<string>>(
 		async () => '1.2.3'
 	),
-	getLatestNPMReleaseVersion: vi.fn<(packageName: string) => Promise<string>>(async () => '2.3.4'),
 }));
 
 import { ExternalFileDB } from './filedb-external';
-import { getLatestGithubReleaseVersion, getLatestNPMReleaseVersion } from '../utils/release_version';
+import { getLatestGithubReleaseVersion } from '../utils/release_version';
 
 // Source configs for tests
 const fontsAllConfig: ExternalSourceConfig = {
@@ -185,21 +184,6 @@ const maplibreConfig: ExternalSourceConfig = {
 	notes: '[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)',
 };
 
-const maplibreInspectConfig: ExternalSourceConfig = {
-	type: 'external',
-	version: { npm: '@maplibre/maplibre-gl-inspect' },
-	assets: [
-		{
-			url: 'https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-${version}.tgz',
-			format: 'tar.gz',
-			include: /package\/dist\/.*\.(js|css|map)$/,
-			flatten: true,
-			dest: 'assets/lib/maplibre-gl-inspect/',
-		},
-	],
-	notes: '[MapLibre GL Inspect](https://github.com/maplibre/maplibre-gl-inspect)',
-};
-
 const maplibreVersatilesStylerConfig: ExternalSourceConfig = {
 	type: 'external',
 	version: { github: 'versatiles-org/maplibre-versatiles-styler' },
@@ -214,31 +198,10 @@ const maplibreVersatilesStylerConfig: ExternalSourceConfig = {
 	notes: '[MapLibre VersaTiles Styler](https://github.com/versatiles-org/maplibre-versatiles-styler)',
 };
 
-const mapboxRtlTextConfig: ExternalSourceConfig = {
-	type: 'external',
-	version: { npm: '@mapbox/mapbox-gl-rtl-text' },
-	assets: [
-		{
-			url: 'https://registry.npmjs.org/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-${version}.tgz',
-			format: 'tar.gz',
-			include: /package\/dist\/.*\.(js|css|map)$/,
-			flatten: true,
-			dest: 'assets/lib/mapbox-gl-rtl-text/',
-		},
-	],
-	notes: '[Mapbox GL RTL Text](https://github.com/mapbox/mapbox-gl-rtl-text)',
-};
-
 describe('getAssets', () => {
 	function getGHCalls() {
 		const calls = getLatestGithubReleaseVersion.mock.calls;
 		calls.sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
-		return calls;
-	}
-
-	function getNPMCalls() {
-		const calls = getLatestNPMReleaseVersion.mock.calls.map((e) => e[0]);
-		calls.sort((a, b) => a.localeCompare(b));
 		return calls;
 	}
 
@@ -279,22 +242,6 @@ describe('getAssets', () => {
 			expect(calls[0]).toMatch(
 				/https:\/\/github.com\/maplibre\/maplibre-gl-js\/releases\/download\/v\d+\.\d+\.\d+\/dist.zip/
 			);
-		});
-
-		it('maplibre-inspect', async () => {
-			await ExternalFileDB.build(maplibreInspectConfig);
-			expect(getNPMCalls()).toStrictEqual(['@maplibre/maplibre-gl-inspect']);
-			expect(getCurlCalls()).toStrictEqual([
-				'https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-2.3.4.tgz',
-			]);
-		});
-
-		it('mapbox-rtl-text', async () => {
-			await ExternalFileDB.build(mapboxRtlTextConfig);
-			expect(getNPMCalls()).toStrictEqual(['@mapbox/mapbox-gl-rtl-text']);
-			expect(getCurlCalls()).toStrictEqual([
-				'https://registry.npmjs.org/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-2.3.4.tgz',
-			]);
 		});
 
 		it('fonts-noto', async () => {
@@ -343,41 +290,12 @@ describe('getAssets', () => {
 			}
 		});
 
-		it('maplibre-inspect filter accepts only js, css, and map files from package/dist', async () => {
-			await ExternalFileDB.build(maplibreInspectConfig);
-			expect(filterCallbacks.ungzipUntar).toBeTruthy();
-			if (filterCallbacks.ungzipUntar) {
-				expect(filterCallbacks.ungzipUntar('package/dist/maplibre-gl-inspect.js')).toContain('maplibre-gl-inspect.js');
-				expect(filterCallbacks.ungzipUntar('package/dist/maplibre-gl-inspect.css')).toContain(
-					'maplibre-gl-inspect.css'
-				);
-				expect(filterCallbacks.ungzipUntar('package/dist/maplibre-gl-inspect.js.map')).toContain(
-					'maplibre-gl-inspect.js.map'
-				);
-				expect(filterCallbacks.ungzipUntar('package/dist/readme.txt')).toBe(false);
-				expect(filterCallbacks.ungzipUntar('package/other/file.js')).toBe(false);
-			}
-		});
-
 		it('maplibre-versatiles-styler filter processes all files', async () => {
 			await ExternalFileDB.build(maplibreVersatilesStylerConfig);
 			expect(filterCallbacks.ungzipUntar).toBeTruthy();
 			if (filterCallbacks.ungzipUntar) {
 				expect(filterCallbacks.ungzipUntar('styler.js')).toContain('styler.js');
 				expect(filterCallbacks.ungzipUntar('path/to/file.css')).toContain('file.css');
-			}
-		});
-
-		it('mapbox-rtl-text filter accepts only js, css, and map files from package/dist', async () => {
-			await ExternalFileDB.build(mapboxRtlTextConfig);
-			expect(filterCallbacks.ungzipUntar).toBeTruthy();
-			if (filterCallbacks.ungzipUntar) {
-				expect(filterCallbacks.ungzipUntar('package/dist/mapbox-gl-rtl-text.js')).toContain('mapbox-gl-rtl-text.js');
-				expect(filterCallbacks.ungzipUntar('package/dist/mapbox-gl-rtl-text.js.map')).toContain(
-					'mapbox-gl-rtl-text.js.map'
-				);
-				expect(filterCallbacks.ungzipUntar('package/dist/readme.txt')).toBe(false);
-				expect(filterCallbacks.ungzipUntar('package/src/file.js')).toBe(false);
 			}
 		});
 	});

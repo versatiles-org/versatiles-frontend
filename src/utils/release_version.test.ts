@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-const { getLatestGithubReleaseVersion, getLatestNPMReleaseVersion } = await import('../utils/release_version');
+const { getLatestGithubReleaseVersion } = await import('../utils/release_version');
 
 // Mock fetch helper
 function mockFetchResponse(data: unknown, status = 200): void {
@@ -104,77 +104,5 @@ describe('getLatestGithubReleaseVersion', () => {
 		await expect(getLatestGithubReleaseVersion(owner, repo)).rejects.toThrow(
 			`Could not fetch the version of the latest release: https://github.com/${owner}/${repo}/releases`
 		);
-	});
-});
-
-describe('getLatestNPMReleaseVersion', () => {
-	it('fetches the latest release version', async () => {
-		const packageName = '@exampleOrg/exampleRepo';
-
-		mockFetchResponse({
-			versions: {
-				a: { version: '1.7.3' },
-				b: { version: '12.7.3' },
-				c: { version: '1.7.3' },
-			},
-		});
-
-		const version = await getLatestNPMReleaseVersion(packageName);
-
-		expect(version).toBe('12.7.3');
-		expect(global.fetch).toHaveBeenCalledWith(`https://registry.npmjs.org/${packageName}`, expect.anything());
-	});
-
-	it('correctly sorts versions numerically', async () => {
-		const packageName = '@exampleOrg/exampleRepo';
-
-		mockFetchResponse({
-			versions: {
-				a: { version: '1.2.3' },
-				b: { version: '1.2.10' },
-				c: { version: '1.10.0' },
-				d: { version: '2.0.0' },
-			},
-		});
-
-		const version = await getLatestNPMReleaseVersion(packageName);
-
-		expect(version).toBe('2.0.0');
-	});
-
-	it('throws error when response does not have versions field', async () => {
-		const packageName = '@exampleOrg/exampleRepo';
-		const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-		mockFetchResponse({ error: 'Not Found' });
-
-		await expect(getLatestNPMReleaseVersion(packageName)).rejects.toThrow('wrong response');
-
-		expect(consoleLogSpy).toHaveBeenCalledWith({ data: { error: 'Not Found' } });
-		consoleLogSpy.mockRestore();
-	});
-
-	it('throws error when response is null', async () => {
-		const packageName = '@exampleOrg/exampleRepo';
-		const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-		mockFetchResponse(null);
-
-		await expect(getLatestNPMReleaseVersion(packageName)).rejects.toThrow('wrong response');
-
-		expect(consoleLogSpy).toHaveBeenCalledWith({ data: null });
-		consoleLogSpy.mockRestore();
-	});
-
-	it('throws error when response is not an object', async () => {
-		const packageName = '@exampleOrg/exampleRepo';
-		const consoleLogSpy = vi.spyOn(console, 'log').mockImplementation(() => {});
-
-		mockFetchResponse('invalid response');
-
-		await expect(getLatestNPMReleaseVersion(packageName)).rejects.toThrow('wrong response');
-
-		expect(consoleLogSpy).toHaveBeenCalledWith({ data: 'invalid response' });
-		consoleLogSpy.mockRestore();
 	});
 });

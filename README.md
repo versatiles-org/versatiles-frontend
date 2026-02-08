@@ -113,8 +113,9 @@ subgraph 6["files"]
 8["filedb-external.ts"]
 F["filedb.ts"]
 H["file.ts"]
-I["filedb-static.ts"]
-Q["source_config.ts"]
+I["filedb-npm.ts"]
+J["filedb-static.ts"]
+R["source_config.ts"]
 end
 subgraph 9["utils"]
 A["curl.ts"]
@@ -124,14 +125,14 @@ D["release_notes.ts"]
 E["release_version.ts"]
 G["parallel.ts"]
 end
-subgraph J["frontend"]
-K["generate.ts"]
-L["frontend.ts"]
-M["load.ts"]
+subgraph K["frontend"]
+L["generate.ts"]
+M["frontend.ts"]
+N["load.ts"]
 end
-N["dev.ts"]
-subgraph O["server"]
-P["server.ts"]
+O["dev.ts"]
+subgraph P["server"]
+Q["server.ts"]
 end
 end
 2-->3
@@ -139,12 +140,13 @@ end
 4-->3
 5-->4
 5-->7
-5-->K
+5-->L
 5-->D
 5-->C
 7-->4
 7-->8
 7-->I
+7-->J
 8-->A
 8-->D
 8-->E
@@ -154,17 +156,19 @@ B-->C
 F-->G
 F-->H
 H-->B
+I-->D
 I-->F
-K-->4
-K-->L
-K-->M
-N-->4
-N-->7
-N-->L
-N-->M
-N-->P
+J-->F
+L-->4
+L-->M
+L-->N
+O-->4
+O-->7
+O-->M
+O-->N
+O-->Q
 
-class 0,1,6,9,J,O subgraphs;
+class 0,1,6,9,K,P subgraphs;
 classDef subgraphs fill-opacity:0.1, fill:#888, color:#888, stroke:#888;
 ```
 

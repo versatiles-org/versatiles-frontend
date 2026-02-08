@@ -13,14 +13,19 @@ interface GithubVersionConfig {
 	pin?: string;
 }
 
-interface NpmVersionConfig {
-	npm: string;
-}
-
 export interface ExternalSourceConfig {
 	type: 'external';
-	version: GithubVersionConfig | NpmVersionConfig;
+	version: GithubVersionConfig;
 	assets: AssetConfig[];
+	notes: string;
+}
+
+export interface NpmSourceConfig {
+	type: 'npm';
+	pkg: string;
+	include?: RegExp;
+	flatten?: boolean;
+	dest: string;
 	notes: string;
 }
 
@@ -29,7 +34,7 @@ export interface StaticSourceConfig {
 	path: string;
 }
 
-export type SourceConfig = ExternalSourceConfig | StaticSourceConfig;
+export type SourceConfig = ExternalSourceConfig | NpmSourceConfig | StaticSourceConfig;
 
 interface GithubSourceOptions {
 	prerelease?: boolean;
@@ -47,16 +52,16 @@ export function githubSource(repo: string, options: GithubSourceOptions): Extern
 	};
 }
 
-interface NpmSourceOptions {
-	assets: AssetConfig[];
-	notes: string;
-}
-
-export function npmSource(pkg: string, options: NpmSourceOptions): ExternalSourceConfig {
+export function npmSource(
+	pkg: string,
+	options: { include?: RegExp; flatten?: boolean; dest: string; notes: string }
+): NpmSourceConfig {
 	return {
-		type: 'external',
-		version: { npm: pkg },
-		assets: options.assets,
+		type: 'npm',
+		pkg,
+		include: options.include,
+		flatten: options.flatten,
+		dest: options.dest,
 		notes: options.notes,
 	};
 }
