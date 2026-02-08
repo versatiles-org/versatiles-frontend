@@ -169,20 +169,6 @@ const stylesConfig: ExternalSourceConfig = {
 	notes: '[VersaTiles style](https://github.com/versatiles-org/versatiles-style)',
 };
 
-const maplibreVersatilesStylerConfig: ExternalSourceConfig = {
-	type: 'external',
-	version: { github: 'versatiles-org/maplibre-versatiles-styler' },
-	assets: [
-		{
-			url: 'https://github.com/versatiles-org/maplibre-versatiles-styler/releases/download/v${version}/maplibre-versatiles-styler.tar.gz',
-			format: 'tar.gz',
-			flatten: true,
-			dest: 'assets/lib/maplibre-versatiles-styler/',
-		},
-	],
-	notes: '[MapLibre VersaTiles Styler](https://github.com/versatiles-org/maplibre-versatiles-styler)',
-};
-
 describe('getAssets', () => {
 	function getGHCalls() {
 		const calls = getLatestGithubReleaseVersion.mock.calls;
@@ -227,14 +213,6 @@ describe('getAssets', () => {
 				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.2.3/noto_sans.tar.gz',
 			]);
 		});
-
-		it('maplibre-versatiles-styler', async () => {
-			await ExternalFileDB.build(maplibreVersatilesStylerConfig);
-			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'maplibre-versatiles-styler', undefined]]);
-			expect(getCurlCalls()).toStrictEqual([
-				'https://github.com/versatiles-org/maplibre-versatiles-styler/releases/download/v1.2.3/maplibre-versatiles-styler.tar.gz',
-			]);
-		});
 	});
 
 	describe('filter callbacks', () => {
@@ -251,15 +229,6 @@ describe('getAssets', () => {
 			if (filterCallbacks.ungzipUntar) {
 				expect(filterCallbacks.ungzipUntar('fonts.json')).toBe('assets/glyphs/index.json');
 				expect(filterCallbacks.ungzipUntar('other.json')).toBe('assets/glyphs/other.json');
-			}
-		});
-
-		it('maplibre-versatiles-styler filter processes all files', async () => {
-			await ExternalFileDB.build(maplibreVersatilesStylerConfig);
-			expect(filterCallbacks.ungzipUntar).toBeTruthy();
-			if (filterCallbacks.ungzipUntar) {
-				expect(filterCallbacks.ungzipUntar('styler.js')).toContain('styler.js');
-				expect(filterCallbacks.ungzipUntar('path/to/file.css')).toContain('file.css');
 			}
 		});
 	});

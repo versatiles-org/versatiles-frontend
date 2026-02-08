@@ -62,15 +62,10 @@ export const sourceConfigs = {
 		notes: '[MapLibre GL Inspect](https://github.com/maplibre/maplibre-gl-inspect)',
 	}),
 
-	'external-maplibre-versatiles-styler': githubSource('versatiles-org/maplibre-versatiles-styler', {
-		assets: [
-			{
-				url: 'https://github.com/versatiles-org/maplibre-versatiles-styler/releases/download/v${version}/maplibre-versatiles-styler.tar.gz',
-				format: 'tar.gz',
-				flatten: true,
-				dest: 'assets/lib/maplibre-versatiles-styler/',
-			},
-		],
+	'external-maplibre-versatiles-styler': npmSource('maplibre-versatiles-styler', {
+		include: /dist\//,
+		flatten: true,
+		dest: 'assets/lib/maplibre-versatiles-styler/',
 		notes: '[MapLibre VersaTiles Styler](https://github.com/versatiles-org/maplibre-versatiles-styler)',
 	}),
 
