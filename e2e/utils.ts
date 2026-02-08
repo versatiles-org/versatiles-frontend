@@ -39,11 +39,3 @@ export function groupByFolder(files: string[], prefix: string): Map<string, stri
 	}
 	return groups;
 }
-
-/** Get only top-level entries (files + immediate children names) under a prefix. */
-export function filesInFolder(files: string[], prefix: string): string[] {
-	return files
-		.filter((f) => f.startsWith(prefix))
-		.map((f) => f.slice(prefix.length))
-		.sort();
-}
