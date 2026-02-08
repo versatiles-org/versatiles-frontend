@@ -1,6 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../async_progress/progress';
 import type { Curl as CurlType } from '../utils/curl';
+import type { ExternalSourceConfig } from './source_config';
 
 // Mock curl module - use vi.hoisted to ensure curlCalls is available when the mock is executed
 const { curlCalls, filterCallbacks } = vi.hoisted(() => {
@@ -117,6 +118,105 @@ vi.mock('../utils/release_version', () => ({
 import { ExternalFileDB } from './filedb-external';
 import { getLatestGithubReleaseVersion, getLatestNPMReleaseVersion } from '../utils/release_version';
 
+// Source configs for tests
+const fontsAllConfig: ExternalSourceConfig = {
+	type: 'external',
+	version: { github: 'versatiles-org/versatiles-fonts' },
+	assets: [{
+		url: 'https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/fonts.tar.gz',
+		format: 'tar.gz',
+		dest: 'assets/glyphs/',
+		rename: { 'fonts.json': 'index.json' },
+	}],
+	notes: '[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)',
+};
+
+const fontsNotoConfig: ExternalSourceConfig = {
+	type: 'external',
+	version: { github: 'versatiles-org/versatiles-fonts' },
+	assets: [{
+		url: 'https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/noto_sans.tar.gz',
+		format: 'tar.gz',
+		dest: 'assets/glyphs/',
+		rename: { 'fonts.json': 'index.json' },
+	}],
+	notes: '[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)',
+};
+
+const stylesConfig: ExternalSourceConfig = {
+	type: 'external',
+	version: { github: 'versatiles-org/versatiles-style', prerelease: true },
+	assets: [
+		{
+			url: 'https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/styles.tar.gz',
+			format: 'tar.gz',
+			dest: 'assets/styles/',
+		},
+		{
+			url: 'https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/versatiles-style.tar.gz',
+			format: 'tar.gz',
+			dest: 'assets/lib/versatiles-style/',
+		},
+		{
+			url: 'https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/sprites.tar.gz',
+			format: 'tar.gz',
+			dest: 'assets/sprites/',
+		},
+	],
+	notes: '[VersaTiles style](https://github.com/versatiles-org/versatiles-style)',
+};
+
+const maplibreConfig: ExternalSourceConfig = {
+	type: 'external',
+	version: { github: 'maplibre/maplibre-gl-js', pin: '5.14.0' },
+	assets: [{
+		url: 'https://github.com/maplibre/maplibre-gl-js/releases/download/v${version}/dist.zip',
+		format: 'zip',
+		include: /dist\/.*\.(js|css|map)$/,
+		flatten: true,
+		dest: 'assets/lib/maplibre-gl/',
+	}],
+	notes: '[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)',
+};
+
+const maplibreInspectConfig: ExternalSourceConfig = {
+	type: 'external',
+	version: { npm: '@maplibre/maplibre-gl-inspect' },
+	assets: [{
+		url: 'https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-${version}.tgz',
+		format: 'tar.gz',
+		include: /package\/dist\/.*\.(js|css|map)$/,
+		flatten: true,
+		dest: 'assets/lib/maplibre-gl-inspect/',
+	}],
+	notes: '[MapLibre GL Inspect](https://github.com/maplibre/maplibre-gl-inspect)',
+};
+
+const maplibreVersatilesStylerConfig: ExternalSourceConfig = {
+	type: 'external',
+	version: { github: 'versatiles-org/maplibre-versatiles-styler' },
+	assets: [{
+		url: 'https://github.com/versatiles-org/maplibre-versatiles-styler/releases/download/v${version}/maplibre-versatiles-styler.tar.gz',
+		format: 'tar.gz',
+		flatten: true,
+		dest: 'assets/lib/maplibre-versatiles-styler/',
+	}],
+	notes: '[MapLibre VersaTiles Styler](https://github.com/versatiles-org/maplibre-versatiles-styler)',
+};
+
+const mapboxRtlTextConfig: ExternalSourceConfig = {
+	type: 'external',
+	version: { npm: '@mapbox/mapbox-gl-rtl-text' },
+	assets: [{
+		url: 'https://registry.npmjs.org/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-${version}.tgz',
+		format: 'tar.gz',
+		include: /package\/dist\/.*\.(js|css|map)$/,
+		flatten: true,
+		dest: 'assets/lib/mapbox-gl-rtl-text/',
+	}],
+	notes: '[Mapbox GL RTL Text](https://github.com/mapbox/mapbox-gl-rtl-text)',
+};
+
 describe('getAssets', () => {
 	function getGHCalls() {
 		const calls = getLatestGithubReleaseVersion.mock.calls;
@@ -143,15 +243,15 @@ describe('getAssets', () => {
 		});
 
 		it('fonts', async () => {
-			await ExternalFileDB.build({ type: 'external', source: 'fonts-all' });
-			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-fonts']]);
+			await ExternalFileDB.build(fontsAllConfig);
+			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-fonts', undefined]]);
 			expect(getCurlCalls()).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.2.3/fonts.tar.gz',
 			]);
 		});
 
 		it('styles', async () => {
-			await ExternalFileDB.build({ type: 'external', source: 'styles' });
+			await ExternalFileDB.build(stylesConfig);
 			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-style', true]]);
 			expect(getCurlCalls()).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/sprites.tar.gz',
@@ -161,8 +261,8 @@ describe('getAssets', () => {
 		});
 
 		it('maplibre', async () => {
-			await ExternalFileDB.build({ type: 'external', source: 'maplibre' });
-			expect(getGHCalls()).toStrictEqual([['maplibre', 'maplibre-gl-js']]);
+			await ExternalFileDB.build(maplibreConfig);
+			expect(getGHCalls()).toStrictEqual([['maplibre', 'maplibre-gl-js', undefined]]);
 			const calls = getCurlCalls();
 			expect(calls[0]).toMatch(
 				/https:\/\/github.com\/maplibre\/maplibre-gl-js\/releases\/download\/v\d+\.\d+\.\d+\/dist.zip/
@@ -170,7 +270,7 @@ describe('getAssets', () => {
 		});
 
 		it('maplibre-inspect', async () => {
-			await ExternalFileDB.build({ type: 'external', source: 'maplibre-inspect' });
+			await ExternalFileDB.build(maplibreInspectConfig);
 			expect(getNPMCalls()).toStrictEqual(['@maplibre/maplibre-gl-inspect']);
 			expect(getCurlCalls()).toStrictEqual([
 				'https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-2.3.4.tgz',
@@ -178,7 +278,7 @@ describe('getAssets', () => {
 		});
 
 		it('mapbox-rtl-text', async () => {
-			await ExternalFileDB.build({ type: 'external', source: 'mapbox-rtl-text' });
+			await ExternalFileDB.build(mapboxRtlTextConfig);
 			expect(getNPMCalls()).toStrictEqual(['@mapbox/mapbox-gl-rtl-text']);
 			expect(getCurlCalls()).toStrictEqual([
 				'https://registry.npmjs.org/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-2.3.4.tgz',
@@ -186,32 +286,19 @@ describe('getAssets', () => {
 		});
 
 		it('fonts-noto', async () => {
-			await ExternalFileDB.build({ type: 'external', source: 'fonts-noto' });
-			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-fonts']]);
+			await ExternalFileDB.build(fontsNotoConfig);
+			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-fonts', undefined]]);
 			expect(getCurlCalls()).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.2.3/noto_sans.tar.gz',
 			]);
 		});
 
 		it('maplibre-versatiles-styler', async () => {
-			await ExternalFileDB.build({ type: 'external', source: 'maplibre-versatiles-styler' });
-			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'maplibre-versatiles-styler']]);
+			await ExternalFileDB.build(maplibreVersatilesStylerConfig);
+			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'maplibre-versatiles-styler', undefined]]);
 			expect(getCurlCalls()).toStrictEqual([
 				'https://github.com/versatiles-org/maplibre-versatiles-styler/releases/download/v1.2.3/maplibre-versatiles-styler.tar.gz',
 			]);
-		});
-	});
-
-	describe('error handling', () => {
-		beforeEach(() => {
-			vi.clearAllMocks();
-			curlCalls.length = 0;
-		});
-
-		it('throws error for unknown source', async () => {
-			await expect(ExternalFileDB.build({ type: 'external', source: 'unknown-source' as never })).rejects.toThrow(
-				'Unknown external file source: unknown-source'
-			);
 		});
 	});
 
@@ -224,7 +311,7 @@ describe('getAssets', () => {
 		});
 
 		it('fonts filter renames fonts.json to index.json', async () => {
-			await ExternalFileDB.build({ type: 'external', source: 'fonts-all' });
+			await ExternalFileDB.build(fontsAllConfig);
 			expect(filterCallbacks.ungzipUntar).toBeTruthy();
 			if (filterCallbacks.ungzipUntar) {
 				expect(filterCallbacks.ungzipUntar('fonts.json')).toBe('assets/glyphs/index.json');
@@ -233,7 +320,7 @@ describe('getAssets', () => {
 		});
 
 		it('maplibre filter accepts only js, css, and map files', async () => {
-			await ExternalFileDB.build({ type: 'external', source: 'maplibre' });
+			await ExternalFileDB.build(maplibreConfig);
 			expect(filterCallbacks.unzip).toBeTruthy();
 			if (filterCallbacks.unzip) {
 				expect(filterCallbacks.unzip('dist/maplibre-gl.js')).toContain('maplibre-gl.js');
@@ -245,7 +332,7 @@ describe('getAssets', () => {
 		});
 
 		it('maplibre-inspect filter accepts only js, css, and map files from package/dist', async () => {
-			await ExternalFileDB.build({ type: 'external', source: 'maplibre-inspect' });
+			await ExternalFileDB.build(maplibreInspectConfig);
 			expect(filterCallbacks.ungzipUntar).toBeTruthy();
 			if (filterCallbacks.ungzipUntar) {
 				expect(filterCallbacks.ungzipUntar('package/dist/maplibre-gl-inspect.js')).toContain('maplibre-gl-inspect.js');
@@ -261,7 +348,7 @@ describe('getAssets', () => {
 		});
 
 		it('maplibre-versatiles-styler filter processes all files', async () => {
-			await ExternalFileDB.build({ type: 'external', source: 'maplibre-versatiles-styler' });
+			await ExternalFileDB.build(maplibreVersatilesStylerConfig);
 			expect(filterCallbacks.ungzipUntar).toBeTruthy();
 			if (filterCallbacks.ungzipUntar) {
 				expect(filterCallbacks.ungzipUntar('styler.js')).toContain('styler.js');
@@ -270,7 +357,7 @@ describe('getAssets', () => {
 		});
 
 		it('mapbox-rtl-text filter accepts only js, css, and map files from package/dist', async () => {
-			await ExternalFileDB.build({ type: 'external', source: 'mapbox-rtl-text' });
+			await ExternalFileDB.build(mapboxRtlTextConfig);
 			expect(filterCallbacks.ungzipUntar).toBeTruthy();
 			if (filterCallbacks.ungzipUntar) {
 				expect(filterCallbacks.ungzipUntar('package/dist/mapbox-gl-rtl-text.js')).toContain('mapbox-gl-rtl-text.js');
