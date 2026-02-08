@@ -169,21 +169,6 @@ const stylesConfig: ExternalSourceConfig = {
 	notes: '[VersaTiles style](https://github.com/versatiles-org/versatiles-style)',
 };
 
-const maplibreConfig: ExternalSourceConfig = {
-	type: 'external',
-	version: { github: 'maplibre/maplibre-gl-js', pin: '5.14.0' },
-	assets: [
-		{
-			url: 'https://github.com/maplibre/maplibre-gl-js/releases/download/v${version}/dist.zip',
-			format: 'zip',
-			include: /dist\/.*\.(js|css|map)$/,
-			flatten: true,
-			dest: 'assets/lib/maplibre-gl/',
-		},
-	],
-	notes: '[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)',
-};
-
 const maplibreVersatilesStylerConfig: ExternalSourceConfig = {
 	type: 'external',
 	version: { github: 'versatiles-org/maplibre-versatiles-styler' },
@@ -235,15 +220,6 @@ describe('getAssets', () => {
 			]);
 		});
 
-		it('maplibre', async () => {
-			await ExternalFileDB.build(maplibreConfig);
-			expect(getGHCalls()).toStrictEqual([['maplibre', 'maplibre-gl-js', undefined]]);
-			const calls = getCurlCalls();
-			expect(calls[0]).toMatch(
-				/https:\/\/github.com\/maplibre\/maplibre-gl-js\/releases\/download\/v\d+\.\d+\.\d+\/dist.zip/
-			);
-		});
-
 		it('fonts-noto', async () => {
 			await ExternalFileDB.build(fontsNotoConfig);
 			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-fonts', undefined]]);
@@ -275,18 +251,6 @@ describe('getAssets', () => {
 			if (filterCallbacks.ungzipUntar) {
 				expect(filterCallbacks.ungzipUntar('fonts.json')).toBe('assets/glyphs/index.json');
 				expect(filterCallbacks.ungzipUntar('other.json')).toBe('assets/glyphs/other.json');
-			}
-		});
-
-		it('maplibre filter accepts only js, css, and map files', async () => {
-			await ExternalFileDB.build(maplibreConfig);
-			expect(filterCallbacks.unzip).toBeTruthy();
-			if (filterCallbacks.unzip) {
-				expect(filterCallbacks.unzip('dist/maplibre-gl.js')).toContain('maplibre-gl.js');
-				expect(filterCallbacks.unzip('dist/maplibre-gl.css')).toContain('maplibre-gl.css');
-				expect(filterCallbacks.unzip('dist/maplibre-gl.js.map')).toContain('maplibre-gl.js.map');
-				expect(filterCallbacks.unzip('dist/readme.txt')).toBe(false);
-				expect(filterCallbacks.unzip('other/file.js')).toBe(false);
 			}
 		});
 

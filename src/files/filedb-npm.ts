@@ -42,7 +42,11 @@ export class NpmFileDB extends FileDB {
 function findPackageRoot(startPath: string): string {
 	let dir = dirname(startPath);
 	while (dir !== dirname(dir)) {
-		if (existsSync(join(dir, 'package.json'))) return dir;
+		const pkgPath = join(dir, 'package.json');
+		if (existsSync(pkgPath)) {
+			const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
+			if (pkg.version) return dir;
+		}
 		dir = dirname(dir);
 	}
 	throw new Error(`Could not find package.json starting from ${startPath}`);

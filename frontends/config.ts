@@ -48,17 +48,10 @@ export const sourceConfigs = {
 		notes: '[VersaTiles style](https://github.com/versatiles-org/versatiles-style)',
 	}),
 
-	'external-maplibre': githubSource('maplibre/maplibre-gl-js', {
-		pin: '5.14.0',
-		assets: [
-			{
-				url: 'https://github.com/maplibre/maplibre-gl-js/releases/download/v${version}/dist.zip',
-				format: 'zip',
-				include: /dist\/.*\.(js|css|map)$/,
-				flatten: true,
-				dest: 'assets/lib/maplibre-gl/',
-			},
-		],
+	'external-maplibre': npmSource('maplibre-gl', {
+		include: /dist\/.*\.(js|css|map)$/,
+		flatten: true,
+		dest: 'assets/lib/maplibre-gl/',
 		notes: '[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)',
 	}),
 
