@@ -171,7 +171,7 @@ const stylesConfig: ExternalSourceConfig = {
 
 describe('getAssets', () => {
 	function getGHCalls() {
-		const calls = getLatestGithubReleaseVersion.mock.calls;
+		const calls = vi.mocked(getLatestGithubReleaseVersion).mock.calls;
 		calls.sort((a, b) => a[0].localeCompare(b[0]) || a[1].localeCompare(b[1]));
 		return calls;
 	}
