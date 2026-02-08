@@ -74,11 +74,15 @@ export class Server {
 			if (tryFrontend(resolve(req.path + '/', 'index.html'))) return;
 
 			// Attempt to proxy the request based on configuration.
-			void tryProxy(req.path).then((value) => {
-				if (value) return;
-				// Respond with 404 if the file was not found in the file system and no proxy rule matched.
-				res.status(404).end(`path "${escapeHtml(req.path)}" not found.`);
-			});
+			void tryProxy(req.path)
+				.then((value) => {
+					if (value) return;
+					// Respond with 404 if the file was not found in the file system and no proxy rule matched.
+					res.status(404).end(`path "${escapeHtml(req.path)}" not found.`);
+				})
+				.catch(() => {
+					res.status(502).end('proxy error');
+				});
 
 			/**
 			 * Attempts to serve a file from the file system.
