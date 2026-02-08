@@ -20,6 +20,7 @@
     "release": "vrt release-npm",
     "test-coverage": "vitest run --coverage",
     "test": "vitest run",
+    "test:e2e": "vitest run --config vitest.config.e2e.ts",
     "upgrade": "vrt deps-upgrade"
   },
   "type": "module",

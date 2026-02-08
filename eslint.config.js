@@ -17,7 +17,7 @@ export default [
 		],
 	},
 	{
-		files: ['src/**/*.ts', 'frontends/**/*.ts', 'rollups/**/*.ts'],
+		files: ['src/**/*.ts', 'frontends/**/*.ts', 'rollups/**/*.ts', 'e2e/**/*.ts'],
 		languageOptions: {
 			ecmaVersion: 'latest',
 			sourceType: 'module',
