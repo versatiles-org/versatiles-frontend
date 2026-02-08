@@ -14,6 +14,8 @@ const frontendConfigs = await loadFrontendConfigs();
 // parse arguments
 const args = arg(
 	{
+		'--port': Number,
+		'-p': '--port',
 		'--local-proxy-port': Number,
 		'-l': '--local-proxy-port',
 	},
@@ -65,4 +67,4 @@ const devConfig = {
 	],
 };
 const server = new Server(frontend, devConfig);
-await server.start();
+await server.start(args['--port']);
