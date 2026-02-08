@@ -56,27 +56,27 @@ vi.mock('../files/filedbs', async (importOriginal) => {
 	});
 
 	// Wrap the original loader functions in vi.fn so tests can assert on calls
-	const loadFileDBConfigs = vi.fn(original.loadFileDBConfigs);
+	const loadSourceConfigs = vi.fn(original.loadSourceConfigs);
 	const loadFileDBs = vi.fn(original.loadFileDBs);
 
 	return {
 		...original,
 		FileDBs,
-		loadFileDBConfigs,
+		loadSourceConfigs,
 		loadFileDBs,
 	};
 });
 
 import { progress, PromiseFunction } from '../async_progress';
 
-const { loadFileDBConfigs } = await import('../files/filedbs');
+const { loadSourceConfigs } = await import('../files/filedbs');
 const { Frontend } = await import('./frontend');
 const { loadFrontendConfigs } = await import('./load');
 const { generateFrontends } = await import('./generate');
 
 progress.disable();
 
-const fileDBConfig = await loadFileDBConfigs();
+const fileDBConfig = await loadSourceConfigs();
 
 describe('Frontend class', () => {
 	let mockFileDBs: InstanceType<typeof FileDBs>;
