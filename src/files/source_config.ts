@@ -29,14 +29,7 @@ export interface StaticSourceConfig {
 	path: string;
 }
 
-export interface RollupSourceConfig {
-	type: 'rollup';
-	path: string;
-	url: string;
-	globalVariable: string;
-}
-
-export type SourceConfig = ExternalSourceConfig | StaticSourceConfig | RollupSourceConfig;
+export type SourceConfig = ExternalSourceConfig | StaticSourceConfig;
 
 interface GithubSourceOptions {
 	prerelease?: boolean;
@@ -70,8 +63,4 @@ export function npmSource(pkg: string, options: NpmSourceOptions): ExternalSourc
 
 export function staticSource(path: string): StaticSourceConfig {
 	return { type: 'static', path };
-}
-
-export function rollupSource(path: string, url: string, globalVariable: string): RollupSourceConfig {
-	return { type: 'rollup', path, url, globalVariable };
 }

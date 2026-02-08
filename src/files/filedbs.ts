@@ -2,7 +2,6 @@ import { FileDB } from './filedb';
 import { PromiseFunction, ProgressLabel, progress } from '../async_progress';
 import { StaticFileDB } from './filedb-static';
 import { ExternalFileDB } from './filedb-external';
-import { RollupFileDB } from './filedb-rollup';
 import type { SourceConfig } from './source_config';
 
 export type { SourceConfig };
@@ -80,9 +79,6 @@ export function loadFileDBs(fileDBs: FileDBs): PromiseFunction {
 									break;
 								case 'external':
 									fileDB = await ExternalFileDB.build(config);
-									break;
-								case 'rollup':
-									fileDB = await RollupFileDB.build(config, frontendFolder);
 									break;
 								default:
 									// @ts-expect-error Just to be sure

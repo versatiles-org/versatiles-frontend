@@ -113,27 +113,6 @@ vi.mock('./files/filedb-static', async (importOriginal) => {
 	};
 });
 
-// Mock RollupFileDB
-vi.mock('./files/filedb-rollup', async (importOriginal) => {
-	const original = await importOriginal<typeof import('./files/filedb-rollup')>();
-	const BaseRollupFileDB = original.RollupFileDB;
-
-	class RollupFileDB extends BaseRollupFileDB {
-		public static async build(config: unknown, frontendFolder: string): Promise<RollupFileDB> {
-			return new RollupFileDB(config, frontendFolder);
-		}
-
-		public enterWatchMode(): void {
-			// no-op in tests
-		}
-	}
-
-	return {
-		...original,
-		RollupFileDB,
-	};
-});
-
 // Mock ExternalFileDB
 vi.mock('./files/filedb-external', async (importOriginal) => {
 	const original = await importOriginal<typeof import('./files/filedb-external')>();
