@@ -19,33 +19,47 @@ jobs:
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v6
+      - name: Checkout
+        uses: actions/checkout@v6
 
       - name: Setup Node
         uses: actions/setup-node@v6
         with:
           node-version: 22
 
-      - name: get version
+      - name: Get version
         run: 'echo "RELEASE_TAG=v$(jq -r ''.version'' package.json)" >> $GITHUB_ENV'
 
-      - name: install dependencies
-        run: npm install
+      - name: Cache node modules
+        id: cache-node-modules
+        uses: actions/cache@v5
+        with:
+          path: node_modules
+          key: node-modules-${{ runner.os }}-${{ hashFiles('package-lock.json') }}
 
-      - name: build
+      - name: Install dependencies
+        if: steps.cache-node-modules.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Build
         run: npm run build
 
-      - name: test e2e
+      - name: Run e2e tests
         run: npm run test:e2e
 
-      - name: create release if needed
+      - name: Create release if needed
         run: gh release view $RELEASE_TAG || gh release create $RELEASE_TAG
 
-      - name: add files to release
+      - name: Add files to release
         run: gh release upload $RELEASE_TAG --clobber release/*.tar.gz
 
-      - name: update release
+      - name: Update release
         run: gh release edit $RELEASE_TAG --draft=false --latest --prerelease=false --notes-file=release/notes.md
 
-      - name: trigger Docker release
-        run: curl -XPOST -u "michaelkreil:${{secrets.PAT_TOKEN}}" https://api.github.com/repos/versatiles-org/versatiles-docker/actions/workflows/release.yml/dispatches --data '{"ref":"main","inputs":{"run_jobs":"frontend"}}'
+      - name: Trigger Docker release
+        run: |
+          curl -X POST \
+            -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
+            -H "Accept: application/vnd.github.v3+json" \
+            https://api.github.com/repos/versatiles-org/versatiles-docker/actions/workflows/release.yml/dispatches \
+            -d '{"ref":"main","inputs":{"run_jobs":"frontend"}}'
