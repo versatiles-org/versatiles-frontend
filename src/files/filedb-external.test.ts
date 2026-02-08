@@ -122,24 +122,28 @@ import { getLatestGithubReleaseVersion, getLatestNPMReleaseVersion } from '../ut
 const fontsAllConfig: ExternalSourceConfig = {
 	type: 'external',
 	version: { github: 'versatiles-org/versatiles-fonts' },
-	assets: [{
-		url: 'https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/fonts.tar.gz',
-		format: 'tar.gz',
-		dest: 'assets/glyphs/',
-		rename: { 'fonts.json': 'index.json' },
-	}],
+	assets: [
+		{
+			url: 'https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/fonts.tar.gz',
+			format: 'tar.gz',
+			dest: 'assets/glyphs/',
+			rename: { 'fonts.json': 'index.json' },
+		},
+	],
 	notes: '[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)',
 };
 
 const fontsNotoConfig: ExternalSourceConfig = {
 	type: 'external',
 	version: { github: 'versatiles-org/versatiles-fonts' },
-	assets: [{
-		url: 'https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/noto_sans.tar.gz',
-		format: 'tar.gz',
-		dest: 'assets/glyphs/',
-		rename: { 'fonts.json': 'index.json' },
-	}],
+	assets: [
+		{
+			url: 'https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/noto_sans.tar.gz',
+			format: 'tar.gz',
+			dest: 'assets/glyphs/',
+			rename: { 'fonts.json': 'index.json' },
+		},
+	],
 	notes: '[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)',
 };
 
@@ -169,51 +173,59 @@ const stylesConfig: ExternalSourceConfig = {
 const maplibreConfig: ExternalSourceConfig = {
 	type: 'external',
 	version: { github: 'maplibre/maplibre-gl-js', pin: '5.14.0' },
-	assets: [{
-		url: 'https://github.com/maplibre/maplibre-gl-js/releases/download/v${version}/dist.zip',
-		format: 'zip',
-		include: /dist\/.*\.(js|css|map)$/,
-		flatten: true,
-		dest: 'assets/lib/maplibre-gl/',
-	}],
+	assets: [
+		{
+			url: 'https://github.com/maplibre/maplibre-gl-js/releases/download/v${version}/dist.zip',
+			format: 'zip',
+			include: /dist\/.*\.(js|css|map)$/,
+			flatten: true,
+			dest: 'assets/lib/maplibre-gl/',
+		},
+	],
 	notes: '[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)',
 };
 
 const maplibreInspectConfig: ExternalSourceConfig = {
 	type: 'external',
 	version: { npm: '@maplibre/maplibre-gl-inspect' },
-	assets: [{
-		url: 'https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-${version}.tgz',
-		format: 'tar.gz',
-		include: /package\/dist\/.*\.(js|css|map)$/,
-		flatten: true,
-		dest: 'assets/lib/maplibre-gl-inspect/',
-	}],
+	assets: [
+		{
+			url: 'https://registry.npmjs.org/@maplibre/maplibre-gl-inspect/-/maplibre-gl-inspect-${version}.tgz',
+			format: 'tar.gz',
+			include: /package\/dist\/.*\.(js|css|map)$/,
+			flatten: true,
+			dest: 'assets/lib/maplibre-gl-inspect/',
+		},
+	],
 	notes: '[MapLibre GL Inspect](https://github.com/maplibre/maplibre-gl-inspect)',
 };
 
 const maplibreVersatilesStylerConfig: ExternalSourceConfig = {
 	type: 'external',
 	version: { github: 'versatiles-org/maplibre-versatiles-styler' },
-	assets: [{
-		url: 'https://github.com/versatiles-org/maplibre-versatiles-styler/releases/download/v${version}/maplibre-versatiles-styler.tar.gz',
-		format: 'tar.gz',
-		flatten: true,
-		dest: 'assets/lib/maplibre-versatiles-styler/',
-	}],
+	assets: [
+		{
+			url: 'https://github.com/versatiles-org/maplibre-versatiles-styler/releases/download/v${version}/maplibre-versatiles-styler.tar.gz',
+			format: 'tar.gz',
+			flatten: true,
+			dest: 'assets/lib/maplibre-versatiles-styler/',
+		},
+	],
 	notes: '[MapLibre VersaTiles Styler](https://github.com/versatiles-org/maplibre-versatiles-styler)',
 };
 
 const mapboxRtlTextConfig: ExternalSourceConfig = {
 	type: 'external',
 	version: { npm: '@mapbox/mapbox-gl-rtl-text' },
-	assets: [{
-		url: 'https://registry.npmjs.org/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-${version}.tgz',
-		format: 'tar.gz',
-		include: /package\/dist\/.*\.(js|css|map)$/,
-		flatten: true,
-		dest: 'assets/lib/mapbox-gl-rtl-text/',
-	}],
+	assets: [
+		{
+			url: 'https://registry.npmjs.org/@mapbox/mapbox-gl-rtl-text/-/mapbox-gl-rtl-text-${version}.tgz',
+			format: 'tar.gz',
+			include: /package\/dist\/.*\.(js|css|map)$/,
+			flatten: true,
+			dest: 'assets/lib/mapbox-gl-rtl-text/',
+		},
+	],
 	notes: '[Mapbox GL RTL Text](https://github.com/mapbox/mapbox-gl-rtl-text)',
 };
 

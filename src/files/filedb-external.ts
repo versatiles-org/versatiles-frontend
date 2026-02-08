@@ -47,8 +47,12 @@ export class ExternalFileDB extends FileDB {
 		};
 
 		switch (asset.format) {
-			case 'tar.gz': await curl.ungzipUntar(mapFilename); break;
-			case 'zip': await curl.unzip(mapFilename); break;
+			case 'tar.gz':
+				await curl.ungzipUntar(mapFilename);
+				break;
+			case 'zip':
+				await curl.unzip(mapFilename);
+				break;
 		}
 	}
 
