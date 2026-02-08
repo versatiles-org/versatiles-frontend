@@ -48,6 +48,12 @@ jobs:
       - name: Run tests
         run: npm run test
 
+      - name: build
+        run: npm run build
+
+      - name: test e2e
+        run: npm run test:e2e
+
       - name: Generate test coverage
         run: npm run test-coverage
 

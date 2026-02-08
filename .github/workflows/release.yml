@@ -29,8 +29,14 @@ jobs:
       - name: get version
         run: 'echo "RELEASE_TAG=v$(jq -r ''.version'' package.json)" >> $GITHUB_ENV'
 
-      - run: npm install
-      - run: NO_COLOR=1 npm run build
+      - name: install dependencies
+        run: npm install
+
+      - name: build
+        run: npm run build
+
+      - name: test e2e
+        run: npm run test:e2e
 
       - name: create release if needed
         run: gh release view $RELEASE_TAG || gh release create $RELEASE_TAG
