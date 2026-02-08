@@ -132,10 +132,10 @@ export class Server {
 	/**
 	 * Starts the server on a specified port, logging a message once it's running.
 	 */
-	public async start(): Promise<void> {
+	public async start(port = 8080): Promise<void> {
 		return new Promise((res) =>
-			this.app.listen(8080, () => {
-				console.log('Server started: http://localhost:8080/');
+			this.app.listen(port, () => {
+				console.log(`Server started: http://localhost:${port}/`);
 				res();
 			})
 		);
