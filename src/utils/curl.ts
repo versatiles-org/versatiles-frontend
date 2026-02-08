@@ -75,7 +75,7 @@ export class Curl {
 		const zip = unzipper.Parse();
 		zip.on('entry', (entry: Entry) => {
 			const path = cbFilter(entry.path);
-			if (path != false) {
+			if (path !== false) {
 				void entry.buffer().then((buffer) => {
 					this.fileDB.setFileFromBuffer(path, entry.vars.lastModifiedTime, buffer);
 				});
