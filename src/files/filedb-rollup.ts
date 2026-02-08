@@ -4,7 +4,7 @@ import { existsSync, watch } from 'fs';
 import { basename, dirname, normalize } from 'path';
 import { rollup } from 'rollup';
 import css from 'rollup-plugin-import-css';
-import { FileDB } from './filedb';
+import { FileDB } from './filedb.js';
 
 export interface RollupFileDBConfig {
 	type: 'rollup';
@@ -37,11 +37,21 @@ export class RollupFileDB extends FileDB {
 		const input = normalize(`${this.frontendFolder}/${path}/index.ts`);
 		if (!existsSync(input)) throw new Error(`Input file not found: ${input}`);
 
-		const tsconfig = normalize(`${this.frontendFolder}/tsconfig.json`);
-
 		const bundle = await rollup({
 			input,
-			plugins: [nodeResolve(), css({ output: baseFilename + '.css' }), typescript({ tsconfig })],
+			plugins: [
+				nodeResolve(),
+				css({ output: baseFilename + '.css' }),
+				typescript({
+					extends: '../tsconfig.json',
+					compilerOptions: {
+						lib: ['DOM', 'ESNext'],
+						declaration: false,
+					},
+					include: ['**/*.ts'],
+					exclude: ['config.ts'],
+				}),
+			],
 			external: ['maplibregl'],
 			onLog(level, log, handler) {
 				if (log.code === 'CIRCULAR_DEPENDENCY') return;
