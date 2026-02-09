@@ -141,7 +141,7 @@ test.describe('overview page', () => {
 	});
 
 	test('screenshot', async ({ page, serverUrl }) => {
-		await page.setViewportSize({ width: 640, height: 480 });
+		await page.setViewportSize({ width: 1024, height: 768 });
 		await page.goto(serverUrl);
 		await page.waitForLoadState('networkidle');
 		await expect(page).toHaveScreenshot();
@@ -191,7 +191,7 @@ test.describe('preview page', () => {
 	test('screenshot', async ({ page, serverUrl }) => {
 		await mockBrowserRequests(page);
 		await installMapIdleHook(page);
-		await page.setViewportSize({ width: 640, height: 480 });
+		await page.setViewportSize({ width: 1024, height: 768 });
 		await page.goto(`${serverUrl}/preview.html?id=osm`);
 		await waitForMapRendered(page);
 		await expect(page).toHaveScreenshot();

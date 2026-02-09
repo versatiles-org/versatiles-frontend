@@ -9,6 +9,7 @@ export default defineConfig({
 		toHaveScreenshot: {
 			maxDiffPixelRatio: 0.01,
 			threshold: 0.2,
+			scale: 'device',
 		},
 	},
 	fullyParallel: true,
@@ -24,6 +25,7 @@ export default defineConfig({
 			name: 'chromium',
 			use: {
 				...devices['Desktop Chrome'],
+				deviceScaleFactor: 0.5,
 				launchOptions: {
 					args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
 				},

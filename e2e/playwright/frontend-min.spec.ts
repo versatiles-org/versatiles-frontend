@@ -108,7 +108,7 @@ test('VersaTilesStylerControl is present', async ({ page, serverUrl }) => {
 test('screenshot', async ({ page, serverUrl }) => {
 	await mockBrowserRequests(page);
 	await installMapIdleHook(page);
-	await page.setViewportSize({ width: 640, height: 480 });
+	await page.setViewportSize({ width: 1024, height: 768 });
 	await page.goto(`${serverUrl}/#map=13/52.474/13.40&style=satellite`);
 	await waitForMapRendered(page);
 	await expect(page).toHaveScreenshot();
