@@ -16,11 +16,13 @@ async function waitForMapReady(page: Page) {
 }
 
 /**
- * Intercept maplibregl.Map to expose the instance on window.__mapInstance.
+ * Intercept maplibregl.Map to resolve window.__mapIdle on debounced idle.
  * Must be called before page.goto().
  */
-async function installMapHook(page: Page) {
+async function installMapIdleHook(page: Page) {
 	await page.addInitScript(() => {
+		let resolve: () => void;
+		(window as Record<string, unknown>).__mapIdle = new Promise<void>((r) => (resolve = r));
 		let _ml: unknown;
 		Object.defineProperty(window, 'maplibregl', {
 			configurable: true,
@@ -31,10 +33,14 @@ async function installMapHook(page: Page) {
 			set(val: Record<string, unknown>) {
 				_ml = val;
 				if (val?.Map) {
-					const OrigMap = val.Map as new (...args: unknown[]) => unknown;
+					const OrigMap = val.Map as new (...args: unknown[]) => Record<string, unknown>;
 					val.Map = function (...args: unknown[]) {
 						const instance = new OrigMap(...args);
-						(window as Record<string, unknown>).__mapInstance = instance;
+						let timer: ReturnType<typeof setTimeout>;
+						(instance.on as (event: string, fn: () => void) => void)('idle', () => {
+							clearTimeout(timer);
+							timer = setTimeout(() => resolve(), 500);
+						});
 						return instance;
 					};
 					(val.Map as Record<string, unknown>).prototype = OrigMap.prototype;
@@ -45,23 +51,11 @@ async function installMapHook(page: Page) {
 	});
 }
 
-/**
- * Navigate the map to a specific position and wait for rendering to complete.
- * Uses jumpTo + debounced idle event to ensure tiles are fully rendered.
- */
-async function navigateMapAndWait(page: Page, options: { center: [number, number]; zoom: number }) {
-	await page.evaluate(({ center, zoom }) => {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const map = (window as any).__mapInstance;
-		return new Promise<void>((resolve) => {
-			let timer: ReturnType<typeof setTimeout>;
-			map.on('idle', () => {
-				clearTimeout(timer);
-				timer = setTimeout(resolve, 500);
-			});
-			map.jumpTo({ center, zoom });
-		});
-	}, options);
+/** Wait for map tiles to be fully rendered. */
+async function waitForMapRendered(page: Page) {
+	await waitForMapReady(page);
+	await page.waitForLoadState('networkidle');
+	await page.evaluate(() => (window as Record<string, unknown>).__mapIdle);
 }
 
 test('page loads without console errors', async ({ page, serverUrl }) => {
@@ -104,29 +98,19 @@ test('VersaTiles logo loads', async ({ page, serverUrl }) => {
 	expect(width).toBeGreaterThan(0);
 });
 
-test('no styler control present', async ({ page, serverUrl }) => {
+test('VersaTilesStylerControl is present', async ({ page, serverUrl }) => {
 	await mockBrowserRequests(page);
 	await page.goto(serverUrl);
 	await waitForMapReady(page);
-	await expect(page.getByRole('button', { name: 'Toggle style editor' })).toHaveCount(0);
-});
-
-test('no inspect control present', async ({ page, serverUrl }) => {
-	await mockBrowserRequests(page);
-	await page.goto(serverUrl);
-	await waitForMapReady(page);
-	await expect(page.getByRole('button', { name: 'Toggle Inspect' })).toHaveCount(0);
+	await expect(page.getByRole('button', { name: 'Toggle style editor' })).toBeAttached();
 });
 
 test('screenshot', async ({ page, serverUrl }) => {
 	await mockBrowserRequests(page);
-	await installMapHook(page);
+	await installMapIdleHook(page);
 	await page.setViewportSize({ width: 640, height: 480 });
-	await page.goto(serverUrl);
-	await waitForMapReady(page);
-	await page.waitForLoadState('networkidle');
-	await navigateMapAndWait(page, { center: [13.4, 52.474], zoom: 13 });
-	await page.waitForLoadState('networkidle');
+	await page.goto(`${serverUrl}/#map=13/52.474/13.40&style=satellite`);
+	await waitForMapRendered(page);
 	await expect(page).toHaveScreenshot();
 });
 
