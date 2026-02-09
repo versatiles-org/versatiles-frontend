@@ -1,32 +1,13 @@
 import { test as base } from '@playwright/test';
-import { createReadStream, readFileSync, readdirSync, statSync } from 'fs';
+import { createReadStream } from 'fs';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'http';
-import { tmpdir } from 'os';
-import { join, extname, resolve } from 'path';
-import { mkdtemp, rm } from 'fs/promises';
+import { extname, resolve } from 'path';
 import { createGunzip } from 'zlib';
 import { pipeline } from 'stream/promises';
-import * as tar from 'tar';
+import { Parser } from 'tar';
 import { lookup } from 'mrmime';
 
 const releaseDir = resolve(import.meta.dirname, '../../release');
-
-/** Recursively read all files in a directory into a map of relative path -> Buffer. */
-function readDirRecursive(dir: string, prefix = ''): Map<string, Buffer> {
-	const files = new Map<string, Buffer>();
-	for (const entry of readdirSync(dir)) {
-		const fullPath = join(dir, entry);
-		const relPath = prefix ? `${prefix}/${entry}` : entry;
-		if (statSync(fullPath).isDirectory()) {
-			for (const [k, v] of readDirRecursive(fullPath, relPath)) {
-				files.set(k, v);
-			}
-		} else {
-			files.set(relPath, readFileSync(fullPath));
-		}
-	}
-	return files;
-}
 
 type WorkerFixtures = {
 	bundleName: string;
@@ -42,18 +23,23 @@ export const test = base.extend<object, WorkerFixtures>({
 
 	serverUrl: [
 		async ({ bundleName, tileIndex, tilesMeta }, use) => {
-			const tmpDir = await mkdtemp(join(tmpdir(), 'pw-'));
-
-			// Extract tar.gz and read files into memory
+			// Stream tar.gz entries directly into memory (no temp directory needed)
+			const files = new Map<string, Buffer>();
 			await pipeline(
-				createReadStream(join(releaseDir, `${bundleName}.tar.gz`)),
+				createReadStream(resolve(releaseDir, `${bundleName}.tar.gz`)),
 				createGunzip(),
-				tar.x({ cwd: tmpDir })
+				new Parser({
+					onReadEntry: (entry) => {
+						if (entry.type === 'File') {
+							const chunks: Buffer[] = [];
+							entry.on('data', (chunk: Buffer) => chunks.push(chunk));
+							entry.on('end', () => files.set(entry.path, Buffer.concat(chunks)));
+						} else {
+							entry.resume();
+						}
+					},
+				})
 			);
-			const files = readDirRecursive(tmpDir);
-
-			// Remove temp dir immediately — files are in memory
-			void rm(tmpDir, { recursive: true, force: true });
 
 			// Create server that serves static files and proxies /tiles/ requests
 			const server: Server = createServer((req: IncomingMessage, res: ServerResponse) => {
@@ -122,7 +108,7 @@ export const test = base.extend<object, WorkerFixtures>({
 			server.closeAllConnections();
 			server.close();
 		},
-		{ scope: 'worker' },
+		{ scope: 'worker', timeout: 60_000 },
 	],
 });
 
