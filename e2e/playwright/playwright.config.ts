@@ -4,7 +4,13 @@ export default defineConfig({
 	testDir: '.',
 	testMatch: '*.spec.ts',
 	timeout: 30_000,
-	expect: { timeout: 10_000 },
+	expect: {
+		timeout: 10_000,
+		toHaveScreenshot: {
+			maxDiffPixelRatio: 0.01,
+			threshold: 0.2,
+		},
+	},
 	fullyParallel: true,
 	forbidOnly: !!process.env.CI,
 	retries: process.env.CI ? 1 : 0,
@@ -19,7 +25,7 @@ export default defineConfig({
 			use: {
 				...devices['Desktop Chrome'],
 				launchOptions: {
-					args: ['--use-gl=angle', '--use-angle=swiftshader'],
+					args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
 				},
 			},
 		},

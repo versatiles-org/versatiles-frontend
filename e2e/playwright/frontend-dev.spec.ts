@@ -36,6 +36,55 @@ async function waitForMapReady(page: Page) {
 	await page.locator('.maplibregl-canvas').waitFor({ state: 'attached', timeout: 20_000 });
 }
 
+/**
+ * Intercept maplibregl.Map to expose the instance on window.__mapInstance.
+ * Must be called before page.goto().
+ */
+async function installMapHook(page: Page) {
+	await page.addInitScript(() => {
+		let _ml: unknown;
+		Object.defineProperty(window, 'maplibregl', {
+			configurable: true,
+			enumerable: true,
+			get() {
+				return _ml;
+			},
+			set(val: Record<string, unknown>) {
+				_ml = val;
+				if (val?.Map) {
+					const OrigMap = val.Map as new (...args: unknown[]) => unknown;
+					val.Map = function (...args: unknown[]) {
+						const instance = new OrigMap(...args);
+						(window as Record<string, unknown>).__mapInstance = instance;
+						return instance;
+					};
+					(val.Map as Record<string, unknown>).prototype = OrigMap.prototype;
+					Object.setPrototypeOf(val.Map, OrigMap);
+				}
+			},
+		});
+	});
+}
+
+/**
+ * Navigate the map to a specific position and wait for rendering to complete.
+ * Uses jumpTo + debounced idle event to ensure tiles are fully rendered.
+ */
+async function navigateMapAndWait(page: Page, options: { center: [number, number]; zoom: number }) {
+	await page.evaluate(({ center, zoom }) => {
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
+		const map = (window as any).__mapInstance;
+		return new Promise<void>((resolve) => {
+			let timer: ReturnType<typeof setTimeout>;
+			map.on('idle', () => {
+				clearTimeout(timer);
+				timer = setTimeout(resolve, 500);
+			});
+			map.jumpTo({ center, zoom });
+		});
+	}, options);
+}
+
 // --- Overview page tests ---
 
 test.describe('overview page', () => {
@@ -60,6 +109,13 @@ test.describe('overview page', () => {
 		await expect(page.locator('#list .box')).toHaveCount(2);
 		await expect(page.locator('#list .box h2').first()).toHaveText('OpenStreetMap');
 		await expect(page.locator('#list .box h2').nth(1)).toHaveText('Hillshade');
+	});
+
+	test('screenshot', async ({ page, serverUrl }) => {
+		await page.setViewportSize({ width: 640, height: 480 });
+		await page.goto(serverUrl);
+		await page.waitForLoadState('networkidle');
+		await expect(page).toHaveScreenshot();
 	});
 
 	test('boxes link to preview.html with correct id', async ({ page, serverUrl }) => {
@@ -102,6 +158,18 @@ test.describe('preview page', () => {
 		await page.goto(`${serverUrl}/preview.html?id=test`);
 		const logo = page.locator('img[alt="VersaTiles"]');
 		await expect(logo).toBeVisible();
+	});
+
+	test('screenshot', async ({ page, serverUrl }) => {
+		await mockBrowserRequests(page);
+		await installMapHook(page);
+		await page.setViewportSize({ width: 640, height: 480 });
+		await page.goto(`${serverUrl}/preview.html?id=osm`);
+		await waitForMapReady(page);
+		await page.waitForLoadState('networkidle');
+		await navigateMapAndWait(page, { center: [13.4, 52.474], zoom: 13 });
+		await page.waitForLoadState('networkidle');
+		await expect(page).toHaveScreenshot();
 	});
 });
 

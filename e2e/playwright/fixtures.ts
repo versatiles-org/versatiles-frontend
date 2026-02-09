@@ -42,29 +42,36 @@ export const test = base.extend<object, WorkerFixtures>({
 			);
 
 			// Create server that serves static files and proxies /tiles/ requests
-			const server: Server = createServer((req: IncomingMessage, res: ServerResponse) => {
+			const server: Server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
 				const url = new URL(req.url ?? '/', 'http://localhost');
 				let path = url.pathname;
 
-				// Proxy: handle /tiles/ requests with mock data
+				// Proxy: handle /tiles/ requests — mock metadata, proxy tile data
 				if (path.startsWith('/tiles/')) {
-					if (path === '/tiles/index.json') {
+					if (tileIndex.length > 0 && path === '/tiles/index.json') {
 						res.writeHead(200, { 'Content-Type': 'application/json' });
 						res.end(JSON.stringify(tileIndex));
 						return;
 					}
 
 					const tilesJsonMatch = path.match(/^\/tiles\/([^/]+)\/tiles\.json$/);
-					if (tilesJsonMatch) {
-						const id = tilesJsonMatch[1];
-						const meta = tilesMeta[id] ?? { name: id };
+					if (tilesJsonMatch && tilesMeta[tilesJsonMatch[1]]) {
 						res.writeHead(200, { 'Content-Type': 'application/json' });
-						res.end(JSON.stringify(meta));
+						res.end(JSON.stringify(tilesMeta[tilesJsonMatch[1]]));
 						return;
 					}
 
-					res.writeHead(200, { 'Content-Type': 'application/octet-stream' });
-					res.end(Buffer.alloc(0));
+					// Proxy to tiles.versatiles.org
+					try {
+						const response = await fetch(`https://tiles.versatiles.org${path}`);
+						const contentType = response.headers.get('content-type') ?? 'application/octet-stream';
+						const buffer = Buffer.from(await response.arrayBuffer());
+						res.writeHead(response.status, { 'Content-Type': contentType });
+						res.end(buffer);
+					} catch {
+						res.writeHead(502);
+						res.end('Proxy Error');
+					}
 					return;
 				}
 
