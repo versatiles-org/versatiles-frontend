@@ -87,9 +87,7 @@ describe('getLatestGithubReleaseVersion', () => {
 
 		mockFetchResponse({ error: 'Not Found' });
 
-		await expect(getLatestGithubReleaseVersion(owner, repo)).rejects.toThrow(
-			'Unexpected GitHub API response'
-		);
+		await expect(getLatestGithubReleaseVersion(owner, repo)).rejects.toThrow('Unexpected GitHub API response');
 	});
 
 	it('throws error when response status is not ok', async () => {
@@ -98,9 +96,7 @@ describe('getLatestGithubReleaseVersion', () => {
 
 		mockFetchResponse({ error: 'Forbidden' }, 403);
 
-		await expect(getLatestGithubReleaseVersion(owner, repo)).rejects.toThrow(
-			'GitHub API returned 403'
-		);
+		await expect(getLatestGithubReleaseVersion(owner, repo)).rejects.toThrow('GitHub API returned 403');
 	});
 
 	it('throws error when no valid version is found', async () => {

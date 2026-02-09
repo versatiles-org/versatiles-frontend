@@ -109,9 +109,9 @@ describe('Bundle contents', () => {
 			expect(
 				bundles.countRegex(/^assets\/lib\/maplibre-versatiles-styler\/maplibre-versatiles-styler\./)
 			).toStrictEqual({
-				'frontend-dev.tar.gz': 4,
-				'frontend-min.tar.gz': 1,
-				'frontend.tar.gz': 4,
+				'frontend-dev.tar.gz': 2,
+				'frontend-min.tar.gz': 0,
+				'frontend.tar.gz': 2,
 			});
 			bundles.expectEmptyPrefix('assets/lib/maplibre-versatiles-styler/');
 		});

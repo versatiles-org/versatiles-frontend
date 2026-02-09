@@ -25,6 +25,7 @@ export interface NpmSourceConfig {
 	pkg: string;
 	include?: RegExp;
 	flatten?: boolean;
+	rename?: Record<string, string>;
 	dest: string;
 	notes: string;
 }
@@ -54,13 +55,14 @@ export function githubSource(repo: string, options: GithubSourceOptions): Extern
 
 export function npmSource(
 	pkg: string,
-	options: { include?: RegExp; flatten?: boolean; dest: string; notes: string }
+	options: { include?: RegExp; flatten?: boolean; rename?: Record<string, string>; dest: string; notes: string }
 ): NpmSourceConfig {
 	return {
 		type: 'npm',
 		pkg,
 		include: options.include,
 		flatten: options.flatten,
+		rename: options.rename,
 		dest: options.dest,
 		notes: options.notes,
 	};

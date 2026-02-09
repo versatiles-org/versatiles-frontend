@@ -63,8 +63,12 @@ export const sourceConfigs = {
 	}),
 
 	'external-maplibre-versatiles-styler': npmSource('maplibre-versatiles-styler', {
-		include: /dist\//,
+		include: /dist\/.*\.(umd\.cjs|d\.ts)(\.map)?$/,
 		flatten: true,
+		rename: {
+			'maplibre-versatiles-styler.umd.cjs': 'maplibre-versatiles-styler.js',
+			'maplibre-versatiles-styler.umd.cjs.map': 'maplibre-versatiles-styler.js.map',
+		},
 		dest: 'assets/lib/maplibre-versatiles-styler/',
 		notes: '[MapLibre VersaTiles Styler](https://github.com/versatiles-org/maplibre-versatiles-styler)',
 	}),
