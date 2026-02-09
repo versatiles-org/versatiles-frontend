@@ -9,7 +9,7 @@
 		<script src="/assets/lib/maplibre-gl/maplibre-gl.js"></script>
 		<link href="/assets/lib/maplibre-gl/maplibre-gl.css" rel="stylesheet" />
 
-		<script src="/assets/lib/maplibre-versatiles-styler/maplibre-versatiles-styler.js"></script>
+		<script src="/assets/lib/versatiles-style/versatiles-style.js"></script>
 
 		<script src="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.js"></script>
 		<link href="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet" />
@@ -26,51 +26,34 @@
 
 			maplibregl.setRTLTextPlugin('/assets/lib/mapbox-gl-rtl-text/mapbox-gl-rtl-text.js', true);
 
-			const map = new maplibregl.Map({
-				container: 'map',
-				bounds: [-180, -80, 180, 80],
-				zoom: 5,
-				maxZoom: 20,
-				hash: true,
-				maxPitch: 0,
-				dragRotate: false,
-			});
+			(async () => {
+				const tileJSONUrl = `/tiles/${id}/tiles.json`;
+				const response = await fetch(tileJSONUrl);
+				const tileJSON = await response.json();
+				tileJSON.tiles = [`/tiles/${id}/{z}/{x}/{y}`];
 
-			map.addControl(new maplibregl.NavigationControl(), 'top-right');
-			map.addControl(
-				new MaplibreInspect({
-					sources: {
-						'versatiles-shortbread': [
-							'addresses',
-							'boundaries',
-							'boundary_labels',
-							'bridges',
-							'buildings',
-							'dam_lines',
-							'dam_polygons',
-							'ferries',
-							'land',
-							'ocean',
-							'pier_lines',
-							'pier_polygons',
-							'place_labels',
-							'pois',
-							'public_transport',
-							'sites',
-							'street_labels',
-							'street_polygons',
-							'streets',
-							'water_lines',
-							'water_polygons',
-						],
-					},
-				})
-			);
+				const style = VersaTilesStyle.guessStyle(tileJSON);
+				const sourceId = Object.keys(style.sources);
+				if (sourceId.length === 1) style.sources[sourceId[0]].url = tileJSONUrl;
 
-			map.addControl(new VersaTilesStylerControl({ open: true }), 'top-left');
+				const map = new maplibregl.Map({
+					container: 'map',
+					bounds: [-180, -80, 180, 80],
+					zoom: 5,
+					style,
+					maxZoom: 20,
+					hash: true,
+					maxPitch: 0,
+					dragRotate: false,
+				});
 
-			// collapse attribution control
-			document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');
+				map.addControl(new maplibregl.NavigationControl(), 'top-right');
+
+				map.addControl(new MaplibreInspect());
+
+				// collapse attribution control
+				document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');
+			})();
 		</script>
 	</body>
 </html>

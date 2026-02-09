@@ -6,18 +6,53 @@ test.use({
 	tileIndex: ['osm', 'hillshade'],
 	tilesMeta: {
 		osm: {
-			name: 'OpenStreetMap',
-			description: 'OSM vector tiles',
-			type: 'vector',
-			format: 'pbf',
+			tilejson: '3.0.0',
+			name: 'VersaTiles OSM',
+			description: 'Vector tiles based on OSM in Shortbread scheme',
+			type: 'baselayer',
+			tile_format: 'vnd.mapbox-vector-tile',
+			tile_schema: 'shortbread@1.0',
+			tiles: ['/tiles/osm/{z}/{x}/{y}'],
+			bounds: [-180, -85.051129, 180, 85.051129],
 			minzoom: 0,
 			maxzoom: 14,
+			vector_layers: [
+				{ id: 'addresses', minzoom: 14, maxzoom: 14, fields: {} },
+				{ id: 'aerialways', minzoom: 12, maxzoom: 14, fields: {} },
+				{ id: 'boundaries', minzoom: 0, maxzoom: 14, fields: {} },
+				{ id: 'boundary_labels', minzoom: 2, maxzoom: 14, fields: {} },
+				{ id: 'bridges', minzoom: 12, maxzoom: 14, fields: {} },
+				{ id: 'buildings', minzoom: 14, maxzoom: 14, fields: {} },
+				{ id: 'dam_lines', minzoom: 12, maxzoom: 14, fields: {} },
+				{ id: 'dam_polygons', minzoom: 12, maxzoom: 14, fields: {} },
+				{ id: 'ferries', minzoom: 8, maxzoom: 14, fields: {} },
+				{ id: 'land', minzoom: 10, maxzoom: 14, fields: {} },
+				{ id: 'ocean', minzoom: 8, maxzoom: 14, fields: {} },
+				{ id: 'pier_lines', minzoom: 12, maxzoom: 14, fields: {} },
+				{ id: 'pier_polygons', minzoom: 12, maxzoom: 14, fields: {} },
+				{ id: 'place_labels', minzoom: 3, maxzoom: 14, fields: {} },
+				{ id: 'pois', minzoom: 14, maxzoom: 14, fields: {} },
+				{ id: 'public_transport', minzoom: 11, maxzoom: 14, fields: {} },
+				{ id: 'sites', minzoom: 14, maxzoom: 14, fields: {} },
+				{ id: 'street_labels', minzoom: 10, maxzoom: 14, fields: {} },
+				{ id: 'street_labels_points', minzoom: 12, maxzoom: 14, fields: {} },
+				{ id: 'street_polygons', minzoom: 11, maxzoom: 14, fields: {} },
+				{ id: 'streets', minzoom: 14, maxzoom: 14, fields: {} },
+				{ id: 'streets_polygons_labels', minzoom: 14, maxzoom: 14, fields: {} },
+				{ id: 'water_lines', minzoom: 4, maxzoom: 14, fields: {} },
+				{ id: 'water_lines_labels', minzoom: 4, maxzoom: 14, fields: {} },
+				{ id: 'water_polygons', minzoom: 4, maxzoom: 14, fields: {} },
+				{ id: 'water_polygons_labels', minzoom: 14, maxzoom: 14, fields: {} },
+			],
 		},
 		hillshade: {
+			tilejson: '3.0.0',
 			name: 'Hillshade',
 			description: 'Terrain hillshading',
 			type: 'raster',
-			format: 'webp',
+			tile_format: 'webp',
+			tiles: ['/tiles/hillshade/{z}/{x}/{y}'],
+			bounds: [-180, -85.051129, 180, 85.051129],
 			minzoom: 0,
 			maxzoom: 12,
 		},
@@ -37,11 +72,13 @@ async function waitForMapReady(page: Page) {
 }
 
 /**
- * Intercept maplibregl.Map to expose the instance on window.__mapInstance.
+ * Intercept maplibregl.Map to resolve window.__mapIdle on debounced idle.
  * Must be called before page.goto().
  */
-async function installMapHook(page: Page) {
+async function installMapIdleHook(page: Page) {
 	await page.addInitScript(() => {
+		let resolve: () => void;
+		(window as Record<string, unknown>).__mapIdle = new Promise<void>((r) => (resolve = r));
 		let _ml: unknown;
 		Object.defineProperty(window, 'maplibregl', {
 			configurable: true,
@@ -52,10 +89,14 @@ async function installMapHook(page: Page) {
 			set(val: Record<string, unknown>) {
 				_ml = val;
 				if (val?.Map) {
-					const OrigMap = val.Map as new (...args: unknown[]) => unknown;
+					const OrigMap = val.Map as new (...args: unknown[]) => Record<string, unknown>;
 					val.Map = function (...args: unknown[]) {
 						const instance = new OrigMap(...args);
-						(window as Record<string, unknown>).__mapInstance = instance;
+						let timer: ReturnType<typeof setTimeout>;
+						(instance.on as (event: string, fn: () => void) => void)('idle', () => {
+							clearTimeout(timer);
+							timer = setTimeout(() => resolve(), 500);
+						});
 						return instance;
 					};
 					(val.Map as Record<string, unknown>).prototype = OrigMap.prototype;
@@ -66,23 +107,11 @@ async function installMapHook(page: Page) {
 	});
 }
 
-/**
- * Navigate the map to a specific position and wait for rendering to complete.
- * Uses jumpTo + debounced idle event to ensure tiles are fully rendered.
- */
-async function navigateMapAndWait(page: Page, options: { center: [number, number]; zoom: number }) {
-	await page.evaluate(({ center, zoom }) => {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		const map = (window as any).__mapInstance;
-		return new Promise<void>((resolve) => {
-			let timer: ReturnType<typeof setTimeout>;
-			map.on('idle', () => {
-				clearTimeout(timer);
-				timer = setTimeout(resolve, 500);
-			});
-			map.jumpTo({ center, zoom });
-		});
-	}, options);
+/** Wait for map tiles to be fully rendered. */
+async function waitForMapRendered(page: Page) {
+	await waitForMapReady(page);
+	await page.waitForLoadState('networkidle');
+	await page.evaluate(() => (window as Record<string, unknown>).__mapIdle);
 }
 
 // --- Overview page tests ---
@@ -107,7 +136,7 @@ test.describe('overview page', () => {
 	test('boxes show metadata from mocked tiles.json', async ({ page, serverUrl }) => {
 		await page.goto(serverUrl);
 		await expect(page.locator('#list .box')).toHaveCount(2);
-		await expect(page.locator('#list .box h2').first()).toHaveText('OpenStreetMap');
+		await expect(page.locator('#list .box h2').first()).toHaveText('VersaTiles OSM');
 		await expect(page.locator('#list .box h2').nth(1)).toHaveText('Hillshade');
 	});
 
@@ -132,43 +161,39 @@ test.describe('overview page', () => {
 test.describe('preview page', () => {
 	test('title is "VersaTiles - Preview"', async ({ page, serverUrl }) => {
 		await mockBrowserRequests(page);
-		await page.goto(`${serverUrl}/preview.html?id=test`);
+		await page.goto(`${serverUrl}/preview.html?id=osm`);
 		await expect(page).toHaveTitle('VersaTiles - Preview');
 	});
 
 	test('#map with canvas', async ({ page, serverUrl }) => {
 		await mockBrowserRequests(page);
-		await page.goto(`${serverUrl}/preview.html?id=test`);
+		await page.goto(`${serverUrl}/preview.html?id=osm`);
 		await waitForMapReady(page);
 		const map = page.locator('#map');
 		await expect(map).toBeVisible();
 		await expect(map.locator('canvas')).toBeAttached();
 	});
 
-	test('styler and inspect controls present', async ({ page, serverUrl }) => {
+	test('inspect control present', async ({ page, serverUrl }) => {
 		await mockBrowserRequests(page);
-		await page.goto(`${serverUrl}/preview.html?id=test`);
+		await page.goto(`${serverUrl}/preview.html?id=osm`);
 		await waitForMapReady(page);
-		await expect(page.getByRole('button', { name: 'Toggle style editor' })).toBeAttached();
 		await expect(page.getByRole('button', { name: 'Toggle Inspect' })).toBeAttached();
 	});
 
 	test('logo is present', async ({ page, serverUrl }) => {
 		await mockBrowserRequests(page);
-		await page.goto(`${serverUrl}/preview.html?id=test`);
+		await page.goto(`${serverUrl}/preview.html?id=osm`);
 		const logo = page.locator('img[alt="VersaTiles"]');
 		await expect(logo).toBeVisible();
 	});
 
 	test('screenshot', async ({ page, serverUrl }) => {
 		await mockBrowserRequests(page);
-		await installMapHook(page);
+		await installMapIdleHook(page);
 		await page.setViewportSize({ width: 640, height: 480 });
 		await page.goto(`${serverUrl}/preview.html?id=osm`);
-		await waitForMapReady(page);
-		await page.waitForLoadState('networkidle');
-		await navigateMapAndWait(page, { center: [13.4, 52.474], zoom: 13 });
-		await page.waitForLoadState('networkidle');
+		await waitForMapRendered(page);
 		await expect(page).toHaveScreenshot();
 	});
 });
