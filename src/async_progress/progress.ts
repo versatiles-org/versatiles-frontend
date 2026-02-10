@@ -117,7 +117,7 @@ export class Progress {
 	 * Constructs a Progress instance, determining if ANSI colors are supported.
 	 */
 	public constructor() {
-		this.#useAnsi = Boolean(supportsColor.stdout);
+		this.#useAnsi = Boolean(supportsColor.stdout) && Boolean(process.stdout.isTTY);
 		if (env.NO_COLOR != null) this.#useAnsi = false;
 	}
 
