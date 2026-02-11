@@ -28,8 +28,15 @@ jobs:
           node-version: 22
           cache: npm
 
-      - name: Get version
-        run: 'echo "RELEASE_TAG=v$(jq -r ''.version'' package.json)" >> $GITHUB_ENV'
+      - name: Get version and verify tag
+        run: |
+          PKG_VERSION="v$(jq -r '.version' package.json)"
+          LATEST_TAG=$(git tag --list 'v*' --sort=-version:refname | head -n1)
+          if [ "$PKG_VERSION" != "$LATEST_TAG" ]; then
+            echo "::error::package.json version ($PKG_VERSION) does not match latest v* tag ($LATEST_TAG)"
+            exit 1
+          fi
+          echo "RELEASE_TAG=$PKG_VERSION" >> $GITHUB_ENV
 
       - name: Install dependencies
         run: npm ci
