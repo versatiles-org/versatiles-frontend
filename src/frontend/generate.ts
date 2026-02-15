@@ -1,8 +1,11 @@
+import { resolve } from 'path';
+import { writeFileSync } from 'fs';
 import { FileDBs } from '../files/filedbs';
 import type { FrontendConfig } from './frontend';
 import { Frontend } from './frontend';
 import { PromiseFunction, progress, type ProgressLabel } from '../async_progress';
 import { loadFrontendConfigs } from './load';
+import { generateOverview } from './overview';
 
 /**
  * Generates frontend bundles for deployment based on configurations.
@@ -17,13 +20,14 @@ import { loadFrontendConfigs } from './load';
 export function generateFrontends(fileDBs: FileDBs, dstFolder: string): PromiseFunction {
 	let s: ProgressLabel;
 	let parallel = PromiseFunction.parallel();
+	const frontends: Frontend[] = [];
 
 	return PromiseFunction.single(
 		async () => {
 			s = progress.add('generate frontends');
 			const configs = await loadFrontendConfigs();
 			const todos = configs.map(
-				(config: FrontendConfig): PromiseFunction => generateFrontend(config, fileDBs, dstFolder)
+				(config: FrontendConfig): PromiseFunction => generateFrontend(config, fileDBs, dstFolder, frontends)
 			);
 			parallel = PromiseFunction.parallel(...todos);
 			await parallel.init();
@@ -31,12 +35,18 @@ export function generateFrontends(fileDBs: FileDBs, dstFolder: string): PromiseF
 		async () => {
 			s.start();
 			await parallel.run();
+			writeFileSync(resolve(dstFolder, 'overview.md'), generateOverview(frontends));
 			s.end();
 		}
 	);
 }
 
-export function generateFrontend(config: FrontendConfig, fileDBs: FileDBs, dstFolder: string): PromiseFunction {
+export function generateFrontend(
+	config: FrontendConfig,
+	fileDBs: FileDBs,
+	dstFolder: string,
+	frontends: Frontend[]
+): PromiseFunction {
 	const { name } = config;
 	let s: ProgressLabel, sBr: ProgressLabel, sGz: ProgressLabel;
 
@@ -54,6 +64,7 @@ export function generateFrontend(config: FrontendConfig, fileDBs: FileDBs, dstFo
 			sGz.start();
 			// Create a new Frontend instance and generate the compressed tarballs.
 			const frontend = new Frontend(fileDBs, config);
+			frontends.push(frontend);
 			await Promise.all([
 				(async () => {
 					await frontend.saveAsBrTarGz(dstFolder);
