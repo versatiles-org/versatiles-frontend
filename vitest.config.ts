@@ -8,5 +8,9 @@ export default defineConfig({
 	test: {
 		environment: 'node',
 		exclude: ['e2e/**', 'node_modules/**'],
+		coverage: {
+			exclude: ['src/dev.ts'],
+			include: ['src/**'],
+		},
 	},
 });
