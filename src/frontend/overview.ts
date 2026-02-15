@@ -40,7 +40,7 @@ export function generateOverview(frontends: Frontend[]): string {
 
 	// Build header
 	const lines: string[] = [];
-	lines.push('# Asset Overview');
+	lines.push('## Asset Overview');
 	lines.push('');
 	lines.push('| Folder | ' + names.join(' | ') + ' |');
 	lines.push('|--------|' + names.map(() => '---:').join('|') + '|');

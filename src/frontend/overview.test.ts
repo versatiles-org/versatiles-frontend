@@ -40,7 +40,7 @@ describe('generateOverview', () => {
 
 		const result = generateOverview([f1, f2]);
 
-		expect(result).toContain('# Asset Overview');
+		expect(result).toContain('## Asset Overview');
 		expect(result).toContain('| Folder | frontend | frontend-min |');
 		// Root files
 		expect(result).toContain('| `/` | 0.0 MB | 0.0 MB |');
@@ -91,9 +91,10 @@ describe('generateOverview', () => {
 		expect(result).toContain('| `assets/glyphs/*` | 2.0 MB |');
 	});
 
-	it('uses right-aligned columns', () => {
+	it('uses right-aligned columns and ## heading', () => {
 		const f = mockFrontend('test', [{ name: 'a.txt', size: 1000000 }]);
 		const result = generateOverview([f]);
 		expect(result).toContain('|---:|');
+		expect(result).toContain('## Asset Overview');
 	});
 });
