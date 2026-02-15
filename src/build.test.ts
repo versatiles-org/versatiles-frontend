@@ -68,6 +68,7 @@ vi.mock('./utils/release_version', () => ({
 // Mock release_notes module
 const releaseNotesMock = {
 	add: vi.fn(),
+	append: vi.fn(),
 	setVersion: vi.fn(),
 	save: vi.fn(),
 	labelList: [],

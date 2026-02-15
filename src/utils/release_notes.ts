@@ -4,24 +4,14 @@ import { writeFileSync } from 'fs';
  * Represents a single label or component within the release notes, with an optional version.
  */
 class Label {
-	public name: string; // Name of the label or component.
+	public name: string;
 
-	public version = ''; // Version of the component, defaulting to an empty string.
+	public version = '';
 
-	/**
-	 * Constructs a Label instance.
-	 *
-	 * @param name - The name of the label or component.
-	 */
 	public constructor(name: string) {
 		this.name = name;
 	}
 
-	/**
-	 * Sets the version for the label or component.
-	 *
-	 * @param version - The version to be set.
-	 */
 	public setVersion(version: string): void {
 		this.version = version;
 	}
@@ -31,19 +21,13 @@ class Label {
  * Manages the creation and saving of release notes for a project.
  */
 export class ReleaseNotes {
-	private version = ''; // The version of the release.
+	private version = '';
 
-	private readonly labelList: Label[] = []; // List of all labels included in the release notes.
+	private suffix = '';
 
-	private readonly labelMap = new Map<string, Label>(); // Map for quick label lookup by name.
+	private readonly labelList: Label[] = [];
 
-	/**
-	 * Constructs a ReleaseNotes instance.
-	 */
-	public constructor() {
-		// Save the current cursor position in the terminal.
-		process.stderr.write('\u001b[s');
-	}
+	private readonly labelMap = new Map<string, Label>();
 
 	/**
 	 * Adds a new label to the release notes.
@@ -63,22 +47,24 @@ export class ReleaseNotes {
 
 	/**
 	 * Sets the version of the release.
-	 *
-	 * @param version - The version of the release to be set.
 	 */
 	public setVersion(version: string): void {
 		this.version = version;
 	}
 
 	/**
+	 * Appends additional content to the end of the release notes.
+	 */
+	public append(text: string): void {
+		this.suffix += text;
+	}
+
+	/**
 	 * Saves the release notes to a specified file.
-	 *
-	 * @param filename - The name of the file where the release notes should be saved.
 	 */
 	public save(filename: string): void {
 		if (!this.version) throw Error('No version specified for release');
 
-		// Compile the release notes content.
 		const notes = [
 			`## VersaTiles Frontend ${this.version}`,
 			'',
@@ -86,8 +72,7 @@ export class ReleaseNotes {
 			...this.labelList.map((l) => `- ${l.name}: ${l.version || '?.?.?'}`),
 		].join('\n');
 
-		// Write the compiled release notes to the specified file.
-		writeFileSync(filename, notes);
+		writeFileSync(filename, notes + this.suffix);
 	}
 }
 

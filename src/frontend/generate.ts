@@ -1,11 +1,10 @@
-import { resolve } from 'path';
-import { writeFileSync } from 'fs';
 import { FileDBs } from '../files/filedbs';
 import type { FrontendConfig } from './frontend';
 import { Frontend } from './frontend';
 import { PromiseFunction, progress, type ProgressLabel } from '../async_progress';
 import { loadFrontendConfigs } from './load';
 import { generateOverview } from './overview';
+import notes from '../utils/release_notes';
 
 /**
  * Generates frontend bundles for deployment based on configurations.
@@ -35,7 +34,7 @@ export function generateFrontends(fileDBs: FileDBs, dstFolder: string): PromiseF
 		async () => {
 			s.start();
 			await parallel.run();
-			writeFileSync(resolve(dstFolder, 'overview.md'), generateOverview(frontends));
+			notes.append('\n\n' + generateOverview(frontends));
 			s.end();
 		}
 	);
