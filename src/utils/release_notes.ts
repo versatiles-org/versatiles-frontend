@@ -66,9 +66,10 @@ export class ReleaseNotes {
 		if (!this.version) throw Error('No version specified for release');
 
 		const notes = [
-			`## VersaTiles Frontend ${this.version}`,
+			`# VersaTiles Frontend ${this.version}`,
 			'',
-			'contains:',
+			'## Components',
+			'',
 			...this.labelList.map((l) => `- ${l.name}: ${l.version || '?.?.?'}`),
 		].join('\n');
 

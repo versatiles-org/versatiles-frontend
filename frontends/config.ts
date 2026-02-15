@@ -11,7 +11,7 @@ export const sourceConfigs = {
 				rename: { 'fonts.json': 'index.json' },
 			},
 		],
-		notes: '[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)',
+		notes: '[VersaTiles Fonts](https://github.com/versatiles-org/versatiles-fonts)',
 	}),
 
 	'external-fonts-noto': githubSource('versatiles-org/versatiles-fonts', {
@@ -23,7 +23,7 @@ export const sourceConfigs = {
 				rename: { 'fonts.json': 'index.json' },
 			},
 		],
-		notes: '[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)',
+		notes: '[VersaTiles Fonts](https://github.com/versatiles-org/versatiles-fonts)',
 	}),
 
 	'external-styles': githubSource('versatiles-org/versatiles-style', {
@@ -45,7 +45,7 @@ export const sourceConfigs = {
 				dest: 'assets/sprites/',
 			},
 		],
-		notes: '[VersaTiles style](https://github.com/versatiles-org/versatiles-style)',
+		notes: '[VersaTiles Style](https://github.com/versatiles-org/versatiles-style)',
 	}),
 
 	'external-maplibre': npmSource('maplibre-gl', {

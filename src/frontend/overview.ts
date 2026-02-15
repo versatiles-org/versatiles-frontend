@@ -71,9 +71,9 @@ export function generateOverview(frontends: Frontend[]): string {
 function mapFolder(folder: string): string {
 	if (folder.startsWith('assets/glyphs/')) {
 		if (folder.startsWith('assets/glyphs/noto_sans_')) {
-			return 'assets/glyphs/noto_sans_*';
+			return 'assets/glyphs/noto_sans_*/';
 		}
-		return 'assets/glyphs/*';
+		return 'assets/glyphs/other/';
 	}
 	if (folder.startsWith('assets/styles/')) {
 		return 'assets/styles/*';

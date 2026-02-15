@@ -43,7 +43,7 @@ describe('ReleaseNotes', () => {
 		releaseNotes.save(testFilename);
 
 		const content = readFileSync(testFilename, 'utf-8');
-		expect(content).toContain('## VersaTiles Frontend 3.5.1');
+		expect(content).toContain('# VersaTiles Frontend 3.5.1');
 	});
 
 	it('should save release notes with all labels', () => {
@@ -55,8 +55,8 @@ describe('ReleaseNotes', () => {
 		releaseNotes.save(testFilename);
 
 		const content = readFileSync(testFilename, 'utf-8');
-		expect(content).toContain('## VersaTiles Frontend 3.5.1');
-		expect(content).toContain('contains:');
+		expect(content).toContain('# VersaTiles Frontend 3.5.1');
+		expect(content).toContain('## Components');
 		expect(content).toContain('- MapLibre GL: 5.0.0');
 		expect(content).toContain('- VersaTiles Style: 2.1.0');
 		expect(content).toContain('- VersaTiles Fonts: 1.5.0');
