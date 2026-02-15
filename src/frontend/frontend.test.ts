@@ -23,6 +23,7 @@ vi.mock('fs', async (originalImport) => {
 	return {
 		createReadStream: vi.fn(),
 		createWriteStream,
+		writeFileSync: vi.fn(),
 		mkdirSync: vi.fn(),
 		existsSync: vi.fn(),
 		rmSync: vi.fn(),
