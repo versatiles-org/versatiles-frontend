@@ -5,6 +5,31 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.7.0] - 2026-02-16
+
+### Features
+
+- add overview generation for frontend assets and update bundling process
+- add coverage configuration to Vitest setup
+- add append method to ReleaseNotes and update generateFrontend to use it
+- update asset overview header to use ## for consistency
+- add external SVG renderer configuration and update dependencies
+
+### Bug Fixes
+
+- update markdown headings in release notes and overview generation for consistency
+- update external SVG renderer configuration for correct file inclusion and renaming
+
+### Tests
+
+- add unit tests for formatSize and generateOverview functions
+- improve Bundles and PrefixedBundles classes for better file handling and verification
+
+### Chores
+
+- update badge formatting in README.md for consistency
+- update dotenv and maplibre-versatiles-styler dependencies to latest versions
+
 ## [3.6.1] - 2026-02-11
 
 ### CI/CD
