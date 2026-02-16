@@ -1,48 +1,5 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import { listTarGzFiles } from './utils';
-
-interface Bundle {
-	name: string;
-	files: string[];
-}
-
-class Bundles {
-	private bundles: Bundle[];
-	constructor(bundles: Bundle[]) {
-		this.bundles = bundles;
-	}
-	expectEmptyPrefix(prefix: string) {
-		const result = this.bundles.flatMap(({ name, files }) =>
-			files.filter((f) => f.startsWith(prefix)).map((f) => `${name}: ${f}`)
-		);
-		expect(result).toStrictEqual([]);
-	}
-	expectFile(file: string) {
-		const missing: string[] = [];
-		for (const bundle of this.bundles) {
-			let found = false;
-			bundle.files = bundle.files.filter((f) => {
-				if (f === file) {
-					found = true;
-					return false;
-				}
-				return true;
-			});
-			if (!found) missing.push(bundle.name);
-		}
-		expect(missing, `file "${file}" missing in bundles`).toStrictEqual([]);
-	}
-	countRegex(regex: RegExp): Record<string, number> {
-		const results: Record<string, number> = {};
-		for (const bundle of this.bundles) {
-			let count = bundle.files.length;
-			bundle.files = bundle.files.filter((f) => !regex.test(f));
-			count -= bundle.files.length;
-			results[bundle.name] = count;
-		}
-		return results;
-	}
-}
+import { Bundles, listTarGzFiles } from './utils';
 
 const bundles = new Bundles(
 	await Promise.all(
@@ -55,105 +12,133 @@ const bundles = new Bundles(
 
 describe('Bundle contents', () => {
 	it('contains glyphs', () => {
-		bundles.expectFile('assets/glyphs/font_families.json');
+		const path = bundles.withPrefix('assets/glyphs/');
+		expect(path.file('font_families.json')).toBeTruthy();
+		expect(path.file('index.json')).toBeTruthy();
 
-		bundles.expectFile('assets/glyphs/index.json');
+		expect(path.count(/^noto_sans_regular\/\d+-\d+\.pbf$/)).toBe(451);
+		expect(path.sizes(/^noto_sans_regular\/\d+-\d+\.pbf$/)).toBeGreaterThan(38e6);
 
-		expect(bundles.countRegex(/^assets\/glyphs\/noto_sans_bold\/\d+-\d+\.pbf$/)).toStrictEqual({
-			'frontend-dev.tar.gz': 451,
-			'frontend-min.tar.gz': 451,
-			'frontend.tar.gz': 451,
-		});
+		expect(path.count(/^noto_sans_bold\/\d+-\d+\.pbf$/)).toBe(451);
+		expect(path.sizes(/^noto_sans_bold\/\d+-\d+\.pbf$/)).toBeGreaterThan(40e6);
 
-		expect(bundles.countRegex(/^assets\/glyphs\/noto_sans_regular\/\d+-\d+\.pbf$/)).toStrictEqual({
-			'frontend-dev.tar.gz': 451,
-			'frontend-min.tar.gz': 451,
-			'frontend.tar.gz': 451,
-		});
-
-		expect(bundles.countRegex(/^assets\/glyphs\/[a-z0-9_]+\/\d+-\d+\.pbf$/)).toStrictEqual({
+		expect(path.count(/^[a-z0-9_]+\/\d+-\d+\.pbf$/)).toStrictEqual({
 			'frontend-dev.tar.gz': 47440,
 			'frontend-min.tar.gz': 0,
 			'frontend.tar.gz': 47440,
 		});
 
-		bundles.expectEmptyPrefix('assets/glyphs/'); // no other files in glyphs/
+		expect(path.rest()).toStrictEqual({}); // no other files in glyphs/
 	});
 
 	it('contains logo', () => {
-		bundles.expectFile('assets/images/versatiles-logo.png');
+		const path = bundles.withPrefix('assets/images/');
+		expect(path.file('versatiles-logo.png')).toBeTruthy();
+		expect(path.rest()).toStrictEqual({}); // no other files in images/
 	});
 
 	describe('libraries', () => {
 		it('contains maplibre-gl', () => {
-			bundles.expectFile('assets/lib/maplibre-gl/maplibre-gl.css');
-			bundles.expectFile('assets/lib/maplibre-gl/maplibre-gl.js');
-			expect(bundles.countRegex(/^assets\/lib\/maplibre-gl\//)).toStrictEqual({
-				'frontend-dev.tar.gz': 11,
-				'frontend-min.tar.gz': 0,
-				'frontend.tar.gz': 11,
-			});
+			const path = bundles.withPrefix('assets/lib/maplibre-gl/');
+			expect(path.file('maplibre-gl.css')).toBeTruthy();
+			expect(path.count(/^maplibre-gl-csp-dev\.js(\.map)?$/)).toBe(2);
+			expect(path.count(/^maplibre-gl-csp-worker-dev\.js(\.map)?$/)).toBe(2);
+			expect(path.count(/^maplibre-gl-csp-worker\.js(\.map)?$/)).toBe(2);
+			expect(path.count(/^maplibre-gl-csp\.js(\.map)?$/)).toBe(2);
+			expect(path.count(/^maplibre-gl-dev\.js(\.map)?$/)).toBe(2);
+			expect(path.count(/^maplibre-gl\.js(\.map)?$/)).toBe(2);
+			expect(path.rest()).toStrictEqual({});
 		});
 
 		it('contains maplibre-gl-inspect', () => {
-			expect(bundles.countRegex(/^assets\/lib\/maplibre-gl-inspect\//)).toStrictEqual({
-				'frontend-dev.tar.gz': 4,
-				'frontend-min.tar.gz': 2,
-				'frontend.tar.gz': 4,
-			});
-			bundles.expectEmptyPrefix('assets/lib/maplibre-gl-inspect/');
+			const path = bundles.withPrefix('assets/lib/maplibre-gl-inspect/');
+			expect(path.file('maplibre-gl-inspect.css')).toBeTruthy();
+			expect(path.file('maplibre-gl-inspect.js.map')).toBeTruthy();
+			expect(path.file('maplibre-gl-inspect.js')).toBeTruthy();
+			expect(path.file('maplibre-gl-inspect.mjs.map')).toBeTruthy();
+			expect(path.rest()).toStrictEqual({});
 		});
 
 		it('contains maplibre-versatiles-styler', () => {
-			bundles.expectFile('assets/lib/maplibre-versatiles-styler/maplibre-versatiles-styler.js');
-			expect(
-				bundles.countRegex(/^assets\/lib\/maplibre-versatiles-styler\/maplibre-versatiles-styler\./)
-			).toStrictEqual({
-				'frontend-dev.tar.gz': 2,
-				'frontend-min.tar.gz': 0,
-				'frontend.tar.gz': 2,
-			});
-			bundles.expectEmptyPrefix('assets/lib/maplibre-versatiles-styler/');
+			const path = bundles.withPrefix('assets/lib/maplibre-versatiles-styler/');
+			expect(path.file('maplibre-versatiles-styler.d.ts')).toBeTruthy();
+			expect(path.file('maplibre-versatiles-styler.js.map')).toBeTruthy();
+			expect(path.file('maplibre-versatiles-styler.js')).toBeTruthy();
+			expect(path.rest()).toStrictEqual({});
+		});
+
+		it('contains versatiles-svg-renderer', () => {
+			const path = bundles.withPrefix('assets/lib/versatiles-svg-renderer/');
+			expect(path.file('versatiles-svg-renderer.js')).toBeTruthy();
+			expect(path.file('versatiles-svg-renderer.js.map')).toBeTruthy();
+			expect(path.rest()).toStrictEqual({});
 		});
 
 		it('contains mapbox-gl-rtl-text', () => {
-			bundles.expectFile('assets/lib/mapbox-gl-rtl-text/mapbox-gl-rtl-text.js');
+			const path = bundles.withPrefix('assets/lib/mapbox-gl-rtl-text/');
+			expect(path.file('mapbox-gl-rtl-text.js')).toBeTruthy();
+			expect(path.rest()).toStrictEqual({});
 		});
 
 		it('contains versatiles-style', () => {
-			bundles.expectFile('assets/lib/versatiles-style/versatiles-style.js');
-			expect(bundles.countRegex(/^assets\/lib\/versatiles-style\//)).toStrictEqual({
-				'frontend-dev.tar.gz': 2,
-				'frontend-min.tar.gz': 0,
-				'frontend.tar.gz': 2,
-			});
+			const path = bundles.withPrefix('assets/lib/versatiles-style/');
+			expect(path.file('versatiles-style.d.ts')).toBeTruthy();
+			expect(path.file('versatiles-style.js.map')).toBeTruthy();
+			expect(path.file('versatiles-style.js')).toBeTruthy();
+			expect(path.rest()).toStrictEqual({});
 		});
 
 		afterAll(() => {
-			bundles.expectEmptyPrefix('assets/lib/'); // no other files in lib/
+			expect(bundles.withPrefix('assets/lib/').rest()).toStrictEqual({}); // no other files in lib/
 		});
 	});
 
 	it('contains sprites', () => {
-		bundles.expectFile('assets/sprites/index.json');
-		expect(bundles.countRegex(/^assets\/sprites\/basics\/sprites.*\.(json|png)$/)).toStrictEqual({
-			'frontend-dev.tar.gz': 8,
-			'frontend-min.tar.gz': 4,
-			'frontend.tar.gz': 8,
+		const path = bundles.withPrefix('assets/sprites/');
+		expect(path.file('index.json')).toBeTruthy();
+
+		expect(path.count(/^basics\/sprites\.(json|png)$/)).toBe(2);
+		expect(path.count(/^basics\/sprites@2x\.(json|png)$/)).toBe(2);
+		expect(path.count(/^basics\/sprites.*\.(json|png)$/)).toStrictEqual({
+			'frontend-dev.tar.gz': 4,
+			'frontend-min.tar.gz': 0,
+			'frontend.tar.gz': 4,
 		});
+		expect(path.sizes(/^basics\/sprites/)).toStrictEqual({
+			'frontend-dev.tar.gz': 1100744,
+			'frontend-min.tar.gz': 297444,
+			'frontend.tar.gz': 1100744,
+		});
+
+		expect(path.count(/^markers\/sprites\.(json|png)$/)).toBe(2);
+		expect(path.count(/^markers\/sprites@2x\.(json|png)$/)).toBe(2);
+		expect(path.count(/^markers\/sprites.*\.(json|png)$/)).toStrictEqual({
+			'frontend-dev.tar.gz': 4,
+			'frontend-min.tar.gz': 0,
+			'frontend.tar.gz': 4,
+		});
+		expect(path.sizes(/^markers\/sprites/)).toStrictEqual({
+			'frontend-dev.tar.gz': 315407,
+			'frontend-min.tar.gz': 84337,
+			'frontend.tar.gz': 315407,
+		});
+
+		expect(path.rest()).toStrictEqual({});
 	});
 
 	it('contains styles', () => {
-		expect(bundles.countRegex(/^assets\/styles\/.*\/.*\.json$/)).toStrictEqual({
+		const path = bundles.withPrefix('assets/styles/');
+		expect(path.count(/^.*\/.*\.json$/)).toStrictEqual({
 			'frontend-dev.tar.gz': 25,
 			'frontend-min.tar.gz': 0,
 			'frontend.tar.gz': 25,
 		});
+		expect(path.rest()).toStrictEqual({});
 	});
 
 	describe('basic html files', () => {
 		it('contains preview.html', () => {
-			expect(bundles.countRegex(/^preview\.html$/)).toStrictEqual({
+			expect(bundles.withPrefix('').count(/^preview\.html$/)).toStrictEqual({
 				'frontend-dev.tar.gz': 1,
 				'frontend-min.tar.gz': 0,
 				'frontend.tar.gz': 0,
@@ -161,25 +146,25 @@ describe('Bundle contents', () => {
 		});
 
 		it('contains index.html', () => {
-			bundles.expectFile('index.html');
+			expect(bundles.withPrefix('').file('index.html')).toBeTruthy();
 		});
 
 		it('contains robots.txt', () => {
-			bundles.expectFile('robots.txt');
+			expect(bundles.withPrefix('').file('robots.txt')).toBeTruthy();
 		});
 	});
 
 	afterAll(() => {
-		bundles.expectEmptyPrefix('');
+		bundles.expectEmpty();
 	});
 });
 
 describe('brotli bundles match regular bundles', () => {
 	for (const name of ['frontend', 'frontend-dev', 'frontend-min']) {
 		it(`${name}.br.tar.gz matches ${name}.tar.gz`, async () => {
-			const regular = await listTarGzFiles(`${name}.tar.gz`);
-			const brotli = await listTarGzFiles(`${name}.br.tar.gz`);
-			expect(brotli).toStrictEqual(regular.map((f) => f + '.br'));
+			const regular = (await listTarGzFiles(`${name}.tar.gz`)).map((f) => f.name).sort();
+			const brotli = (await listTarGzFiles(`${name}.br.tar.gz`)).map((f) => f.name.slice(0, -3)).sort();
+			expect(brotli).toStrictEqual(regular);
 		});
 	}
 });
