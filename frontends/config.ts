@@ -74,11 +74,11 @@ export const sourceConfigs = {
 	}),
 
 	'external-versatiles-svg-renderer': npmSource('@versatiles/svg-renderer', {
-		include: /dist\/maplibre\.(umd\.cjs|d\.ts)(\.map)?$/,
+		include: /dist\/maplibre\.umd\.js(\.map)?$/,
 		flatten: true,
 		rename: {
-			'maplibre.umd.cjs': 'versatiles-svg-renderer.js',
-			'maplibre.umd.cjs.map': 'versatiles-svg-renderer.js.map',
+			'maplibre.umd.js': 'versatiles-svg-renderer.js',
+			'maplibre.umd.js.map': 'versatiles-svg-renderer.js.map',
 		},
 		dest: 'assets/lib/versatiles-svg-renderer/',
 		notes: '[VersaTiles SVG Renderer](https://github.com/versatiles-org/versatiles-svg-renderer)',
@@ -139,16 +139,6 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-versatiles-svg-renderer',
 			'external-mapbox-rtl-text',
 		],
-		ignore: [
-			'*.d.ts',
-			'*.map',
-			'*@3x.json',
-			'*@3x.png',
-			'*@4x.json',
-			'*@4x.png',
-			'assets/lib/maplibre-gl/maplibre-gl-csp*',
-			'assets/lib/maplibre-gl/maplibre-gl-dev*',
-			'assets/styles/',
-		],
+		ignore: ['*@3x.json', '*@3x.png', '*@4x.json', '*@4x.png', 'assets/styles/'],
 	},
 ];
