@@ -73,6 +73,17 @@ export const sourceConfigs = {
 		notes: '[MapLibre VersaTiles Styler](https://github.com/versatiles-org/maplibre-versatiles-styler)',
 	}),
 
+	'external-versatiles-svg-renderer': npmSource('@versatiles/svg-renderer', {
+		include: /dist\/maplibre\.(umd\.cjs|d\.ts)(\.map)?$/,
+		flatten: true,
+		rename: {
+			'maplibre.umd.cjs': 'versatiles-svg-renderer.js',
+			'maplibre.umd.cjs.map': 'versatiles-svg-renderer.js.map',
+		},
+		dest: 'assets/lib/versatiles-svg-renderer/',
+		notes: '[VersaTiles SVG Renderer](https://github.com/versatiles-org/versatiles-svg-renderer)',
+	}),
+
 	'external-mapbox-rtl-text': npmSource('@mapbox/mapbox-gl-rtl-text', {
 		include: /dist\/.*\.(js|css|map)$/,
 		flatten: true,
@@ -97,6 +108,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-maplibre',
 			'external-maplibre-inspect',
 			'external-maplibre-versatiles-styler',
+			'external-versatiles-svg-renderer',
 			'external-mapbox-rtl-text',
 		],
 	},
@@ -110,6 +122,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-maplibre',
 			'external-maplibre-inspect',
 			'external-maplibre-versatiles-styler',
+			'external-versatiles-svg-renderer',
 			'external-mapbox-rtl-text',
 		],
 	},
@@ -123,6 +136,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-maplibre',
 			'external-maplibre-inspect',
 			'external-maplibre-versatiles-styler',
+			'external-versatiles-svg-renderer',
 			'external-mapbox-rtl-text',
 		],
 		ignore: [
