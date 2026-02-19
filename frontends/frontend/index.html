@@ -11,6 +11,8 @@
 
 		<script src="/assets/lib/maplibre-versatiles-styler/maplibre-versatiles-styler.js"></script>
 
+		<script src="/assets/lib/versatiles-svg-renderer/versatiles-svg-renderer.js"></script>
+
 		<script src="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.js"></script>
 		<link href="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet" />
 	</head>
@@ -64,6 +66,7 @@
 			);
 
 			map.addControl(new VersaTilesStylerControl({ open: true }), 'top-left');
+			map.addControl(new VersaTilesSVG.SVGExportControl(), 'top-right');
 
 			// collapse attribution control
 			document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');

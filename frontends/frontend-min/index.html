@@ -10,6 +10,8 @@
 		<link href="/assets/lib/maplibre-gl/maplibre-gl.css" rel="stylesheet" />
 
 		<script src="/assets/lib/maplibre-versatiles-styler/maplibre-versatiles-styler.js"></script>
+
+		<script src="/assets/lib/versatiles-svg-renderer/versatiles-svg-renderer.js"></script>
 	</head>
 
 	<body style="margin: 0; height: 100%">
@@ -31,6 +33,7 @@
 
 			map.addControl(new maplibregl.NavigationControl(), 'top-right');
 			map.addControl(new VersaTilesStylerControl({ open: true }), 'top-left');
+			map.addControl(new VersaTilesSVG.SVGExportControl(), 'top-right');
 
 			// collapse attribution control
 			document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');
