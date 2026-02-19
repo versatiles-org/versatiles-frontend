@@ -87,8 +87,8 @@ describe('generateOverview', () => {
 		// noto_sans_* grouped together
 		expect(result).toContain('`assets/glyphs/noto_sans_*/`');
 		expect(result).toContain('| `assets/glyphs/noto_sans_*/` | 8.0 MB |');
-		// other glyphs grouped under assets/glyphs/other/
-		expect(result).toContain('| `assets/glyphs/other/` | 2.0 MB |');
+		// other glyphs grouped under assets/glyphs/*/
+		expect(result).toContain('| `assets/glyphs/*/` | 2.0 MB |');
 	});
 
 	it('uses right-aligned columns and ## heading', () => {
