@@ -35,7 +35,7 @@ jobs:
         run: npm ci
 
       - name: Check vulnerabilities
-        run: npm audit --audit-level=high
+        run: npm audit --omit=dev
 
       - name: Check formatting
         run: npm run format:check
