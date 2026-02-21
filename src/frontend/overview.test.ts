@@ -16,7 +16,7 @@ function mockFrontend(name: string, files: { name: string; size: number }[]): Fr
 describe('formatSize', () => {
 	it('formats small values', () => {
 		expect(formatSize(0)).toBe('0.0 MB');
-		expect(formatSize(999)).toBe('0.0 MB');
+		expect(formatSize(999)).toBe('<0.1 MB');
 	});
 
 	it('formats megabytes', () => {
@@ -43,7 +43,7 @@ describe('generateOverview', () => {
 		expect(result).toContain('## Asset Overview');
 		expect(result).toContain('| Folder | frontend | frontend-min |');
 		// Root files
-		expect(result).toContain('| `/` | 0.0 MB | 0.0 MB |');
+		expect(result).toContain('| `/` | <0.1 MB | <0.1 MB |');
 		// assets/styles/* only in f1 (mapped via mapFolder)
 		expect(result).toContain('| `assets/styles/*` | 2.5 MB | - |');
 		// assets/lib/maplibre-gl/ only in f2

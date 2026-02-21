@@ -4,7 +4,11 @@ import type { Frontend } from './frontend';
  * Formats a byte count as a human-readable string.
  */
 export function formatSize(bytes: number): string {
-	return (bytes / 1000000).toFixed(1) + ' MB';
+	let value = (bytes / 1000000).toFixed(1);
+	if (value === '0.0') {
+		value = bytes === 0 ? '0.0' : '<0.1';
+	}
+	return value + ' MB';
 }
 
 /**
