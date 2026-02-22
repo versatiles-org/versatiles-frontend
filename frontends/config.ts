@@ -146,10 +146,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-fonts-noto',
 			'external-styles',
 			'external-maplibre',
-			'external-maplibre-inspect',
 			'external-maplibre-versatiles-styler',
-			'external-versatiles-svg-renderer',
-			'external-mapbox-rtl-text',
 		],
 		ignore: [
 			'*.js.map',
@@ -158,13 +155,13 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'*@4x.json',
 			'*@4x.png',
 			'assets/styles/',
-			'maplibre-gl-csp.*',
-			'maplibre-gl-dev.*',
+			'maplibre-gl-csp*',
+			'maplibre-gl-dev*',
 		],
 		filter: (filename: string): boolean => {
 			const match = filename.match(/^assets\/glyphs\/[^/]+\/(\d+)-\d+\.pbf/);
 			if (!match) return true;
-			return parseInt(match[1], 10) < 4096;
+			return parseInt(match[1], 10) < 1024;
 		},
 	},
 ];

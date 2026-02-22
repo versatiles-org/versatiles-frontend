@@ -36,26 +36,26 @@ describe('Bundle contents', () => {
 			frontend: 405,
 			'frontend-dev': 405,
 			'frontend-min': 405,
-			'frontend-tiny': 15,
+			'frontend-tiny': 4,
 		});
 		expectMinSizes(path.sizes(/^noto_sans_regular\/\d+-\d+\.pbf$/), {
 			frontend: 38e6,
 			'frontend-dev': 38e6,
 			'frontend-min': 38e6,
-			'frontend-tiny': 1e6,
+			'frontend-tiny': 400e3,
 		});
 
 		expect(path.count(/^noto_sans_bold\/\d+-\d+\.pbf$/)).toStrictEqual({
 			frontend: 405,
 			'frontend-dev': 405,
 			'frontend-min': 405,
-			'frontend-tiny': 15,
+			'frontend-tiny': 4,
 		});
 		expectMinSizes(path.sizes(/^noto_sans_bold\/\d+-\d+\.pbf$/), {
 			frontend: 40e6,
 			'frontend-dev': 40e6,
 			'frontend-min': 40e6,
-			'frontend-tiny': 1e6,
+			'frontend-tiny': 400e3,
 		});
 
 		expect(path.count(/^[a-z0-9_]+\/\d+-\d+\.pbf$/)).toStrictEqual({
