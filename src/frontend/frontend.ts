@@ -38,13 +38,21 @@ export class Frontend {
 		this.fileDBs = fileDBs;
 		this.config = config;
 
-		// Add ignore patterns if provided.
-		const ig = ignore();
-		if (config.ignore) ig.add(config.ignore);
-		const ignoreCheck = ig.createFilter();
-		this.ignoreFilter = config.filter
-			? (pathname: string) => ignoreCheck(pathname) && config.filter!(pathname)
-			: ignoreCheck;
+		this.ignoreFilter = this.buildFilter(config);
+	}
+
+	private buildFilter(config: FrontendConfig): (pathname: string) => boolean {
+		const filters: ((pathname: string) => boolean)[] = [];
+
+		if (config.ignore) {
+			const ig = ignore();
+			ig.add(config.ignore);
+			filters.push(ig.createFilter());
+		}
+
+		if (config.filter) filters.push(config.filter);
+
+		return (pathname: string) => filters.every((f) => f(pathname));
 	}
 
 	/**
