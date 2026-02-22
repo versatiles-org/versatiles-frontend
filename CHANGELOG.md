@@ -5,6 +5,52 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.9.0] - 2026-02-22
+
+### Features
+
+- add descriptions to frontend configurations and update generation notes
+- update bundle names to use frontend configurations dynamically
+- update frontend-tiny configuration and add tests
+- implement file caching for tile proxy requests
+- integrate SCREENSHOT_LOCATION into frontend tests and use it for all screenshots
+
+### Bug Fixes
+
+- update npm audit command to omit dev dependencies
+- update glyphs folder grouping in overview generation
+- update formatSize function to handle zero and small values correctly
+- update generateOverview to include compressed archive sizes when dstFolder is provided
+- remove frontend-min configuration and associated HTML file
+- remove rename configuration for fonts.json in sourceConfigs
+- add filter functionality to FrontendConfig and update ignoreFilter logic
+- add frontend-tiny configuration and update related tests
+- refactor ignoreFilter initialization to use buildFilter method
+- enhance file verification and counting in Bundles and PrefixedBundles classes
+- refactor bundle tests to improve structure and assertions
+- refactor size assertions in bundle tests to use expectMinSizes function
+- refactor maplibre-gl tests to improve file assertions and structure
+- make frontend-tiny even smaller
+- remove external-maplibre-versatiles-styler from frontendConfigs
+- remove ignored patterns from frontendConfigs
+- add frontend-min assertions for sprite counts and sizes
+- update lint script to include TypeScript check and add exclude pattern in tsconfig
+- make notes optional in ExternalSourceConfig and wrap notes handling in a conditional
+- add external-sprites and external-versatiles-style to sourceConfigs and frontendConfigs
+- update generateOverview to return ASCII table, and print file sizes in KB
+- replace notes with source object in external source configurations
+- update release notes format to include version in labels
+- update bundle contents tests to reflect absence of styles and remove external-styles configuration
+- update type casting for __mapIdle in frontend tests feat: add tsconfig.json for TypeScript configuration in Playwright tests
+
+### Documentation
+
+- update frontend descriptions in README and clarify available options
+
+### Chores
+
+- update dependencies in package.json
+
 ## [3.8.0] - 2026-02-19
 
 ### Features
