@@ -18,20 +18,21 @@ describe('ReleaseNotes', () => {
 	});
 
 	it('should add a label', () => {
-		const label = releaseNotes.add('MapLibre GL');
+		const label = releaseNotes.add({ name: 'MapLibre GL', url: 'https://maplibre.org' });
 		expect(label).toBeDefined();
 		expect(label.name).toBe('MapLibre GL');
+		expect(label.url).toBe('https://maplibre.org');
 		expect(label.version).toBe('');
 	});
 
 	it('should return existing label if added again', () => {
-		const label1 = releaseNotes.add('MapLibre GL');
-		const label2 = releaseNotes.add('MapLibre GL');
+		const label1 = releaseNotes.add({ name: 'MapLibre GL', url: 'https://maplibre.org' });
+		const label2 = releaseNotes.add({ name: 'MapLibre GL', url: 'https://maplibre.org' });
 		expect(label1).toBe(label2);
 	});
 
 	it('should set version for a label', () => {
-		const label = releaseNotes.add('MapLibre GL');
+		const label = releaseNotes.add({ name: 'MapLibre GL', url: 'https://maplibre.org' });
 		label.setVersion('5.0.0');
 		expect(label.version).toBe('5.0.0');
 	});
@@ -39,7 +40,7 @@ describe('ReleaseNotes', () => {
 	it('should set release version', () => {
 		releaseNotes.setVersion('3.5.1');
 		// Since version is private, we test it via save()
-		releaseNotes.add('Test Component').setVersion('1.0.0');
+		releaseNotes.add({ name: 'Test Component', url: 'https://example.com' }).setVersion('1.0.0');
 		releaseNotes.save(testFilename);
 
 		const content = readFileSync(testFilename, 'utf-8');
@@ -48,34 +49,38 @@ describe('ReleaseNotes', () => {
 
 	it('should save release notes with all labels', () => {
 		releaseNotes.setVersion('3.5.1');
-		releaseNotes.add('MapLibre GL').setVersion('5.0.0');
-		releaseNotes.add('VersaTiles Style').setVersion('2.1.0');
-		releaseNotes.add('VersaTiles Fonts').setVersion('1.5.0');
+		releaseNotes.add({ name: 'MapLibre GL', url: 'https://maplibre.org' }).setVersion('5.0.0');
+		releaseNotes
+			.add({ name: 'VersaTiles Style', url: 'https://github.com/versatiles-org/versatiles-style' })
+			.setVersion('2.1.0');
+		releaseNotes
+			.add({ name: 'VersaTiles Fonts', url: 'https://github.com/versatiles-org/versatiles-fonts' })
+			.setVersion('1.5.0');
 
 		releaseNotes.save(testFilename);
 
 		const content = readFileSync(testFilename, 'utf-8');
 		expect(content).toContain('# VersaTiles Frontend 3.5.1');
 		expect(content).toContain('## Components');
-		expect(content).toContain('- MapLibre GL: 5.0.0');
-		expect(content).toContain('- VersaTiles Style: 2.1.0');
-		expect(content).toContain('- VersaTiles Fonts: 1.5.0');
+		expect(content).toContain('- [MapLibre GL](https://maplibre.org): 5.0.0');
+		expect(content).toContain('- [VersaTiles Style](https://github.com/versatiles-org/versatiles-style): 2.1.0');
+		expect(content).toContain('- [VersaTiles Fonts](https://github.com/versatiles-org/versatiles-fonts): 1.5.0');
 	});
 
 	it('should use ?.?.? for labels without version', () => {
 		releaseNotes.setVersion('3.5.1');
-		releaseNotes.add('Component Without Version');
-		releaseNotes.add('Component With Version').setVersion('1.2.3');
+		releaseNotes.add({ name: 'Component Without Version', url: 'https://example.com/no-version' });
+		releaseNotes.add({ name: 'Component With Version', url: 'https://example.com/with-version' }).setVersion('1.2.3');
 
 		releaseNotes.save(testFilename);
 
 		const content = readFileSync(testFilename, 'utf-8');
-		expect(content).toContain('- Component Without Version: ?.?.?');
-		expect(content).toContain('- Component With Version: 1.2.3');
+		expect(content).toContain('- [Component Without Version](https://example.com/no-version): ?.?.?');
+		expect(content).toContain('- [Component With Version](https://example.com/with-version): 1.2.3');
 	});
 
 	it('should throw error when saving without setting version', () => {
-		releaseNotes.add('Some Component').setVersion('1.0.0');
+		releaseNotes.add({ name: 'Some Component', url: 'https://example.com' }).setVersion('1.0.0');
 
 		expect(() => {
 			releaseNotes.save(testFilename);

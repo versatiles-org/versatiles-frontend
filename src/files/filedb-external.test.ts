@@ -129,7 +129,7 @@ const fontsAllConfig: ExternalSourceConfig = {
 			rename: { 'fonts.json': 'index.json' },
 		},
 	],
-	notes: '[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)',
+	source: { name: 'VersaTiles Fonts', url: 'https://github.com/versatiles-org/versatiles-fonts' },
 };
 
 const fontsNotoConfig: ExternalSourceConfig = {
@@ -143,7 +143,7 @@ const fontsNotoConfig: ExternalSourceConfig = {
 			rename: { 'fonts.json': 'index.json' },
 		},
 	],
-	notes: '[VersaTiles fonts](https://github.com/versatiles-org/versatiles-fonts)',
+	source: { name: 'VersaTiles Fonts', url: 'https://github.com/versatiles-org/versatiles-fonts' },
 };
 
 const stylesConfig: ExternalSourceConfig = {
@@ -166,7 +166,7 @@ const stylesConfig: ExternalSourceConfig = {
 			dest: 'assets/sprites/',
 		},
 	],
-	notes: '[VersaTiles style](https://github.com/versatiles-org/versatiles-style)',
+	source: { name: 'VersaTiles Style', url: 'https://github.com/versatiles-org/versatiles-style' },
 };
 
 describe('getAssets', () => {

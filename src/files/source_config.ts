@@ -1,3 +1,8 @@
+export interface SourceInfo {
+	name: string;
+	url: string;
+}
+
 export interface AssetConfig {
 	url: string;
 	format: 'tar.gz' | 'zip';
@@ -17,7 +22,7 @@ export interface ExternalSourceConfig {
 	type: 'external';
 	version: GithubVersionConfig;
 	assets: AssetConfig[];
-	notes?: string;
+	source?: SourceInfo;
 }
 
 export interface NpmSourceConfig {
@@ -27,7 +32,7 @@ export interface NpmSourceConfig {
 	flatten?: boolean;
 	rename?: Record<string, string>;
 	dest: string;
-	notes: string;
+	source: SourceInfo;
 }
 
 export interface StaticSourceConfig {
@@ -41,7 +46,7 @@ interface GithubSourceOptions {
 	prerelease?: boolean;
 	pin?: string;
 	assets: AssetConfig[];
-	notes?: string;
+	source?: SourceInfo;
 }
 
 export function githubSource(repo: string, options: GithubSourceOptions): ExternalSourceConfig {
@@ -49,13 +54,13 @@ export function githubSource(repo: string, options: GithubSourceOptions): Extern
 		type: 'external',
 		version: { github: repo, prerelease: options.prerelease, pin: options.pin },
 		assets: options.assets,
-		notes: options.notes,
+		source: options.source,
 	};
 }
 
 export function npmSource(
 	pkg: string,
-	options: { include?: RegExp; flatten?: boolean; rename?: Record<string, string>; dest: string; notes: string }
+	options: { include?: RegExp; flatten?: boolean; rename?: Record<string, string>; dest: string; source: SourceInfo }
 ): NpmSourceConfig {
 	return {
 		type: 'npm',
@@ -64,7 +69,7 @@ export function npmSource(
 		flatten: options.flatten,
 		rename: options.rename,
 		dest: options.dest,
-		notes: options.notes,
+		source: options.source,
 	};
 }
 

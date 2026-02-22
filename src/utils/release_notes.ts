@@ -1,4 +1,5 @@
 import { writeFileSync } from 'fs';
+import type { SourceInfo } from '../files/source_config';
 
 /**
  * Represents a single label or component within the release notes, with an optional version.
@@ -6,10 +7,13 @@ import { writeFileSync } from 'fs';
 class Label {
 	public name: string;
 
+	public url: string;
+
 	public version = '';
 
-	public constructor(name: string) {
-		this.name = name;
+	public constructor(source: SourceInfo) {
+		this.name = source.name;
+		this.url = source.url;
 	}
 
 	public setVersion(version: string): void {
@@ -32,15 +36,15 @@ export class ReleaseNotes {
 	/**
 	 * Adds a new label to the release notes.
 	 *
-	 * @param name - The name of the new label or component.
+	 * @param source - The source info for the component.
 	 * @returns The newly created Label instance.
 	 */
-	public add(name: string): Label {
-		if (this.labelMap.has(name)) return this.labelMap.get(name)!;
+	public add(source: SourceInfo): Label {
+		if (this.labelMap.has(source.name)) return this.labelMap.get(source.name)!;
 
-		const label = new Label(name);
+		const label = new Label(source);
 		this.labelList.push(label);
-		this.labelMap.set(name, label);
+		this.labelMap.set(source.name, label);
 
 		return label;
 	}
@@ -70,7 +74,7 @@ export class ReleaseNotes {
 			'',
 			'## Components',
 			'',
-			...this.labelList.map((l) => `- ${l.name}: ${l.version || '?.?.?'}`),
+			...this.labelList.map((l) => `- [${l.name}](${l.url}): ${l.version || '?.?.?'}`),
 		].join('\n');
 
 		writeFileSync(filename, notes + this.suffix);

@@ -10,7 +10,7 @@ export const sourceConfigs = {
 				dest: 'assets/glyphs/',
 			},
 		],
-		notes: '[VersaTiles Fonts](https://github.com/versatiles-org/versatiles-fonts)',
+		source: { name: 'VersaTiles Fonts', url: 'https://github.com/versatiles-org/versatiles-fonts' },
 	}),
 
 	'external-fonts-noto': githubSource('versatiles-org/versatiles-fonts', {
@@ -21,7 +21,7 @@ export const sourceConfigs = {
 				dest: 'assets/glyphs/',
 			},
 		],
-		notes: '[VersaTiles Fonts](https://github.com/versatiles-org/versatiles-fonts)',
+		source: { name: 'VersaTiles Fonts', url: 'https://github.com/versatiles-org/versatiles-fonts' },
 	}),
 
 	'external-styles': githubSource('versatiles-org/versatiles-style', {
@@ -55,21 +55,21 @@ export const sourceConfigs = {
 				dest: 'assets/lib/versatiles-style/',
 			},
 		],
-		notes: '[VersaTiles Style](https://github.com/versatiles-org/versatiles-style)',
+		source: { name: 'VersaTiles Style', url: 'https://github.com/versatiles-org/versatiles-style' },
 	}),
 
 	'external-maplibre': npmSource('maplibre-gl', {
 		include: /dist\/.*\.(js|css|map)$/,
 		flatten: true,
 		dest: 'assets/lib/maplibre-gl/',
-		notes: '[MapLibre GL JS](https://maplibre.org/maplibre-gl-js/docs/)',
+		source: { name: 'MapLibre GL JS', url: 'https://maplibre.org/maplibre-gl-js/docs/' },
 	}),
 
 	'external-maplibre-inspect': npmSource('@maplibre/maplibre-gl-inspect', {
 		include: /dist\/.*\.(js|css|map)$/,
 		flatten: true,
 		dest: 'assets/lib/maplibre-gl-inspect/',
-		notes: '[MapLibre GL Inspect](https://github.com/maplibre/maplibre-gl-inspect)',
+		source: { name: 'MapLibre GL Inspect', url: 'https://github.com/maplibre/maplibre-gl-inspect' },
 	}),
 
 	'external-maplibre-versatiles-styler': npmSource('maplibre-versatiles-styler', {
@@ -80,7 +80,7 @@ export const sourceConfigs = {
 			'maplibre-versatiles-styler.umd.cjs.map': 'maplibre-versatiles-styler.js.map',
 		},
 		dest: 'assets/lib/maplibre-versatiles-styler/',
-		notes: '[MapLibre VersaTiles Styler](https://github.com/versatiles-org/maplibre-versatiles-styler)',
+		source: { name: 'MapLibre VersaTiles Styler', url: 'https://github.com/versatiles-org/maplibre-versatiles-styler' },
 	}),
 
 	'external-versatiles-svg-renderer': npmSource('@versatiles/svg-renderer', {
@@ -91,14 +91,14 @@ export const sourceConfigs = {
 			'maplibre.umd.js.map': 'versatiles-svg-renderer.js.map',
 		},
 		dest: 'assets/lib/versatiles-svg-renderer/',
-		notes: '[VersaTiles SVG Renderer](https://github.com/versatiles-org/versatiles-svg-renderer)',
+		source: { name: 'VersaTiles SVG Renderer', url: 'https://github.com/versatiles-org/versatiles-svg-renderer' },
 	}),
 
 	'external-mapbox-rtl-text': npmSource('@mapbox/mapbox-gl-rtl-text', {
 		include: /dist\/.*\.(js|css|map)$/,
 		flatten: true,
 		dest: 'assets/lib/mapbox-gl-rtl-text/',
-		notes: '[Mapbox GL RTL Text](https://github.com/mapbox/mapbox-gl-rtl-text)',
+		source: { name: 'Mapbox GL RTL Text', url: 'https://github.com/mapbox/mapbox-gl-rtl-text' },
 	}),
 
 	all: staticSource('all'),

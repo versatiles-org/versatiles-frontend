@@ -149,7 +149,7 @@ describe('NpmFileDB', () => {
 			include: /dist\/.*\.(js|css|map)$/,
 			flatten: true,
 			dest: 'assets/lib/test/',
-			notes: '[Test Package](https://example.com)',
+			source: { name: 'Test Package', url: 'https://example.com' },
 		};
 
 		const db = await NpmFileDB.build(config);
@@ -169,7 +169,7 @@ describe('NpmFileDB', () => {
 			type: 'npm',
 			pkg: '@test/pkg',
 			dest: 'output/',
-			notes: '[Test Package](https://example.com)',
+			source: { name: 'Test Package', url: 'https://example.com' },
 		};
 
 		const db = await NpmFileDB.build(config);
@@ -194,7 +194,7 @@ describe('NpmFileDB', () => {
 			include: /dist\/.*\.(js|css)$/,
 			flatten: true,
 			dest: 'lib/',
-			notes: '[Test](https://example.com)',
+			source: { name: 'Test', url: 'https://example.com' },
 		};
 
 		const db = await NpmFileDB.build(config);
@@ -212,7 +212,7 @@ describe('NpmFileDB', () => {
 			include: /dist\/.*\.(js|css)$/,
 			flatten: false,
 			dest: 'lib/',
-			notes: '[Test](https://example.com)',
+			source: { name: 'Test', url: 'https://example.com' },
 		};
 
 		const db = await NpmFileDB.build(config);
@@ -230,13 +230,13 @@ describe('NpmFileDB', () => {
 			include: /dist\/.*\.js$/,
 			flatten: true,
 			dest: 'lib/',
-			notes: '[Test](https://example.com)',
+			source: { name: 'Test', url: 'https://example.com' },
 		};
 
 		await NpmFileDB.build(config);
 
 		// The release notes mock should have been called with the version from package.json
-		expect(releaseNotesMock.add).toHaveBeenCalledWith('[Test](https://example.com)');
+		expect(releaseNotesMock.add).toHaveBeenCalledWith({ name: 'Test', url: 'https://example.com' });
 		expect(setVersionMock).toHaveBeenCalledWith('3.4.5');
 	});
 });

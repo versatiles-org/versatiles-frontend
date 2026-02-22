@@ -11,8 +11,8 @@ export class ExternalFileDB extends FileDB {
 
 		const version = await db.resolveVersion(config);
 
-		if (config.notes) {
-			const label = notes.add(config.notes);
+		if (config.source) {
+			const label = notes.add(config.source);
 			label.setVersion(version);
 		}
 

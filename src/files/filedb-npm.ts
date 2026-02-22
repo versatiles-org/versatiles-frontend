@@ -16,7 +16,7 @@ export class NpmFileDB extends FileDB {
 
 		const pkgJsonPath = join(pkgDir, 'package.json');
 		const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
-		const label = notes.add(config.notes);
+		const label = notes.add(config.source);
 		label.setVersion(pkgJson.version);
 
 		addPath(pkgDir, '');
