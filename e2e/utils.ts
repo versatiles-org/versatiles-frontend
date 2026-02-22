@@ -57,7 +57,10 @@ export class Bundles {
 	}
 	expectEmpty() {
 		for (const bundle of this.bundles) {
-			expect(bundle.files.filter((f) => !f.verified).map((f) => f.name)).toStrictEqual([]);
+			expect(
+				bundle.files.filter((f) => !f.verified).map((f) => f.name),
+				`Unverified files in bundle ${bundle.name}`
+			).toStrictEqual([]);
 		}
 	}
 }
@@ -93,8 +96,9 @@ class PrefixedBundles {
 		}
 		return result;
 	}
-	file(filename: string): boolean {
+	file(filename: string): Record<string, boolean> | boolean {
 		const filenameWithPrefix = this.prefix + filename;
+		const result: Record<string, boolean> = {};
 		for (const bundle of this.bundles) {
 			let found = false;
 			bundle.files.forEach((file) => {
@@ -103,26 +107,44 @@ class PrefixedBundles {
 				file.verified = true;
 				found = true;
 			});
-			if (!found) {
-				throw new Error(`File ${filenameWithPrefix} not found in bundle ${bundle.name}`);
-			}
+			result[bundle.name] = found;
 		}
-		return true;
+
+		// if all bundles have the file, return true instead of an object
+		if (Object.values(result).every((v) => v)) {
+			return true;
+		}
+
+		// if no bundle has the file, return false instead of an object
+		if (Object.values(result).every((v) => !v)) {
+			return false;
+		}
+
+		// remove all bundles with false, as they are not relevant for the test
+		for (const bundle in result) {
+			if (!result[bundle]) delete result[bundle];
+		}
+
+		return result;
 	}
 	count(regex: RegExp): Record<string, number> | number {
 		const found = this.verify((f) => f.startsWith(this.prefix) && regex.test(f.slice(this.prefix.length)));
 		const counts: Record<string, number> = {};
 		const bundleNames = this.bundles.map((b) => b.name);
-		for (const bundle of bundleNames) {
-			counts[bundle] = 0;
-		}
-		for (const { bundle } of found) {
-			counts[bundle] = (counts[bundle] || 0) + 1;
-		}
+		for (const bundle of bundleNames) counts[bundle] = 0;
+		for (const { bundle } of found) counts[bundle]++;
+
+		// if all counts are the same, return a single number instead of an object
 		const anyCount = Object.values(counts)[0];
 		if (Object.values(counts).every((c) => c === anyCount)) {
 			return anyCount;
 		}
+
+		// remove all bundles with count 0, as they are not relevant for the test
+		for (const bundle in counts) {
+			if (counts[bundle] === 0) delete counts[bundle];
+		}
+
 		return counts;
 	}
 	sizes(regex: RegExp): Record<string, number> | number {
@@ -137,10 +159,18 @@ class PrefixedBundles {
 			});
 			sizes[bundle.name] = size;
 		}
+
+		// if all sizes are the same, return a single number instead of an object
 		const anySize = Object.values(sizes)[0];
 		if (Object.values(sizes).every((s) => s === anySize)) {
 			return anySize;
 		}
+
+		// remove all bundles with size 0, as they are not relevant for the test
+		for (const bundle in sizes) {
+			if (sizes[bundle] === 0) delete sizes[bundle];
+		}
+
 		return sizes;
 	}
 }
