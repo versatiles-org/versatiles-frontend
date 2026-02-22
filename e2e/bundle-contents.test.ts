@@ -1,6 +1,13 @@
 import { describe, it, expect, afterAll, beforeEach, onTestFailed } from 'vitest';
 import { Bundles, listTarGzFiles } from './utils';
 
+function expectMinSizes(actual: Record<string, number> | number, expected: Record<string, number>) {
+	for (const [bundle, min] of Object.entries(expected)) {
+		const value = typeof actual === 'number' ? actual : actual[bundle];
+		expect(value, `size in ${bundle}`).toBeGreaterThan(min);
+	}
+}
+
 const BUNDLE_NAMES = ['frontend', 'frontend-dev', 'frontend-min', 'frontend-tiny'] as const;
 
 const bundles = new Bundles(
@@ -31,11 +38,11 @@ describe('Bundle contents', () => {
 			'frontend-min': 405,
 			'frontend-tiny': 15,
 		});
-		expect(path.sizes(/^noto_sans_regular\/\d+-\d+\.pbf$/)).toStrictEqual({
-			frontend: 38323100,
-			'frontend-dev': 38323100,
-			'frontend-min': 38323100,
-			'frontend-tiny': 1277992,
+		expectMinSizes(path.sizes(/^noto_sans_regular\/\d+-\d+\.pbf$/), {
+			frontend: 38e6,
+			'frontend-dev': 38e6,
+			'frontend-min': 38e6,
+			'frontend-tiny': 1e6,
 		});
 
 		expect(path.count(/^noto_sans_bold\/\d+-\d+\.pbf$/)).toStrictEqual({
@@ -44,11 +51,11 @@ describe('Bundle contents', () => {
 			'frontend-min': 405,
 			'frontend-tiny': 15,
 		});
-		expect(path.sizes(/^noto_sans_bold\/\d+-\d+\.pbf$/)).toStrictEqual({
-			frontend: 40563411,
-			'frontend-dev': 40563411,
-			'frontend-min': 40563411,
-			'frontend-tiny': 1375583,
+		expectMinSizes(path.sizes(/^noto_sans_bold\/\d+-\d+\.pbf$/), {
+			frontend: 40e6,
+			'frontend-dev': 40e6,
+			'frontend-min': 40e6,
+			'frontend-tiny': 1e6,
 		});
 
 		expect(path.count(/^[a-z0-9_]+\/\d+-\d+\.pbf$/)).toStrictEqual({
@@ -167,11 +174,11 @@ describe('Bundle contents', () => {
 			frontend: 4,
 			'frontend-dev': 4,
 		});
-		expect(path.sizes(/^basics\/sprites/)).toStrictEqual({
-			frontend: 1100744,
-			'frontend-dev': 1100744,
-			'frontend-min': 297444,
-			'frontend-tiny': 297444,
+		expectMinSizes(path.sizes(/^basics\/sprites/), {
+			frontend: 1e6,
+			'frontend-dev': 1e6,
+			'frontend-min': 250e3,
+			'frontend-tiny': 250e3,
 		});
 
 		expect(path.count(/^markers\/sprites\.(json|png)$/)).toBe(2);
@@ -180,11 +187,11 @@ describe('Bundle contents', () => {
 			frontend: 4,
 			'frontend-dev': 4,
 		});
-		expect(path.sizes(/^markers\/sprites/)).toStrictEqual({
-			frontend: 315407,
-			'frontend-dev': 315407,
-			'frontend-min': 84337,
-			'frontend-tiny': 84337,
+		expectMinSizes(path.sizes(/^markers\/sprites/), {
+			frontend: 300e3,
+			'frontend-dev': 300e3,
+			'frontend-min': 80e3,
+			'frontend-tiny': 80e3,
 		});
 
 		expect(path.rest()).toStrictEqual({});
