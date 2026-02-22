@@ -82,41 +82,20 @@ describe('Bundle contents', () => {
 
 		it('contains maplibre-gl', () => {
 			const path = bundles.withPrefix('assets/lib/maplibre-gl/');
+			const notTiny = { frontend: true, 'frontend-dev': true, 'frontend-min': true };
 			expect(path.file('maplibre-gl.css')).toBeTruthy();
-			expect(path.count(/^maplibre-gl-csp-dev\.js(\.map)?$/)).toStrictEqual({
-				frontend: 2,
-				'frontend-dev': 2,
-				'frontend-min': 2,
-				'frontend-tiny': 1,
-			});
-			expect(path.count(/^maplibre-gl-csp-worker-dev\.js(\.map)?$/)).toStrictEqual({
-				frontend: 2,
-				'frontend-dev': 2,
-				'frontend-min': 2,
-				'frontend-tiny': 1,
-			});
-			expect(path.count(/^maplibre-gl-csp-worker\.js(\.map)?$/)).toStrictEqual({
-				frontend: 2,
-				'frontend-dev': 2,
-				'frontend-min': 2,
-				'frontend-tiny': 1,
-			});
-			expect(path.count(/^maplibre-gl-csp\.js(\.map)?$/)).toStrictEqual({
-				frontend: 2,
-				'frontend-dev': 2,
-				'frontend-min': 2,
-			});
-			expect(path.count(/^maplibre-gl-dev\.js(\.map)?$/)).toStrictEqual({
-				frontend: 2,
-				'frontend-dev': 2,
-				'frontend-min': 2,
-			});
-			expect(path.count(/^maplibre-gl\.js(\.map)?$/)).toStrictEqual({
-				frontend: 2,
-				'frontend-dev': 2,
-				'frontend-min': 2,
-				'frontend-tiny': 1,
-			});
+			expect(path.file('maplibre-gl.js')).toBeTruthy();
+			expect(path.file('maplibre-gl.js.map')).toStrictEqual(notTiny);
+			expect(path.file('maplibre-gl-csp.js')).toStrictEqual(notTiny);
+			expect(path.file('maplibre-gl-csp.js.map')).toStrictEqual(notTiny);
+			expect(path.file('maplibre-gl-csp-dev.js')).toBeTruthy();
+			expect(path.file('maplibre-gl-csp-dev.js.map')).toStrictEqual(notTiny);
+			expect(path.file('maplibre-gl-csp-worker.js')).toBeTruthy();
+			expect(path.file('maplibre-gl-csp-worker.js.map')).toStrictEqual(notTiny);
+			expect(path.file('maplibre-gl-csp-worker-dev.js')).toBeTruthy();
+			expect(path.file('maplibre-gl-csp-worker-dev.js.map')).toStrictEqual(notTiny);
+			expect(path.file('maplibre-gl-dev.js')).toStrictEqual(notTiny);
+			expect(path.file('maplibre-gl-dev.js.map')).toStrictEqual(notTiny);
 			expect(path.rest()).toStrictEqual({});
 		});
 
