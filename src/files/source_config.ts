@@ -17,7 +17,7 @@ export interface ExternalSourceConfig {
 	type: 'external';
 	version: GithubVersionConfig;
 	assets: AssetConfig[];
-	notes: string;
+	notes?: string;
 }
 
 export interface NpmSourceConfig {
@@ -41,7 +41,7 @@ interface GithubSourceOptions {
 	prerelease?: boolean;
 	pin?: string;
 	assets: AssetConfig[];
-	notes: string;
+	notes?: string;
 }
 
 export function githubSource(repo: string, options: GithubSourceOptions): ExternalSourceConfig {

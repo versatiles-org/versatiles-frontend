@@ -11,8 +11,10 @@ export class ExternalFileDB extends FileDB {
 
 		const version = await db.resolveVersion(config);
 
-		const label = notes.add(config.notes);
-		label.setVersion(version);
+		if (config.notes) {
+			const label = notes.add(config.notes);
+			label.setVersion(version);
+		}
 
 		for (const asset of config.assets) {
 			const url = asset.url.replaceAll('${version}', version);
