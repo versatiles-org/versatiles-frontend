@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures.js';
+import { test, expect, SCREENSHOT_LOCATION } from './fixtures.js';
 import type { Page } from '@playwright/test';
 
 test.use({
@@ -180,7 +180,7 @@ test.describe('preview page', () => {
 	test('screenshot', async ({ page, serverUrl }) => {
 		await installMapIdleHook(page);
 		await page.setViewportSize({ width: 1024, height: 768 });
-		await page.goto(`${serverUrl}/preview.html?id=osm`);
+		await page.goto(`${serverUrl}/preview.html?id=osm#${SCREENSHOT_LOCATION}`);
 		await waitForMapRendered(page);
 		await expect(page).toHaveScreenshot();
 	});

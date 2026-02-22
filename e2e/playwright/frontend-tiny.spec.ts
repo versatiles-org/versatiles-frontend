@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures.js';
+import { test, expect, SCREENSHOT_LOCATION } from './fixtures.js';
 import type { Page } from '@playwright/test';
 
 test.use({ bundleName: 'frontend-tiny' });
@@ -89,7 +89,7 @@ test('VersaTiles logo loads', async ({ page, serverUrl }) => {
 test('screenshot', async ({ page, serverUrl }) => {
 	await installMapIdleHook(page);
 	await page.setViewportSize({ width: 1024, height: 768 });
-	await page.goto(`${serverUrl}/#map=13/52.474/13.40&style=colorful`);
+	await page.goto(`${serverUrl}/#map=${SCREENSHOT_LOCATION}&style=colorful`);
 	await waitForMapRendered(page);
 	await expect(page).toHaveScreenshot();
 });

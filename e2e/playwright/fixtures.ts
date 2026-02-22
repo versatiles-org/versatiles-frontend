@@ -78,7 +78,6 @@ export const test = base.extend<object, WorkerFixtures>({
 							const response = await fetch(`https://tiles.versatiles.org${path}`);
 							const contentType = response.headers.get('content-type') ?? 'application/octet-stream';
 							const buffer = Buffer.from(await response.arrayBuffer());
-							console.log(`Caching tile ${path}`);
 							writeFileSync(blobPath, buffer);
 							writeFileSync(metaPath, JSON.stringify({ status: response.status, contentType }));
 							res.writeHead(response.status, { 'Content-Type': contentType });
@@ -136,3 +135,5 @@ export const test = base.extend<object, WorkerFixtures>({
 });
 
 export { expect } from '@playwright/test';
+
+export const SCREENSHOT_LOCATION = '18/46.307265/6.677549';

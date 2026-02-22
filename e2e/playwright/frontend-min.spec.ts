@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures.js';
+import { test, expect, SCREENSHOT_LOCATION } from './fixtures.js';
 import type { Page } from '@playwright/test';
 
 test.use({ bundleName: 'frontend-min' });
@@ -95,7 +95,7 @@ test('VersaTilesStylerControl is present', async ({ page, serverUrl }) => {
 test('screenshot', async ({ page, serverUrl }) => {
 	await installMapIdleHook(page);
 	await page.setViewportSize({ width: 1024, height: 768 });
-	await page.goto(`${serverUrl}/#map=13/52.474/13.40&style=satellite`);
+	await page.goto(`${serverUrl}/#map=${SCREENSHOT_LOCATION}&style=colorful`);
 	await waitForMapRendered(page);
 	await expect(page).toHaveScreenshot();
 });
