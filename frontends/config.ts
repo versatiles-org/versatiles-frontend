@@ -24,17 +24,6 @@ export const sourceConfigs = {
 		source: { name: 'VersaTiles Fonts', url: 'https://github.com/versatiles-org/versatiles-fonts' },
 	}),
 
-	'external-styles': githubSource('versatiles-org/versatiles-style', {
-		prerelease: true,
-		assets: [
-			{
-				url: 'https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/styles.tar.gz',
-				format: 'tar.gz',
-				dest: 'assets/styles/',
-			},
-		],
-	}),
-
 	'external-sprites': githubSource('versatiles-org/versatiles-style', {
 		prerelease: true,
 		assets: [
@@ -113,7 +102,6 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'all',
 			'frontend',
 			'external-fonts',
-			'external-styles',
 			'external-sprites',
 			'external-versatiles-style',
 			'external-maplibre',
@@ -129,7 +117,6 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'all',
 			'frontend-dev',
 			'external-fonts',
-			'external-styles',
 			'external-sprites',
 			'external-versatiles-style',
 			'external-maplibre',
@@ -145,7 +132,6 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'all',
 			'frontend',
 			'external-fonts-noto',
-			'external-styles',
 			'external-sprites',
 			'external-versatiles-style',
 			'external-maplibre',
@@ -161,21 +147,11 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'all',
 			'frontend',
 			'external-fonts-noto',
-			'external-styles',
 			'external-sprites',
 			'external-versatiles-style',
 			'external-maplibre',
 		],
-		ignore: [
-			'*.js.map',
-			'*@3x.json',
-			'*@3x.png',
-			'*@4x.json',
-			'*@4x.png',
-			'assets/styles/',
-			'maplibre-gl-csp*',
-			'maplibre-gl-dev*',
-		],
+		ignore: ['*.js.map', '*@3x.json', '*@3x.png', '*@4x.json', '*@4x.png', 'maplibre-gl-csp*', 'maplibre-gl-dev*'],
 		filter: (filename: string): boolean => {
 			const match = filename.match(/^assets\/glyphs\/[^/]+\/(\d+)-\d+\.pbf/);
 			if (!match) return true;

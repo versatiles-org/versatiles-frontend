@@ -178,13 +178,8 @@ describe('Bundle contents', () => {
 		expect(path.rest()).toStrictEqual({});
 	});
 
-	it('contains styles', () => {
+	it('contains no styles', () => {
 		const path = bundles.withPrefix('assets/styles/');
-		expect(path.count(/^.*\/.*\.json$/)).toStrictEqual({
-			frontend: 25,
-			'frontend-dev': 25,
-			'frontend-min': 25,
-		});
 		expect(path.rest()).toStrictEqual({});
 	});
 
