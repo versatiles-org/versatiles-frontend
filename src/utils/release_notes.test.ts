@@ -62,9 +62,9 @@ describe('ReleaseNotes', () => {
 		const content = readFileSync(testFilename, 'utf-8');
 		expect(content).toContain('# VersaTiles Frontend 3.5.1');
 		expect(content).toContain('## Components');
-		expect(content).toContain('- [MapLibre GL](https://maplibre.org): 5.0.0');
-		expect(content).toContain('- [VersaTiles Style](https://github.com/versatiles-org/versatiles-style): 2.1.0');
-		expect(content).toContain('- [VersaTiles Fonts](https://github.com/versatiles-org/versatiles-fonts): 1.5.0');
+		expect(content).toContain('- [MapLibre GL v5.0.0](https://maplibre.org)');
+		expect(content).toContain('- [VersaTiles Style v2.1.0](https://github.com/versatiles-org/versatiles-style)');
+		expect(content).toContain('- [VersaTiles Fonts v1.5.0](https://github.com/versatiles-org/versatiles-fonts)');
 	});
 
 	it('should use ?.?.? for labels without version', () => {
@@ -75,8 +75,8 @@ describe('ReleaseNotes', () => {
 		releaseNotes.save(testFilename);
 
 		const content = readFileSync(testFilename, 'utf-8');
-		expect(content).toContain('- [Component Without Version](https://example.com/no-version): ?.?.?');
-		expect(content).toContain('- [Component With Version](https://example.com/with-version): 1.2.3');
+		expect(content).toContain('- [Component Without Version v?.?.?](https://example.com/no-version)');
+		expect(content).toContain('- [Component With Version v1.2.3](https://example.com/with-version)');
 	});
 
 	it('should throw error when saving without setting version', () => {

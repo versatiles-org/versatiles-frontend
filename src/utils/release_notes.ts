@@ -74,7 +74,7 @@ export class ReleaseNotes {
 			'',
 			'## Components',
 			'',
-			...this.labelList.map((l) => `- [${l.name}](${l.url}): ${l.version || '?.?.?'}`),
+			...this.labelList.map((l) => `- [${l.name} v${l.version || '?.?.?'}](${l.url})`),
 		].join('\n');
 
 		writeFileSync(filename, notes + this.suffix);
