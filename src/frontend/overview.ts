@@ -1,3 +1,5 @@
+import { resolve } from 'path';
+import { statSync } from 'fs';
 import type { Frontend } from './frontend';
 
 /**
@@ -14,7 +16,7 @@ export function formatSize(bytes: number): string {
 /**
  * Generates a markdown overview table comparing assets across frontends.
  */
-export function generateOverview(frontends: Frontend[]): string {
+export function generateOverview(frontends: Frontend[], dstFolder?: string): string {
 	// Collect sizes per (folder, frontend) combination
 	const folderSizes = new Map<string, Map<string, number>>();
 
@@ -68,6 +70,21 @@ export function generateOverview(frontends: Frontend[]): string {
 		return total == null ? '-' : '**' + formatSize(total) + '**';
 	});
 	lines.push('| **Sum** | ' + sumCells.join(' | ') + ' |');
+
+	// Compressed archive sizes
+	if (dstFolder) {
+		for (const ext of ['.tar.gz', '.br.tar.gz']) {
+			const cells = names.map((name) => {
+				try {
+					const size = statSync(resolve(dstFolder, name + ext)).size;
+					return '**' + formatSize(size) + '**';
+				} catch {
+					return '-';
+				}
+			});
+			lines.push('| **' + ext + '** | ' + cells.join(' | ') + ' |');
+		}
+	}
 
 	return lines.join('\n') + '\n';
 }

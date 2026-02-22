@@ -1,7 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { formatSize, generateOverview } from './overview';
 import type { Frontend } from './frontend';
 import { File } from '../files/file';
+import { mkdtempSync, writeFileSync, rmSync } from 'fs';
+import { join } from 'path';
+import { tmpdir } from 'os';
 
 function mockFrontend(name: string, files: { name: string; size: number }[]): Frontend {
 	const fileObjects = files.map((f) => new File(f.name, 0, Buffer.alloc(f.size)));
@@ -96,5 +99,47 @@ describe('generateOverview', () => {
 		const result = generateOverview([f]);
 		expect(result).toContain('|---:|');
 		expect(result).toContain('## Asset Overview');
+	});
+
+	describe('with dstFolder', () => {
+		let tmpDir: string;
+
+		beforeEach(() => {
+			tmpDir = mkdtempSync(join(tmpdir(), 'overview-test-'));
+		});
+
+		afterEach(() => {
+			rmSync(tmpDir, { recursive: true });
+		});
+
+		it('appends compressed archive sizes', () => {
+			const f = mockFrontend('frontend', [{ name: 'index.html', size: 1000000 }]);
+			writeFileSync(join(tmpDir, 'frontend.tar.gz'), Buffer.alloc(500000));
+			writeFileSync(join(tmpDir, 'frontend.br.tar.gz'), Buffer.alloc(300000));
+
+			const result = generateOverview([f], tmpDir);
+
+			expect(result).toContain('| **.tar.gz** | **0.5 MB** |');
+			expect(result).toContain('| **.br.tar.gz** | **0.3 MB** |');
+		});
+
+		it('shows dash when archive file is missing', () => {
+			const f = mockFrontend('frontend', [{ name: 'index.html', size: 1000000 }]);
+			// no tar files created
+
+			const result = generateOverview([f], tmpDir);
+
+			expect(result).toContain('| **.tar.gz** | - |');
+			expect(result).toContain('| **.br.tar.gz** | - |');
+		});
+
+		it('does not append archive rows without dstFolder', () => {
+			const f = mockFrontend('frontend', [{ name: 'index.html', size: 1000000 }]);
+
+			const result = generateOverview([f]);
+
+			expect(result).not.toContain('.tar.gz');
+			expect(result).not.toContain('.br.tar.gz');
+		});
 	});
 });

@@ -34,7 +34,7 @@ export function generateFrontends(fileDBs: FileDBs, dstFolder: string): PromiseF
 		async () => {
 			s.start();
 			await parallel.run();
-			notes.append('\n\n' + generateOverview(frontends));
+			notes.append('\n\n' + generateOverview(frontends, dstFolder));
 			s.end();
 		}
 	);
