@@ -94,7 +94,6 @@ export const sourceConfigs = {
 	all: staticSource('all'),
 	frontend: staticSource('frontend'),
 	'frontend-dev': staticSource('frontend-dev'),
-	'frontend-min': staticSource('frontend-min'),
 } satisfies Record<string, SourceConfig>;
 
 export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
@@ -130,7 +129,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 		name: 'frontend-min',
 		fileDBs: [
 			'all',
-			'frontend-min',
+			'frontend',
 			'external-fonts-noto',
 			'external-styles',
 			'external-maplibre',
