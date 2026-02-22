@@ -15,7 +15,7 @@ async function waitForMapReady(page: Page) {
 async function installMapIdleHook(page: Page) {
 	await page.addInitScript(() => {
 		let resolve: () => void;
-		(window as Record<string, unknown>).__mapIdle = new Promise<void>((r) => (resolve = r));
+		(window as unknown as Record<string, unknown>).__mapIdle = new Promise<void>((r) => (resolve = r));
 		let _ml: unknown;
 		Object.defineProperty(window, 'maplibregl', {
 			configurable: true,
@@ -48,7 +48,7 @@ async function installMapIdleHook(page: Page) {
 async function waitForMapRendered(page: Page) {
 	await waitForMapReady(page);
 	await page.waitForLoadState('networkidle');
-	await page.evaluate(() => (window as Record<string, unknown>).__mapIdle);
+	await page.evaluate(() => (window as unknown as Record<string, unknown>).__mapIdle);
 }
 
 test('page loads without console errors', async ({ page, serverUrl }) => {
