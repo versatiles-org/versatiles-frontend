@@ -1,13 +1,16 @@
 import { test as base } from '@playwright/test';
-import { createReadStream } from 'fs';
+import { createReadStream, existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
 import { createServer, type IncomingMessage, type Server, type ServerResponse } from 'http';
 import { extname, resolve } from 'path';
 import { createGunzip } from 'zlib';
 import { pipeline } from 'stream/promises';
 import { Parser } from 'tar';
 import { lookup } from 'mrmime';
+import { createHash } from 'crypto';
 
 const releaseDir = resolve(import.meta.dirname, '../../release');
+const tileCacheDir = resolve(import.meta.dirname, '../../cache/tiles');
+mkdirSync(tileCacheDir, { recursive: true });
 
 type WorkerFixtures = {
 	bundleName: string;
@@ -61,13 +64,26 @@ export const test = base.extend<object, WorkerFixtures>({
 						return;
 					}
 
-					// Proxy to tiles.versatiles.org
+					// Proxy to tiles.versatiles.org with file cache
 					try {
-						const response = await fetch(`https://tiles.versatiles.org${path}`);
-						const contentType = response.headers.get('content-type') ?? 'application/octet-stream';
-						const buffer = Buffer.from(await response.arrayBuffer());
-						res.writeHead(response.status, { 'Content-Type': contentType });
-						res.end(buffer);
+						const hash = createHash('sha256').update(path).digest('hex');
+						const blobPath = resolve(tileCacheDir, hash) + '.blob';
+						const metaPath = resolve(tileCacheDir, hash) + '.meta';
+
+						if (existsSync(blobPath) && existsSync(metaPath)) {
+							const meta = JSON.parse(readFileSync(metaPath, 'utf-8'));
+							res.writeHead(meta.status, { 'Content-Type': meta.contentType });
+							res.end(readFileSync(blobPath));
+						} else {
+							const response = await fetch(`https://tiles.versatiles.org${path}`);
+							const contentType = response.headers.get('content-type') ?? 'application/octet-stream';
+							const buffer = Buffer.from(await response.arrayBuffer());
+							console.log(`Caching tile ${path}`);
+							writeFileSync(blobPath, buffer);
+							writeFileSync(metaPath, JSON.stringify({ status: response.status, contentType }));
+							res.writeHead(response.status, { 'Content-Type': contentType });
+							res.end(buffer);
+						}
 					} catch {
 						res.writeHead(502);
 						res.end('Proxy Error');
