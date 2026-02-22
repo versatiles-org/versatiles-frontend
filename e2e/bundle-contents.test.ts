@@ -152,6 +152,7 @@ describe('Bundle contents', () => {
 		expect(path.count(/^basics\/sprites.*\.(json|png)$/)).toStrictEqual({
 			frontend: 4,
 			'frontend-dev': 4,
+			'frontend-min': 4,
 		});
 		expectMinSizes(path.sizes(/^basics\/sprites/), {
 			frontend: 1e6,
@@ -165,6 +166,7 @@ describe('Bundle contents', () => {
 		expect(path.count(/^markers\/sprites.*\.(json|png)$/)).toStrictEqual({
 			frontend: 4,
 			'frontend-dev': 4,
+			'frontend-min': 4,
 		});
 		expectMinSizes(path.sizes(/^markers\/sprites/), {
 			frontend: 300e3,
@@ -181,6 +183,7 @@ describe('Bundle contents', () => {
 		expect(path.count(/^.*\/.*\.json$/)).toStrictEqual({
 			frontend: 25,
 			'frontend-dev': 25,
+			'frontend-min': 25,
 		});
 		expect(path.rest()).toStrictEqual({});
 	});
