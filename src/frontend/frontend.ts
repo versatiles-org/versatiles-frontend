@@ -14,6 +14,7 @@ export interface FrontendConfig<fileDBKeys = string> {
 	name: string;
 	fileDBs: fileDBKeys[];
 	ignore?: string[];
+	filter?: (filename: string) => boolean;
 }
 
 /**
@@ -40,7 +41,10 @@ export class Frontend {
 		// Add ignore patterns if provided.
 		const ig = ignore();
 		if (config.ignore) ig.add(config.ignore);
-		this.ignoreFilter = ig.createFilter();
+		const ignoreCheck = ig.createFilter();
+		this.ignoreFilter = config.filter
+			? (pathname: string) => ignoreCheck(pathname) && config.filter!(pathname)
+			: ignoreCheck;
 	}
 
 	/**

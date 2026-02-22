@@ -121,6 +121,43 @@ describe('Frontend class', () => {
 		expect(configs).toContainEqual(expect.objectContaining({ name: expect.any(String), fileDBs: expect.any(Array) }));
 	});
 
+	it('should apply filter callback', () => {
+		const filterFileDBs = new FileDBs({ all: {} });
+		const allDB = filterFileDBs.get('all');
+		allDB.setFileFromBuffer('keep.txt', 0, Buffer.from('keep'));
+		allDB.setFileFromBuffer('drop.txt', 0, Buffer.from('drop'));
+		allDB.setFileFromBuffer('also-keep.txt', 0, Buffer.from('also-keep'));
+
+		const filterConfig: FrontendConfig = {
+			name: 'filtered',
+			fileDBs: ['all'],
+			filter: (filename: string) => !filename.startsWith('drop'),
+		};
+
+		const frontend = new Frontend(filterFileDBs, filterConfig);
+		const files = [...frontend.iterate()].map((f) => f.name).sort();
+		expect(files).toStrictEqual(['also-keep.txt', 'keep.txt']);
+	});
+
+	it('should combine filter with ignore patterns', () => {
+		const filterFileDBs = new FileDBs({ all: {} });
+		const allDB = filterFileDBs.get('all');
+		allDB.setFileFromBuffer('a.txt', 0, Buffer.from('a'));
+		allDB.setFileFromBuffer('b.log', 0, Buffer.from('b'));
+		allDB.setFileFromBuffer('c.txt', 0, Buffer.from('c'));
+
+		const filterConfig: FrontendConfig = {
+			name: 'combo',
+			fileDBs: ['all'],
+			ignore: ['*.log'],
+			filter: (filename: string) => filename !== 'c.txt',
+		};
+
+		const frontend = new Frontend(filterFileDBs, filterConfig);
+		const files = [...frontend.iterate()].map((f) => f.name).sort();
+		expect(files).toStrictEqual(['a.txt']);
+	});
+
 	it('generates frontends', async () => {
 		await PromiseFunction.run(await generateFrontends(mockFileDBs, '/tmp/'));
 
