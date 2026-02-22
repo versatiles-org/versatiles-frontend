@@ -59,13 +59,6 @@ test.use({
 	},
 });
 
-/** Intercept RTL plugin (loads WASM, unnecessary for tests). */
-async function mockBrowserRequests(page: Page) {
-	await page.route('**/mapbox-gl-rtl-text.js', (route) =>
-		route.fulfill({ status: 200, contentType: 'application/javascript', body: '// mocked' })
-	);
-}
-
 /** Wait for the MapLibre map canvas to appear (indicates map has initialized). */
 async function waitForMapReady(page: Page) {
 	await page.locator('.maplibregl-canvas').waitFor({ state: 'attached', timeout: 20_000 });
@@ -160,13 +153,11 @@ test.describe('overview page', () => {
 
 test.describe('preview page', () => {
 	test('title is "VersaTiles - Preview"', async ({ page, serverUrl }) => {
-		await mockBrowserRequests(page);
 		await page.goto(`${serverUrl}/preview.html?id=osm`);
 		await expect(page).toHaveTitle('VersaTiles - Preview');
 	});
 
 	test('#map with canvas', async ({ page, serverUrl }) => {
-		await mockBrowserRequests(page);
 		await page.goto(`${serverUrl}/preview.html?id=osm`);
 		await waitForMapReady(page);
 		const map = page.locator('#map');
@@ -175,21 +166,18 @@ test.describe('preview page', () => {
 	});
 
 	test('inspect control present', async ({ page, serverUrl }) => {
-		await mockBrowserRequests(page);
 		await page.goto(`${serverUrl}/preview.html?id=osm`);
 		await waitForMapReady(page);
 		await expect(page.getByRole('button', { name: 'Toggle Inspect' })).toBeAttached();
 	});
 
 	test('logo is present', async ({ page, serverUrl }) => {
-		await mockBrowserRequests(page);
 		await page.goto(`${serverUrl}/preview.html?id=osm`);
 		const logo = page.locator('img[alt="VersaTiles"]');
 		await expect(logo).toBeVisible();
 	});
 
 	test('screenshot', async ({ page, serverUrl }) => {
-		await mockBrowserRequests(page);
 		await installMapIdleHook(page);
 		await page.setViewportSize({ width: 1024, height: 768 });
 		await page.goto(`${serverUrl}/preview.html?id=osm`);
@@ -204,7 +192,6 @@ test.describe('preview page without id', () => {
 	test('throws error when id is missing', async ({ page, serverUrl }) => {
 		const errors: string[] = [];
 		page.on('pageerror', (err) => errors.push(err.message));
-		await mockBrowserRequests(page);
 		await page.goto(`${serverUrl}/preview.html`);
 		await page.waitForLoadState('networkidle');
 		expect(errors.length).toBeGreaterThan(0);

@@ -3,13 +3,6 @@ import type { Page } from '@playwright/test';
 
 test.use({ bundleName: 'frontend-min' });
 
-/** Intercept RTL plugin (loads WASM, unnecessary for tests). */
-async function mockBrowserRequests(page: Page) {
-	await page.route('**/mapbox-gl-rtl-text.js', (route) =>
-		route.fulfill({ status: 200, contentType: 'application/javascript', body: '// mocked' })
-	);
-}
-
 /** Wait for the MapLibre map canvas to appear (indicates map has initialized). */
 async function waitForMapReady(page: Page) {
 	await page.locator('.maplibregl-canvas').waitFor({ state: 'attached', timeout: 20_000 });
@@ -61,20 +54,17 @@ async function waitForMapRendered(page: Page) {
 test('page loads without console errors', async ({ page, serverUrl }) => {
 	const errors: string[] = [];
 	page.on('pageerror', (err) => errors.push(err.message));
-	await mockBrowserRequests(page);
 	await page.goto(serverUrl);
 	await waitForMapReady(page);
 	expect(errors).toStrictEqual([]);
 });
 
 test('title is "VersaTiles"', async ({ page, serverUrl }) => {
-	await mockBrowserRequests(page);
 	await page.goto(serverUrl);
 	await expect(page).toHaveTitle('VersaTiles');
 });
 
 test('#map div exists and contains a canvas', async ({ page, serverUrl }) => {
-	await mockBrowserRequests(page);
 	await page.goto(serverUrl);
 	await waitForMapReady(page);
 	const map = page.locator('#map');
@@ -83,14 +73,12 @@ test('#map div exists and contains a canvas', async ({ page, serverUrl }) => {
 });
 
 test('NavigationControl is visible', async ({ page, serverUrl }) => {
-	await mockBrowserRequests(page);
 	await page.goto(serverUrl);
 	await waitForMapReady(page);
 	await expect(page.locator('.maplibregl-ctrl-zoom-in')).toBeVisible();
 });
 
 test('VersaTiles logo loads', async ({ page, serverUrl }) => {
-	await mockBrowserRequests(page);
 	await page.goto(serverUrl);
 	const logo = page.locator('img[alt="VersaTiles"]');
 	await expect(logo).toBeVisible();
@@ -99,14 +87,12 @@ test('VersaTiles logo loads', async ({ page, serverUrl }) => {
 });
 
 test('VersaTilesStylerControl is present', async ({ page, serverUrl }) => {
-	await mockBrowserRequests(page);
 	await page.goto(serverUrl);
 	await waitForMapReady(page);
 	await expect(page.getByRole('button', { name: 'Toggle style editor' })).toBeAttached();
 });
 
 test('screenshot', async ({ page, serverUrl }) => {
-	await mockBrowserRequests(page);
 	await installMapIdleHook(page);
 	await page.setViewportSize({ width: 1024, height: 768 });
 	await page.goto(`${serverUrl}/#map=13/52.474/13.40&style=satellite`);
@@ -121,7 +107,6 @@ test('no 404 errors for assets', async ({ page, serverUrl }) => {
 			notFound.push(res.url());
 		}
 	});
-	await mockBrowserRequests(page);
 	await page.goto(serverUrl);
 	await page.waitForLoadState('networkidle');
 	expect(notFound).toStrictEqual([]);

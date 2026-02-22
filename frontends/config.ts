@@ -93,6 +93,7 @@ export const sourceConfigs = {
 	all: staticSource('all'),
 	frontend: staticSource('frontend'),
 	'frontend-dev': staticSource('frontend-dev'),
+	'frontend-tiny': staticSource('frontend-tiny'),
 } satisfies Record<string, SourceConfig>;
 
 export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
@@ -150,11 +151,12 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'Minimal frontend with sprites, MapLibre, VersaTiles style and Noto Sans fonts supporting only Latin characters.',
 		fileDBs: [
 			'all',
-			'frontend',
+			'frontend-tiny',
 			'external-fonts-noto',
 			'external-sprites',
 			'external-versatiles-style',
 			'external-maplibre',
+			'external-maplibre-versatiles-styler',
 		],
 		ignore: ['*.js.map', '*@3x.json', '*@3x.png', '*@4x.json', '*@4x.png', 'maplibre-gl-csp*', 'maplibre-gl-dev*'],
 		filter: (filename: string): boolean => {

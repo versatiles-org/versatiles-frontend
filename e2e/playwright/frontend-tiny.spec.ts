@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures.js';
 import type { Page } from '@playwright/test';
 
-test.use({ bundleName: 'frontend' });
+test.use({ bundleName: 'frontend-tiny' });
 
 /** Wait for the MapLibre map canvas to appear (indicates map has initialized). */
 async function waitForMapReady(page: Page) {
@@ -86,22 +86,10 @@ test('VersaTiles logo loads', async ({ page, serverUrl }) => {
 	expect(width).toBeGreaterThan(0);
 });
 
-test('VersaTilesStylerControl is present', async ({ page, serverUrl }) => {
-	await page.goto(serverUrl);
-	await waitForMapReady(page);
-	await expect(page.getByRole('button', { name: 'Toggle style editor' })).toBeAttached();
-});
-
-test('MaplibreInspect control is present', async ({ page, serverUrl }) => {
-	await page.goto(serverUrl);
-	await waitForMapReady(page);
-	await expect(page.locator('.maplibregl-ctrl-inspect')).toBeAttached();
-});
-
 test('screenshot', async ({ page, serverUrl }) => {
 	await installMapIdleHook(page);
 	await page.setViewportSize({ width: 1024, height: 768 });
-	await page.goto(`${serverUrl}/#map=13/52.474/13.40&style=satellite`);
+	await page.goto(`${serverUrl}/#map=13/52.474/13.40&style=colorful`);
 	await waitForMapRendered(page);
 	await expect(page).toHaveScreenshot();
 });
