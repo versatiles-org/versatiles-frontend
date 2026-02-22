@@ -1,5 +1,6 @@
 import { describe, it, expect, afterAll, beforeEach, onTestFailed } from 'vitest';
 import { Bundles, listTarGzFiles } from './utils';
+import { frontendConfigs } from '../frontends/config';
 
 function expectMinSizes(actual: Record<string, number> | number, expected: Record<string, number>) {
 	for (const [bundle, min] of Object.entries(expected)) {
@@ -8,7 +9,7 @@ function expectMinSizes(actual: Record<string, number> | number, expected: Recor
 	}
 }
 
-const BUNDLE_NAMES = ['frontend', 'frontend-dev', 'frontend-min', 'frontend-tiny'] as const;
+const BUNDLE_NAMES = frontendConfigs.map((c) => c.name);
 
 const bundles = new Bundles(
 	await Promise.all(
