@@ -17,15 +17,16 @@ function mockFrontend(name: string, files: { name: string; size: number }[]): Fr
 }
 
 describe('formatSize', () => {
-	it('formats small values', () => {
-		expect(formatSize(0)).toBe('0.0 MB');
-		expect(formatSize(999)).toBe('<0.1 MB');
+	it('formats zero', () => {
+		expect(formatSize(0)).toBe('0');
 	});
 
-	it('formats megabytes', () => {
-		expect(formatSize(1000000)).toBe('1.0 MB');
-		expect(formatSize(1500000)).toBe('1.5 MB');
-		expect(formatSize(90100000)).toBe('90.1 MB');
+	it('formats kilobytes with thousand separator', () => {
+		expect(formatSize(500)).toBe('1');
+		expect(formatSize(1000)).toBe('1');
+		expect(formatSize(14000)).toBe('14');
+		expect(formatSize(1500000)).toBe("1'500");
+		expect(formatSize(90100000)).toBe("90'100");
 	});
 });
 
@@ -44,23 +45,23 @@ describe('generateOverview', () => {
 		const result = generateOverview([f1, f2]);
 
 		expect(result).toContain('## Asset Overview');
-		expect(result).toContain('| Folder | frontend | frontend-min |');
-		// Root files
-		expect(result).toContain('| `/` | <0.1 MB | <0.1 MB |');
-		// assets/styles/* only in f1 (mapped via mapFolder)
-		expect(result).toContain('| `assets/styles/*` | 2.5 MB | - |');
-		// assets/lib/maplibre-gl/ only in f2
-		expect(result).toContain('| `assets/lib/maplibre-gl/` | - | 0.8 MB |');
+		expect(result).toContain('```');
+		expect(result).toContain('Folder (KB)');
+		expect(result).toContain('frontend');
+		expect(result).toContain('frontend-min');
+		// Data rows with right-aligned values
+		expect(result).toContain('assets/styles/');
+		expect(result).toContain('assets/lib/maplibre-gl/');
 		// Sum row
-		expect(result).toContain('| **Sum** | **2.5 MB** | **0.8 MB** |');
+		expect(result).toContain('Sum');
 	});
 
 	it('handles empty frontends', () => {
 		const f = mockFrontend('empty', []);
 		const result = generateOverview([f]);
 
-		expect(result).toContain('| Folder | empty |');
-		expect(result).toContain('| **Sum** | - |');
+		expect(result).toContain('Folder (KB)');
+		expect(result).toMatch(/Sum\s+-/);
 	});
 
 	it('sorts / first then folders alphabetically', () => {
@@ -71,12 +72,10 @@ describe('generateOverview', () => {
 		]);
 		const result = generateOverview([f]);
 		const lines = result.split('\n');
-		const dataLines = lines.filter(
-			(l) => l.startsWith('| ') && !l.startsWith('| Folder') && !l.startsWith('|--') && !l.startsWith('| **Sum')
-		);
-		expect(dataLines[0]).toContain('`/`');
-		expect(dataLines[1]).toContain('`a/`');
-		expect(dataLines[2]).toContain('`b/`');
+		const dataLines = lines.filter((l) => l.includes("1'000") || l.startsWith('/'));
+		expect(dataLines[0]).toMatch(/^\//);
+		expect(dataLines[1]).toMatch(/^a\//);
+		expect(dataLines[2]).toMatch(/^b\//);
 	});
 
 	it('groups glyphs subfolders via mapFolder', () => {
@@ -87,18 +86,37 @@ describe('generateOverview', () => {
 		]);
 		const result = generateOverview([f]);
 
-		// noto_sans_* grouped together
-		expect(result).toContain('`assets/glyphs/noto_sans_*/`');
-		expect(result).toContain('| `assets/glyphs/noto_sans_*/` | 8.0 MB |');
-		// other glyphs grouped under assets/glyphs/*/
-		expect(result).toContain('| `assets/glyphs/*/` | 2.0 MB |');
+		expect(result).toContain('assets/glyphs/noto_sans_*/');
+		expect(result).toContain('assets/glyphs/*');
 	});
 
-	it('uses right-aligned columns and ## heading', () => {
+	it('wraps table in code block with heading', () => {
 		const f = mockFrontend('test', [{ name: 'a.txt', size: 1000000 }]);
 		const result = generateOverview([f]);
-		expect(result).toContain('|---:|');
 		expect(result).toContain('## Asset Overview');
+		expect(result).toContain('```\n');
+	});
+
+	it('pads all cells in a column to equal width', () => {
+		const f = mockFrontend('col', [
+			{ name: 'data_a/small.txt', size: 1000 },
+			{ name: 'data_b/big.txt', size: 1500000 },
+		]);
+		const result = generateOverview([f]);
+		const table = result.split('\n```\n')[1]; // get content inside code block
+		const lines = table.split('\n');
+		expect(lines.length).toBe(6);
+		// All lines should have the same length
+		const lengths = lines.map((l) => l.length);
+		expect(Array.from(new Set(lengths).values())).toStrictEqual([19]);
+	});
+
+	it('contains separator lines', () => {
+		const f = mockFrontend('test', [{ name: 'a.txt', size: 1000000 }]);
+		const result = generateOverview([f]);
+		const lines = result.split('\n');
+		const separators = lines.filter((l) => /^-+$/.test(l));
+		expect(separators.length).toBeGreaterThanOrEqual(2);
 	});
 
 	describe('with dstFolder', () => {
@@ -119,18 +137,17 @@ describe('generateOverview', () => {
 
 			const result = generateOverview([f], tmpDir);
 
-			expect(result).toContain('| **.tar.gz** | **0.5 MB** |');
-			expect(result).toContain('| **.br.tar.gz** | **0.3 MB** |');
+			expect(result).toMatch(/\.tar\.gz\s+500/);
+			expect(result).toMatch(/\.br\.tar\.gz\s+300/);
 		});
 
 		it('shows dash when archive file is missing', () => {
 			const f = mockFrontend('frontend', [{ name: 'index.html', size: 1000000 }]);
-			// no tar files created
 
 			const result = generateOverview([f], tmpDir);
 
-			expect(result).toContain('| **.tar.gz** | - |');
-			expect(result).toContain('| **.br.tar.gz** | - |');
+			expect(result).toMatch(/\.tar\.gz\s+-/);
+			expect(result).toMatch(/\.br\.tar\.gz\s+-/);
 		});
 
 		it('does not append archive rows without dstFolder', () => {

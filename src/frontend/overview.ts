@@ -3,18 +3,16 @@ import { statSync } from 'fs';
 import type { Frontend } from './frontend';
 
 /**
- * Formats a byte count as a human-readable string.
+ * Formats a byte count as KB with no decimal point.
  */
 export function formatSize(bytes: number): string {
-	let value = (bytes / 1000000).toFixed(1);
-	if (value === '0.0') {
-		value = bytes === 0 ? '0.0' : '<0.1';
-	}
-	return value + ' MB';
+	return Math.round(bytes / 1000)
+		.toString()
+		.replace(/\B(?=(\d{3})+(?!\d))/g, "'");
 }
 
 /**
- * Generates a markdown overview table comparing assets across frontends.
+ * Generates an ASCII overview table comparing assets across frontends.
  */
 export function generateOverview(frontends: Frontend[], dstFolder?: string): string {
 	// Collect sizes per (folder, frontend) combination
@@ -39,19 +37,22 @@ export function generateOverview(frontends: Frontend[], dstFolder?: string): str
 	const folders = [...folderSizes.keys()].sort((a, b) => {
 		if (a === '/') return -1;
 		if (b === '/') return 1;
+		if (a.endsWith('*') && b.startsWith(a.slice(0, -1))) return 1;
+		if (b.endsWith('*') && a.startsWith(b.slice(0, -1))) return -1;
 		return a.localeCompare(b);
 	});
 
 	const names = frontends.map((f) => f.config.name);
 
-	// Build header
-	const lines: string[] = [];
-	lines.push('## Asset Overview');
-	lines.push('');
-	lines.push('| Folder | ' + names.join(' | ') + ' |');
-	lines.push('|--------|' + names.map(() => '---:').join('|') + '|');
+	// Build rows as grid: each row is [label, ...values]
+	type Row = string[] | null; // null = separator line
+	const rows: Row[] = [];
 
-	// Build rows
+	// Header
+	rows.push(['Folder (KB)', ...names]);
+	rows.push(null); // separator
+
+	// Data rows
 	const sums = new Map<string, number>();
 	for (const folder of folders) {
 		const frontendMap = folderSizes.get(folder)!;
@@ -61,32 +62,62 @@ export function generateOverview(frontends: Frontend[], dstFolder?: string): str
 			sums.set(name, (sums.get(name) ?? 0) + size);
 			return formatSize(size);
 		});
-		lines.push('| `' + folder + '` | ' + cells.join(' | ') + ' |');
+		rows.push([folder, ...cells]);
 	}
 
 	// Sum row
-	const sumCells = names.map((name) => {
-		const total = sums.get(name);
-		return total == null ? '-' : '**' + formatSize(total) + '**';
-	});
-	lines.push('| **Sum** | ' + sumCells.join(' | ') + ' |');
+	rows.push(null); // separator
+	rows.push([
+		'Sum',
+		...names.map((name) => {
+			const total = sums.get(name);
+			return total == null ? '-' : formatSize(total);
+		}),
+	]);
 
 	// Compressed archive sizes
 	if (dstFolder) {
+		rows.push(null); // separator
 		for (const ext of ['.tar.gz', '.br.tar.gz']) {
-			const cells = names.map((name) => {
-				try {
-					const size = statSync(resolve(dstFolder, name + ext)).size;
-					return '**' + formatSize(size) + '**';
-				} catch {
-					return '-';
-				}
-			});
-			lines.push('| **' + ext + '** | ' + cells.join(' | ') + ' |');
+			rows.push([
+				ext,
+				...names.map((name) => {
+					try {
+						return formatSize(statSync(resolve(dstFolder, name + ext)).size);
+					} catch {
+						return '-';
+					}
+				}),
+			]);
 		}
 	}
 
-	return lines.join('\n') + '\n';
+	// Compute column widths
+	const colCount = names.length + 1;
+	const colWidths = Array.from({ length: colCount }, (_, col) => {
+		let max = 0;
+		for (const row of rows) {
+			if (row) max = Math.max(max, row[col].length);
+		}
+		return max;
+	});
+
+	// Render table
+	const tableLines: string[] = [];
+
+	const columnSeparator = '   ';
+	const tableWidth = colWidths.reduce((s, w) => s + w) + (colCount - 1) * columnSeparator.length;
+	const dashLine = '-'.repeat(tableWidth);
+	for (const row of rows) {
+		if (row == null) {
+			tableLines.push(dashLine);
+		} else {
+			const cells = row.map((cell, i) => (i === 0 ? cell.padEnd(colWidths[i]) : cell.padStart(colWidths[i])));
+			tableLines.push(cells.join(columnSeparator));
+		}
+	}
+
+	return '## Asset Overview\n\n```\n' + tableLines.join('\n') + '\n```\n\n*All file sizes are in KB*\n';
 }
 
 function mapFolder(folder: string): string {
@@ -94,13 +125,13 @@ function mapFolder(folder: string): string {
 		if (folder.startsWith('assets/glyphs/noto_sans_')) {
 			return 'assets/glyphs/noto_sans_*/';
 		}
-		return 'assets/glyphs/*/';
+		return 'assets/glyphs/*';
 	}
 	if (folder.startsWith('assets/styles/')) {
-		return 'assets/styles/*';
+		return 'assets/styles/';
 	}
 	if (folder.startsWith('assets/sprites/')) {
-		return 'assets/sprites/*';
+		return 'assets/sprites/';
 	}
 	return folder;
 }
