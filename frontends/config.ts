@@ -98,6 +98,7 @@ export const sourceConfigs = {
 export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 	{
 		name: 'frontend',
+		description: 'Full standard frontend with all fonts, sprites, and libraries.',
 		fileDBs: [
 			'all',
 			'frontend',
@@ -113,6 +114,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 	},
 	{
 		name: 'frontend-dev',
+		description: 'Full standard frontend but with development-specific UI.',
 		fileDBs: [
 			'all',
 			'frontend-dev',
@@ -128,6 +130,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 	},
 	{
 		name: 'frontend-min',
+		description: 'Full standard frontend but with only Noto Sans fonts.',
 		fileDBs: [
 			'all',
 			'frontend',
@@ -143,6 +146,8 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 	},
 	{
 		name: 'frontend-tiny',
+		description:
+			'Minimal frontend with sprites, MapLibre, VersaTiles style and Noto Sans fonts supporting only Latin characters.',
 		fileDBs: [
 			'all',
 			'frontend',

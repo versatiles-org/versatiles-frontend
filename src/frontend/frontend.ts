@@ -12,6 +12,7 @@ import { FileDBs } from '../files/filedbs';
  */
 export interface FrontendConfig<fileDBKeys = string> {
 	name: string;
+	description: string;
 	fileDBs: fileDBKeys[];
 	ignore?: string[];
 	filter?: (filename: string) => boolean;

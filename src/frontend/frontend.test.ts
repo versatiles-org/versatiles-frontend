@@ -83,6 +83,7 @@ describe('Frontend class', () => {
 	let mockFileDBs: InstanceType<typeof FileDBs>;
 	const testConfig = {
 		name: 'frontend',
+		description: 'Test frontend.',
 		fileDBs: ['all'],
 		ignore: ['ignore-me.txt'],
 	} as const satisfies FrontendConfig;
@@ -130,6 +131,7 @@ describe('Frontend class', () => {
 
 		const filterConfig: FrontendConfig = {
 			name: 'filtered',
+			description: 'Filtered frontend.',
 			fileDBs: ['all'],
 			filter: (filename: string) => !filename.startsWith('drop'),
 		};
@@ -148,6 +150,7 @@ describe('Frontend class', () => {
 
 		const filterConfig: FrontendConfig = {
 			name: 'combo',
+			description: 'Combo frontend.',
 			fileDBs: ['all'],
 			ignore: ['*.log'],
 			filter: (filename: string) => filename !== 'c.txt',
