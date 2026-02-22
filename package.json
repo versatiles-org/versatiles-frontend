@@ -14,7 +14,7 @@
     "doc": "npm run doc-graph",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "lint": "eslint . --color",
+    "lint": "tsc --noEmit && eslint . --color",
     "prepack": "npm run build",
     "prepare": "husky",
     "release": "vrt release-npm",
