@@ -1,31 +1,59 @@
-import { describe, it, expect, afterAll } from 'vitest';
+import { describe, it, expect, afterAll, beforeEach, onTestFailed } from 'vitest';
 import { Bundles, listTarGzFiles } from './utils';
+
+const BUNDLE_NAMES = ['frontend', 'frontend-dev', 'frontend-min', 'frontend-tiny'] as const;
 
 const bundles = new Bundles(
 	await Promise.all(
-		['frontend.tar.gz', 'frontend-dev.tar.gz', 'frontend-min.tar.gz'].map(async (name) => ({
+		BUNDLE_NAMES.map(async (name) => ({
 			name,
-			files: await listTarGzFiles(name),
+			files: await listTarGzFiles(name + '.tar.gz'),
 		}))
 	)
 );
 
 describe('Bundle contents', () => {
+	let hasAnyFailed = false;
+	beforeEach(() => {
+		onTestFailed(() => {
+			hasAnyFailed = true;
+		});
+	});
+
 	it('contains glyphs', () => {
 		const path = bundles.withPrefix('assets/glyphs/');
 		expect(path.file('font_families.json')).toBeTruthy();
 		expect(path.file('index.json')).toBeTruthy();
 
-		expect(path.count(/^noto_sans_regular\/\d+-\d+\.pbf$/)).toBe(451);
-		expect(path.sizes(/^noto_sans_regular\/\d+-\d+\.pbf$/)).toBeGreaterThan(38e6);
+		expect(path.count(/^noto_sans_regular\/\d+-\d+\.pbf$/)).toStrictEqual({
+			frontend: 405,
+			'frontend-dev': 405,
+			'frontend-min': 405,
+			'frontend-tiny': 15,
+		});
+		expect(path.sizes(/^noto_sans_regular\/\d+-\d+\.pbf$/)).toStrictEqual({
+			frontend: 38323100,
+			'frontend-dev': 38323100,
+			'frontend-min': 38323100,
+			'frontend-tiny': 1277992,
+		});
 
-		expect(path.count(/^noto_sans_bold\/\d+-\d+\.pbf$/)).toBe(451);
-		expect(path.sizes(/^noto_sans_bold\/\d+-\d+\.pbf$/)).toBeGreaterThan(40e6);
+		expect(path.count(/^noto_sans_bold\/\d+-\d+\.pbf$/)).toStrictEqual({
+			frontend: 405,
+			'frontend-dev': 405,
+			'frontend-min': 405,
+			'frontend-tiny': 15,
+		});
+		expect(path.sizes(/^noto_sans_bold\/\d+-\d+\.pbf$/)).toStrictEqual({
+			frontend: 40563411,
+			'frontend-dev': 40563411,
+			'frontend-min': 40563411,
+			'frontend-tiny': 1375583,
+		});
 
 		expect(path.count(/^[a-z0-9_]+\/\d+-\d+\.pbf$/)).toStrictEqual({
-			'frontend-dev.tar.gz': 47440,
-			'frontend-min.tar.gz': 0,
-			'frontend.tar.gz': 47440,
+			'frontend-dev': 3244,
+			frontend: 3244,
 		});
 
 		expect(path.rest()).toStrictEqual({}); // no other files in glyphs/
@@ -38,15 +66,50 @@ describe('Bundle contents', () => {
 	});
 
 	describe('libraries', () => {
+		let hasLibFailed = false;
+		beforeEach(() => {
+			onTestFailed(() => {
+				hasLibFailed = true;
+			});
+		});
+
 		it('contains maplibre-gl', () => {
 			const path = bundles.withPrefix('assets/lib/maplibre-gl/');
 			expect(path.file('maplibre-gl.css')).toBeTruthy();
-			expect(path.count(/^maplibre-gl-csp-dev\.js(\.map)?$/)).toBe(2);
-			expect(path.count(/^maplibre-gl-csp-worker-dev\.js(\.map)?$/)).toBe(2);
-			expect(path.count(/^maplibre-gl-csp-worker\.js(\.map)?$/)).toBe(2);
-			expect(path.count(/^maplibre-gl-csp\.js(\.map)?$/)).toBe(2);
-			expect(path.count(/^maplibre-gl-dev\.js(\.map)?$/)).toBe(2);
-			expect(path.count(/^maplibre-gl\.js(\.map)?$/)).toBe(2);
+			expect(path.count(/^maplibre-gl-csp-dev\.js(\.map)?$/)).toStrictEqual({
+				frontend: 2,
+				'frontend-dev': 2,
+				'frontend-min': 2,
+				'frontend-tiny': 1,
+			});
+			expect(path.count(/^maplibre-gl-csp-worker-dev\.js(\.map)?$/)).toStrictEqual({
+				frontend: 2,
+				'frontend-dev': 2,
+				'frontend-min': 2,
+				'frontend-tiny': 1,
+			});
+			expect(path.count(/^maplibre-gl-csp-worker\.js(\.map)?$/)).toStrictEqual({
+				frontend: 2,
+				'frontend-dev': 2,
+				'frontend-min': 2,
+				'frontend-tiny': 1,
+			});
+			expect(path.count(/^maplibre-gl-csp\.js(\.map)?$/)).toStrictEqual({
+				frontend: 2,
+				'frontend-dev': 2,
+				'frontend-min': 2,
+			});
+			expect(path.count(/^maplibre-gl-dev\.js(\.map)?$/)).toStrictEqual({
+				frontend: 2,
+				'frontend-dev': 2,
+				'frontend-min': 2,
+			});
+			expect(path.count(/^maplibre-gl\.js(\.map)?$/)).toStrictEqual({
+				frontend: 2,
+				'frontend-dev': 2,
+				'frontend-min': 2,
+				'frontend-tiny': 1,
+			});
 			expect(path.rest()).toStrictEqual({});
 		});
 
@@ -89,6 +152,7 @@ describe('Bundle contents', () => {
 		});
 
 		afterAll(() => {
+			if (hasLibFailed) return;
 			expect(bundles.withPrefix('assets/lib/').rest()).toStrictEqual({}); // no other files in lib/
 		});
 	});
@@ -100,27 +164,27 @@ describe('Bundle contents', () => {
 		expect(path.count(/^basics\/sprites\.(json|png)$/)).toBe(2);
 		expect(path.count(/^basics\/sprites@2x\.(json|png)$/)).toBe(2);
 		expect(path.count(/^basics\/sprites.*\.(json|png)$/)).toStrictEqual({
-			'frontend-dev.tar.gz': 4,
-			'frontend-min.tar.gz': 0,
-			'frontend.tar.gz': 4,
+			frontend: 4,
+			'frontend-dev': 4,
 		});
 		expect(path.sizes(/^basics\/sprites/)).toStrictEqual({
-			'frontend-dev.tar.gz': 1100744,
-			'frontend-min.tar.gz': 297444,
-			'frontend.tar.gz': 1100744,
+			frontend: 1100744,
+			'frontend-dev': 1100744,
+			'frontend-min': 297444,
+			'frontend-tiny': 297444,
 		});
 
 		expect(path.count(/^markers\/sprites\.(json|png)$/)).toBe(2);
 		expect(path.count(/^markers\/sprites@2x\.(json|png)$/)).toBe(2);
 		expect(path.count(/^markers\/sprites.*\.(json|png)$/)).toStrictEqual({
-			'frontend-dev.tar.gz': 4,
-			'frontend-min.tar.gz': 0,
-			'frontend.tar.gz': 4,
+			frontend: 4,
+			'frontend-dev': 4,
 		});
 		expect(path.sizes(/^markers\/sprites/)).toStrictEqual({
-			'frontend-dev.tar.gz': 315407,
-			'frontend-min.tar.gz': 84337,
-			'frontend.tar.gz': 315407,
+			frontend: 315407,
+			'frontend-dev': 315407,
+			'frontend-min': 84337,
+			'frontend-tiny': 84337,
 		});
 
 		expect(path.rest()).toStrictEqual({});
@@ -129,9 +193,8 @@ describe('Bundle contents', () => {
 	it('contains styles', () => {
 		const path = bundles.withPrefix('assets/styles/');
 		expect(path.count(/^.*\/.*\.json$/)).toStrictEqual({
-			'frontend-dev.tar.gz': 25,
-			'frontend-min.tar.gz': 0,
-			'frontend.tar.gz': 25,
+			frontend: 25,
+			'frontend-dev': 25,
 		});
 		expect(path.rest()).toStrictEqual({});
 	});
@@ -139,9 +202,7 @@ describe('Bundle contents', () => {
 	describe('basic html files', () => {
 		it('contains preview.html', () => {
 			expect(bundles.withPrefix('').count(/^preview\.html$/)).toStrictEqual({
-				'frontend-dev.tar.gz': 1,
-				'frontend-min.tar.gz': 0,
-				'frontend.tar.gz': 0,
+				'frontend-dev': 1,
 			});
 		});
 
@@ -155,12 +216,13 @@ describe('Bundle contents', () => {
 	});
 
 	afterAll(() => {
+		if (hasAnyFailed) return;
 		bundles.expectEmpty();
 	});
 });
 
 describe('brotli bundles match regular bundles', () => {
-	for (const name of ['frontend', 'frontend-dev', 'frontend-min']) {
+	for (const name of BUNDLE_NAMES) {
 		it(`${name}.br.tar.gz matches ${name}.tar.gz`, async () => {
 			const regular = (await listTarGzFiles(`${name}.tar.gz`)).map((f) => f.name).sort();
 			const brotli = (await listTarGzFiles(`${name}.br.tar.gz`)).map((f) => f.name.slice(0, -3)).sort();
