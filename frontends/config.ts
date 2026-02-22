@@ -140,14 +140,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 	},
 	{
 		name: 'frontend-tiny',
-		fileDBs: [
-			'all',
-			'frontend',
-			'external-fonts-noto',
-			'external-styles',
-			'external-maplibre',
-			'external-maplibre-versatiles-styler',
-		],
+		fileDBs: ['all', 'frontend', 'external-fonts-noto', 'external-styles', 'external-maplibre'],
 		ignore: [
 			'*.js.map',
 			'*@3x.json',
