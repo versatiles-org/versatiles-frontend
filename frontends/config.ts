@@ -136,7 +136,6 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-versatiles-svg-renderer',
 			'external-mapbox-rtl-text',
 		],
-		ignore: ['*@3x.json', '*@3x.png', '*@4x.json', '*@4x.png', 'assets/styles/'],
 	},
 	{
 		name: 'frontend-tiny',
