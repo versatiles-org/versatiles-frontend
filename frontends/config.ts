@@ -138,4 +138,33 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 		],
 		ignore: ['*@3x.json', '*@3x.png', '*@4x.json', '*@4x.png', 'assets/styles/'],
 	},
+	{
+		name: 'frontend-tiny',
+		fileDBs: [
+			'all',
+			'frontend',
+			'external-fonts-noto',
+			'external-styles',
+			'external-maplibre',
+			'external-maplibre-inspect',
+			'external-maplibre-versatiles-styler',
+			'external-versatiles-svg-renderer',
+			'external-mapbox-rtl-text',
+		],
+		ignore: [
+			'*.js.map',
+			'*@3x.json',
+			'*@3x.png',
+			'*@4x.json',
+			'*@4x.png',
+			'assets/styles/',
+			'maplibre-gl-csp.*',
+			'maplibre-gl-dev.*',
+		],
+		filter: (filename: string): boolean => {
+			const match = filename.match(/^assets\/glyphs\/[^/]+\/(\d+)-\d+\.pbf/);
+			if (!match) return true;
+			return parseInt(match[1], 10) < 4096;
+		},
+	},
 ];

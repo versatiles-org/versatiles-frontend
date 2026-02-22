@@ -161,7 +161,7 @@ describe('Frontend class', () => {
 	it('generates frontends', async () => {
 		await PromiseFunction.run(await generateFrontends(mockFileDBs, '/tmp/'));
 
-		expect(createWriteStream).toHaveBeenCalledTimes(6);
+		expect(createWriteStream).toHaveBeenCalledTimes(8);
 
 		const calledFilenames = vi
 			.mocked(createWriteStream)
@@ -172,6 +172,8 @@ describe('Frontend class', () => {
 			'/tmp/frontend-dev.tar.gz',
 			'/tmp/frontend-min.br.tar.gz',
 			'/tmp/frontend-min.tar.gz',
+			'/tmp/frontend-tiny.br.tar.gz',
+			'/tmp/frontend-tiny.tar.gz',
 			'/tmp/frontend.br.tar.gz',
 			'/tmp/frontend.tar.gz',
 		]);

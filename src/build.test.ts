@@ -216,6 +216,7 @@ describe('Build Process', () => {
 			'frontend',
 			'frontend-dev',
 			'frontend-min',
+			'frontend-tiny',
 		]);
 
 		// Confirm that release notes are saved
