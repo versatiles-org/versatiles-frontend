@@ -32,15 +32,27 @@ export const sourceConfigs = {
 				format: 'tar.gz',
 				dest: 'assets/styles/',
 			},
-			{
-				url: 'https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/versatiles-style.tar.gz',
-				format: 'tar.gz',
-				dest: 'assets/lib/versatiles-style/',
-			},
+		],
+	}),
+
+	'external-sprites': githubSource('versatiles-org/versatiles-style', {
+		prerelease: true,
+		assets: [
 			{
 				url: 'https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/sprites.tar.gz',
 				format: 'tar.gz',
 				dest: 'assets/sprites/',
+			},
+		],
+	}),
+
+	'external-versatiles-style': githubSource('versatiles-org/versatiles-style', {
+		prerelease: true,
+		assets: [
+			{
+				url: 'https://github.com/versatiles-org/versatiles-style/releases/download/v${version}/versatiles-style.tar.gz',
+				format: 'tar.gz',
+				dest: 'assets/lib/versatiles-style/',
 			},
 		],
 		notes: '[VersaTiles Style](https://github.com/versatiles-org/versatiles-style)',
@@ -102,6 +114,8 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'frontend',
 			'external-fonts',
 			'external-styles',
+			'external-sprites',
+			'external-versatiles-style',
 			'external-maplibre',
 			'external-maplibre-inspect',
 			'external-maplibre-versatiles-styler',
@@ -116,6 +130,8 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'frontend-dev',
 			'external-fonts',
 			'external-styles',
+			'external-sprites',
+			'external-versatiles-style',
 			'external-maplibre',
 			'external-maplibre-inspect',
 			'external-maplibre-versatiles-styler',
@@ -130,6 +146,8 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'frontend',
 			'external-fonts-noto',
 			'external-styles',
+			'external-sprites',
+			'external-versatiles-style',
 			'external-maplibre',
 			'external-maplibre-inspect',
 			'external-maplibre-versatiles-styler',
@@ -139,7 +157,15 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 	},
 	{
 		name: 'frontend-tiny',
-		fileDBs: ['all', 'frontend', 'external-fonts-noto', 'external-styles', 'external-maplibre'],
+		fileDBs: [
+			'all',
+			'frontend',
+			'external-fonts-noto',
+			'external-styles',
+			'external-sprites',
+			'external-versatiles-style',
+			'external-maplibre',
+		],
 		ignore: [
 			'*.js.map',
 			'*@3x.json',
