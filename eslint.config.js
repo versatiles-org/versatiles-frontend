@@ -7,17 +7,10 @@ export default [
 	js.configs.recommended,
 	...ts.configs.recommended,
 	{
-		ignores: [
-			'cache/**/*.*',
-			'coverage/**/*.*',
-			'dist/**/*.*',
-			'frontends/**/*.js',
-			'release/**/*.*',
-			'rollups/**/*.js',
-		],
+		ignores: ['cache/**/*.*', 'coverage/**/*.*', 'dist/**/*.*', 'frontends/**/*.js', 'release/**/*.*'],
 	},
 	{
-		files: ['src/**/*.ts', 'frontends/**/*.ts', 'rollups/**/*.ts', 'e2e/**/*.ts'],
+		files: ['src/**/*.ts', 'frontends/**/*.ts', 'e2e/**/*.ts'],
 		languageOptions: {
 			ecmaVersion: 'latest',
 			sourceType: 'module',
