@@ -216,6 +216,7 @@ describe('Build Process', () => {
 			'frontend',
 			'frontend-dev',
 			'frontend-min',
+			'frontend-blank',
 			'frontend-tiny',
 		]);
 

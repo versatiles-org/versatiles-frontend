@@ -146,6 +146,11 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 		],
 	},
 	{
+		name: 'frontend-blank',
+		description: 'Blank frontend with only fonts and sprites.',
+		fileDBs: ['external-fonts', 'external-sprites'],
+	},
+	{
 		name: 'frontend-tiny',
 		description:
 			'Minimal frontend with sprites, MapLibre, VersaTiles style and Noto Sans fonts supporting only Latin characters.',

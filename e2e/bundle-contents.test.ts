@@ -33,33 +33,23 @@ describe('Bundle contents', () => {
 		expect(path.file('font_families.json')).toBeTruthy();
 		expect(path.file('index.json')).toBeTruthy();
 
-		expect(path.count(/^noto_sans_regular\/\d+-\d+\.pbf$/)).toStrictEqual({
-			frontend: 405,
-			'frontend-dev': 405,
-			'frontend-min': 405,
-			'frontend-tiny': 4,
+		expect(path.count(/^noto_sans_\w+\/\d+-\d+\.pbf$/)).toStrictEqual({
+			frontend: 810,
+			'frontend-blank': 810,
+			'frontend-dev': 810,
+			'frontend-min': 810,
+			'frontend-tiny': 8,
 		});
-		expectMinSizes(path.sizes(/^noto_sans_regular\/\d+-\d+\.pbf$/), {
-			frontend: 38e6,
-			'frontend-dev': 38e6,
-			'frontend-min': 38e6,
-			'frontend-tiny': 400e3,
-		});
-
-		expect(path.count(/^noto_sans_bold\/\d+-\d+\.pbf$/)).toStrictEqual({
-			frontend: 405,
-			'frontend-dev': 405,
-			'frontend-min': 405,
-			'frontend-tiny': 4,
-		});
-		expectMinSizes(path.sizes(/^noto_sans_bold\/\d+-\d+\.pbf$/), {
-			frontend: 40e6,
-			'frontend-dev': 40e6,
-			'frontend-min': 40e6,
-			'frontend-tiny': 400e3,
+		expectMinSizes(path.sizes(/^noto_sans_\w+\/\d+-\d+\.pbf$/), {
+			frontend: 78e6,
+			'frontend-blank': 78e6,
+			'frontend-dev': 78e6,
+			'frontend-min': 78e6,
+			'frontend-tiny': 800e3,
 		});
 
 		expect(path.count(/^[a-z0-9_]+\/\d+-\d+\.pbf$/)).toStrictEqual({
+			'frontend-blank': 3244,
 			'frontend-dev': 3244,
 			frontend: 3244,
 		});
@@ -152,6 +142,7 @@ describe('Bundle contents', () => {
 		expect(path.count(/^basics\/sprites@2x\.(json|png)$/)).toBe(2);
 		expect(path.count(/^basics\/sprites.*\.(json|png)$/)).toStrictEqual({
 			frontend: 4,
+			'frontend-blank': 4,
 			'frontend-dev': 4,
 			'frontend-min': 4,
 		});
@@ -166,6 +157,7 @@ describe('Bundle contents', () => {
 		expect(path.count(/^markers\/sprites@2x\.(json|png)$/)).toBe(2);
 		expect(path.count(/^markers\/sprites.*\.(json|png)$/)).toStrictEqual({
 			frontend: 4,
+			'frontend-blank': 4,
 			'frontend-dev': 4,
 			'frontend-min': 4,
 		});
