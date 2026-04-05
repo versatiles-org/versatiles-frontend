@@ -40,13 +40,10 @@
 
 				const map = new maplibregl.Map({
 					container: 'map',
-					bounds: [-180, -80, 180, 80],
+					bounds: [-180, -85, 180, 85],
 					zoom: 5,
 					style,
-					maxZoom: 20,
 					hash: true,
-					maxPitch: 0,
-					dragRotate: false,
 				});
 
 				map.addControl(new maplibregl.NavigationControl(), 'top-right');
