@@ -17,7 +17,7 @@ vi.mock('../files/filedb', async (importOriginal) => {
 			super();
 			if (testFiles) {
 				Object.entries(testFiles).forEach(([name, content]) => {
-					this.files.set(name, new File(name, 12345, Buffer.from(content)));
+					this.files.set(name, new File(name, Buffer.from(content)));
 				});
 			}
 		}
@@ -93,18 +93,8 @@ describe('Curl', () => {
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
 
 		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledTimes(2);
-		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(
-			1,
-			'/test/folder/file1.txt',
-			1708473415000,
-			expect.any(Buffer)
-		);
-		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(
-			2,
-			'/test/folder/file2.txt',
-			1708473417000,
-			expect.any(Buffer)
-		);
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(1, '/test/folder/file1.txt', expect.any(Buffer));
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(2, '/test/folder/file2.txt', expect.any(Buffer));
 	});
 
 	it('should save a resource directly to a file', async () => {
@@ -112,7 +102,7 @@ describe('Curl', () => {
 
 		// Verify cache and FileDB interactions
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
-		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledWith(testFilename, expect.any(Number), expect.any(Buffer));
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledWith(testFilename, expect.any(Buffer));
 	});
 
 	it('should fetch, unzip, and save contents based on filter callback', async () => {
@@ -124,8 +114,8 @@ describe('Curl', () => {
 		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
 
 		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledTimes(2);
-		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(1, '/unzipped/file1.txt', 1820, expect.any(Buffer));
-		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(2, '/unzipped/file2.txt', 1821, expect.any(Buffer));
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(1, '/unzipped/file1.txt', expect.any(Buffer));
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(2, '/unzipped/file2.txt', expect.any(Buffer));
 	});
 
 	it('should return a buffer from getBuffer method', async () => {
@@ -173,10 +163,6 @@ describe('Curl', () => {
 
 		// Should only save one file
 		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledTimes(1);
-		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledWith(
-			'/test/folder/file1.txt',
-			expect.any(Number),
-			expect.any(Buffer)
-		);
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledWith('/test/folder/file1.txt', expect.any(Buffer));
 	});
 });

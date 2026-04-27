@@ -1,3 +1,4 @@
+import { createHash } from 'crypto';
 import { brotliCompress, constants } from 'zlib';
 import { cache } from '../utils/cache';
 
@@ -7,7 +8,7 @@ import { cache } from '../utils/cache';
 export class File {
 	public readonly name: string; // Name of the file.
 
-	public readonly hash: string; // Unique hash based on name, modification time, and size.
+	public readonly hash: string; // Unique hash based on name and content.
 
 	public readonly bufferRaw: Buffer; // Raw buffer content of the file.
 
@@ -17,12 +18,11 @@ export class File {
 	 * Constructs a File instance.
 	 *
 	 * @param name - Name of the file.
-	 * @param modificationTime - Last modification time, used in generating the hash.
 	 * @param bufferRaw - Raw buffer content of the file.
 	 */
-	public constructor(name: string, modificationTime: number, bufferRaw: Buffer) {
+	public constructor(name: string, bufferRaw: Buffer) {
 		this.name = name;
-		this.hash = name + ';' + modificationTime + ';' + bufferRaw.length;
+		this.hash = name + ';' + createHash('sha256').update(bufferRaw).digest('hex');
 		this.bufferRaw = bufferRaw;
 	}
 

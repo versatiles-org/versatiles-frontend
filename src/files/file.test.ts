@@ -1,4 +1,5 @@
 import { vi, describe, it, expect } from 'vitest';
+import { createHash } from 'crypto';
 import type { InputType, BrotliOptions, CompressCallback } from 'zlib';
 
 vi.mock('zlib', () => ({
@@ -22,20 +23,34 @@ const { File } = await import('./file');
 
 describe('File', () => {
 	const mockName = 'test.txt';
-	const mockModificationTime = 123456789;
 	const mockBufferRaw = Buffer.from('raw-data');
+	const expectedHash = mockName + ';' + createHash('sha256').update(mockBufferRaw).digest('hex');
 
 	it('should initialize with the correct properties', () => {
-		const file = new File(mockName, mockModificationTime, mockBufferRaw);
+		const file = new File(mockName, mockBufferRaw);
 
 		expect(file.name).toBe(mockName);
-		expect(file.hash).toBe(`${mockName};${mockModificationTime};${mockBufferRaw.length}`);
+		expect(file.hash).toBe(expectedHash);
 		expect(file.bufferRaw).toBe(mockBufferRaw);
 		expect(file.bufferBr).toBeUndefined();
 	});
 
+	it('should produce a stable hash for identical content regardless of identity', () => {
+		const a = new File(mockName, Buffer.from('raw-data'));
+		const b = new File(mockName, Buffer.from('raw-data'));
+
+		expect(a.hash).toBe(b.hash);
+	});
+
+	it('should produce different hashes for different content', () => {
+		const a = new File(mockName, Buffer.from('one'));
+		const b = new File(mockName, Buffer.from('two'));
+
+		expect(a.hash).not.toBe(b.hash);
+	});
+
 	it('should not compress if bufferBr already exists', async () => {
-		const file = new File(mockName, mockModificationTime, mockBufferRaw);
+		const file = new File(mockName, mockBufferRaw);
 		file.bufferBr = Buffer.from('already-compressed');
 
 		await file.compress();
@@ -45,7 +60,7 @@ describe('File', () => {
 	});
 
 	it('should compress the buffer and cache the result', async () => {
-		const file = new File(mockName, mockModificationTime, mockBufferRaw);
+		const file = new File(mockName, mockBufferRaw);
 
 		await file.compress();
 
@@ -72,7 +87,7 @@ describe('File', () => {
 			callback(new Error('Compression failed'), Buffer.alloc(0));
 		}) as typeof brotliCompress);
 
-		const file = new File(mockName, mockModificationTime, mockBufferRaw);
+		const file = new File(mockName, mockBufferRaw);
 
 		await expect(file.compress()).rejects.toThrow();
 

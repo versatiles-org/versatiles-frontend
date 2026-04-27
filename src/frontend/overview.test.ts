@@ -7,7 +7,7 @@ import { join } from 'path';
 import { tmpdir } from 'os';
 
 function mockFrontend(name: string, files: { name: string; size: number }[]): Frontend {
-	const fileObjects = files.map((f) => new File(f.name, 0, Buffer.alloc(f.size)));
+	const fileObjects = files.map((f) => new File(f.name, Buffer.alloc(f.size)));
 	return {
 		config: { name, fileDBs: [] },
 		*iterate() {

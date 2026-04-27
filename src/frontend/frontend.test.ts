@@ -125,9 +125,9 @@ describe('Frontend class', () => {
 	it('should apply filter callback', () => {
 		const filterFileDBs = new FileDBs({ all: {} });
 		const allDB = filterFileDBs.get('all');
-		allDB.setFileFromBuffer('keep.txt', 0, Buffer.from('keep'));
-		allDB.setFileFromBuffer('drop.txt', 0, Buffer.from('drop'));
-		allDB.setFileFromBuffer('also-keep.txt', 0, Buffer.from('also-keep'));
+		allDB.setFileFromBuffer('keep.txt', Buffer.from('keep'));
+		allDB.setFileFromBuffer('drop.txt', Buffer.from('drop'));
+		allDB.setFileFromBuffer('also-keep.txt', Buffer.from('also-keep'));
 
 		const filterConfig: FrontendConfig = {
 			name: 'filtered',
@@ -144,9 +144,9 @@ describe('Frontend class', () => {
 	it('should combine filter with ignore patterns', () => {
 		const filterFileDBs = new FileDBs({ all: {} });
 		const allDB = filterFileDBs.get('all');
-		allDB.setFileFromBuffer('a.txt', 0, Buffer.from('a'));
-		allDB.setFileFromBuffer('b.log', 0, Buffer.from('b'));
-		allDB.setFileFromBuffer('c.txt', 0, Buffer.from('c'));
+		allDB.setFileFromBuffer('a.txt', Buffer.from('a'));
+		allDB.setFileFromBuffer('b.log', Buffer.from('b'));
+		allDB.setFileFromBuffer('c.txt', Buffer.from('c'));
 
 		const filterConfig: FrontendConfig = {
 			name: 'combo',

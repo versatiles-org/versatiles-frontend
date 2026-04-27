@@ -41,6 +41,6 @@ export class StaticFileDB extends FileDB {
 	}
 
 	private setFileFromFilename(filename: string): void {
-		this.setFileFromBuffer(relative(this.path, filename), statSync(filename).mtimeMs, readFileSync(filename));
+		this.setFileFromBuffer(relative(this.path, filename), readFileSync(filename));
 	}
 }

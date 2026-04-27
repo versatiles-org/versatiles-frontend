@@ -32,7 +32,7 @@ export class NpmFileDB extends FileDB {
 				if (config.include && !config.include.test(relPath)) return;
 				let destName = config.flatten ? basename(relPath) : relPath;
 				if (config.rename?.[destName]) destName = config.rename[destName];
-				db.setFileFromBuffer(join(config.dest, destName), stat.mtimeMs, readFileSync(absPath));
+				db.setFileFromBuffer(join(config.dest, destName), readFileSync(absPath));
 			}
 		}
 	}

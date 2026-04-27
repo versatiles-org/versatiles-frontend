@@ -36,12 +36,11 @@ export abstract class FileDB {
 	 * Adds a file to the file system.
 	 *
 	 * @param filename - The name of the file.
-	 * @param modificationTime - The last modification time of the file.
 	 * @param buffer - The raw buffer content of the file.
 	 */
-	public setFileFromBuffer(filename: string, modificationTime: number, buffer: Buffer): void {
+	public setFileFromBuffer(filename: string, buffer: Buffer): void {
 		if (!filename) throw Error('filename is empty');
-		this.files.set(filename, new File(filename, modificationTime, buffer));
+		this.files.set(filename, new File(filename, buffer));
 	}
 
 	public setFile(file: File): void {

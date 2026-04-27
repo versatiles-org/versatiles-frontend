@@ -43,7 +43,7 @@ export class Curl {
 					if (path !== false) {
 						const buffers: Buffer[] = [];
 						for await (const buf of entry) buffers.push(buf);
-						this.fileDB.setFileFromBuffer(path, Number(entry.mtime ?? 0), Buffer.concat(buffers));
+						this.fileDB.setFileFromBuffer(path, Buffer.concat(buffers));
 					}
 					entry.resume();
 				},
@@ -62,7 +62,7 @@ export class Curl {
 	 * @param filename - The name of the file where the resource will be saved.
 	 */
 	public async save(filename: string): Promise<void> {
-		this.fileDB.setFileFromBuffer(filename, Math.random(), await this.getBuffer());
+		this.fileDB.setFileFromBuffer(filename, await this.getBuffer());
 	}
 
 	/**
@@ -77,7 +77,7 @@ export class Curl {
 			const path = cbFilter(entry.path);
 			if (path !== false) {
 				void entry.buffer().then((buffer) => {
-					this.fileDB.setFileFromBuffer(path, entry.vars.lastModifiedTime, buffer);
+					this.fileDB.setFileFromBuffer(path, buffer);
 				});
 			} else {
 				entry.autodrain();
