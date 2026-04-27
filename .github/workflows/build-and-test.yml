@@ -1,0 +1,67 @@
+name: Build and test
+
+on:
+  workflow_call:
+    inputs:
+      upload-release:
+        description: Upload the release/ folder as a workflow artifact
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+env:
+  FORCE_COLOR: 1
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: cache
+          key: build-cache-${{ github.run_id }}
+          restore-keys: |
+            build-cache-
+
+      - name: Build
+        run: npm run build
+
+      - name: Run e2e tests
+        run: npm run test:e2e
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      - name: Run browser e2e tests
+        run: npm run test:e2e:browser
+
+      - name: Upload Playwright report
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
+      - name: Upload release artifacts
+        if: inputs.upload-release
+        uses: actions/upload-artifact@v7
+        with:
+          name: release
+          path: release/
+          retention-days: 1

@@ -13,20 +13,21 @@ env:
   FORCE_COLOR: 1
 
 jobs:
+  build:
+    name: Build and test
+    uses: ./.github/workflows/build-and-test.yml
+    with:
+      upload-release: true
+
   release:
-    name: Build and release
+    name: Publish release
+    needs: build
     runs-on: ubuntu-latest
     env:
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout
         uses: actions/checkout@v6
-
-      - name: Setup Node
-        uses: actions/setup-node@v6
-        with:
-          node-version: 22
-          cache: npm
 
       - name: Get version and verify tag
         run: |
@@ -38,36 +39,11 @@ jobs:
           fi
           echo "RELEASE_TAG=$PKG_VERSION" >> $GITHUB_ENV
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Restore build cache
-        uses: actions/cache@v4
+      - name: Download release artifacts
+        uses: actions/download-artifact@v7
         with:
-          path: cache
-          key: build-cache-${{ github.run_id }}
-          restore-keys: |
-            build-cache-
-
-      - name: Build
-        run: npm run build
-
-      - name: Run e2e tests
-        run: npm run test:e2e
-
-      - name: Install Playwright browsers
-        run: npx playwright install --with-deps chromium
-
-      - name: Run browser e2e tests
-        run: npm run test:e2e:browser
-
-      - name: Upload Playwright report
-        if: failure()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
+          name: release
+          path: release/
 
       - name: Create release if needed
         run: gh release view $RELEASE_TAG || gh release create $RELEASE_TAG --draft
