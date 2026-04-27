@@ -165,6 +165,12 @@ test.describe('preview page', () => {
 		await expect(map.locator('canvas')).toBeAttached();
 	});
 
+	test('geolocate control present', async ({ page, serverUrl }) => {
+		await page.goto(`${serverUrl}/preview.html?id=osm`);
+		await waitForMapReady(page);
+		await expect(page.locator('.maplibregl-ctrl-geolocate')).toBeVisible();
+	});
+
 	test('inspect control present', async ({ page, serverUrl }) => {
 		await page.goto(`${serverUrl}/preview.html?id=osm`);
 		await waitForMapReady(page);
