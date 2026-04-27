@@ -25,6 +25,13 @@
 			});
 
 			map.addControl(new maplibregl.NavigationControl(), 'top-right');
+			map.addControl(
+				new maplibregl.GeolocateControl({
+					positionOptions: { enableHighAccuracy: true },
+					trackUserLocation: true,
+				}),
+				'top-right'
+			);
 			map.addControl(new VersaTilesStylerControl({ open: true }), 'top-left');
 
 			// collapse attribution control

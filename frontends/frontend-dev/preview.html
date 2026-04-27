@@ -47,6 +47,13 @@
 				});
 
 				map.addControl(new maplibregl.NavigationControl(), 'top-right');
+				map.addControl(
+					new maplibregl.GeolocateControl({
+						positionOptions: { enableHighAccuracy: true },
+						trackUserLocation: true,
+					}),
+					'top-right'
+				);
 
 				map.addControl(new MaplibreInspect());
 				map.addControl(new VersaTilesSVG.SVGExportControl(), 'top-right');
