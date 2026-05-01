@@ -40,7 +40,7 @@ jobs:
           echo "RELEASE_TAG=$PKG_VERSION" >> $GITHUB_ENV
 
       - name: Download release artifacts
-        uses: actions/download-artifact@v7
+        uses: actions/download-artifact@v8
         with:
           name: release
           path: release/
