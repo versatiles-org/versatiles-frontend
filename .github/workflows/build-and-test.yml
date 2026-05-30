@@ -30,14 +30,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Restore build cache
-        uses: actions/cache@v5
-        with:
-          path: cache
-          key: build-cache-${{ github.run_id }}
-          restore-keys: |
-            build-cache-
-
       - name: Build
         run: npm run build
 
