@@ -37,7 +37,7 @@
     "@playwright/test": "^1.60.0",
     "@types/escape-html": "^1.0.4",
     "@types/express": "^5.0.6",
-    "@types/node": "^25.9.1",
+    "@types/node": "^26.1.0",
     "@types/tar-stream": "^3.1.4",
     "@types/unzipper": "^0.10.11",
     "@typescript-eslint/eslint-plugin": "^8.60.0",
