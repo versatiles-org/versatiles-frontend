@@ -1,5 +1,6 @@
 import type { ProgressLabel } from './progress';
 import progress from './progress';
+import { forEachAsync } from '../utils/parallel';
 
 type AsyncFunction = () => Promise<void>;
 
@@ -46,7 +47,9 @@ export default class PromiseFunction {
 				for (const pf of pfs) await pf.init();
 			},
 			async () => {
-				await Promise.all(pfs.map(async (pf) => pf.run()));
+				// Cap concurrency via forEachAsync rather than a raw Promise.all, so a wide
+				// parallel() (e.g. many external downloads) can't open unbounded connections.
+				await forEachAsync(pfs, (pf) => pf.run());
 			}
 		);
 	}
