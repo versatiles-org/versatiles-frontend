@@ -99,6 +99,15 @@ describe('Bundle contents', () => {
 			expect(path.rest()).toStrictEqual({});
 		});
 
+		it('contains maplibre-gl-geocoder', () => {
+			const path = bundles.withPrefix('assets/lib/maplibre-gl-geocoder/');
+			const notTiny = { frontend: true, 'frontend-dev': true, 'frontend-min': true };
+			expect(path.file('maplibre-gl-geocoder.css')).toBeTruthy();
+			expect(path.file('maplibre-gl-geocoder.js')).toBeTruthy();
+			expect(path.file('maplibre-gl-geocoder.js.map')).toStrictEqual(notTiny);
+			expect(path.rest()).toStrictEqual({});
+		});
+
 		it('contains maplibre-versatiles-styler', () => {
 			const path = bundles.withPrefix('assets/lib/maplibre-versatiles-styler/');
 			expect(path.file('maplibre-versatiles-styler.d.ts')).toBeTruthy();

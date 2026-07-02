@@ -61,6 +61,13 @@ export const sourceConfigs = {
 		source: { name: 'MapLibre GL Inspect', url: 'https://github.com/maplibre/maplibre-gl-inspect' },
 	}),
 
+	'external-maplibre-gl-geocoder': npmSource('@maplibre/maplibre-gl-geocoder', {
+		include: /dist\/maplibre-gl-geocoder\.(js|css)(\.map)?$/,
+		flatten: true,
+		dest: 'assets/lib/maplibre-gl-geocoder/',
+		source: { name: 'MapLibre GL Geocoder', url: 'https://github.com/maplibre/maplibre-gl-geocoder' },
+	}),
+
 	'external-maplibre-versatiles-styler': npmSource('maplibre-versatiles-styler', {
 		include: /dist\/.*\.(umd\.cjs|d\.ts)(\.map)?$/,
 		flatten: true,
@@ -108,6 +115,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-versatiles-style',
 			'external-maplibre',
 			'external-maplibre-inspect',
+			'external-maplibre-gl-geocoder',
 			'external-maplibre-versatiles-styler',
 			'external-versatiles-svg-renderer',
 			'external-mapbox-rtl-text',
@@ -124,6 +132,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-versatiles-style',
 			'external-maplibre',
 			'external-maplibre-inspect',
+			'external-maplibre-gl-geocoder',
 			'external-maplibre-versatiles-styler',
 			'external-versatiles-svg-renderer',
 			'external-mapbox-rtl-text',
@@ -140,6 +149,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-versatiles-style',
 			'external-maplibre',
 			'external-maplibre-inspect',
+			'external-maplibre-gl-geocoder',
 			'external-maplibre-versatiles-styler',
 			'external-versatiles-svg-renderer',
 			'external-mapbox-rtl-text',
@@ -161,6 +171,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-sprites',
 			'external-versatiles-style',
 			'external-maplibre',
+			'external-maplibre-gl-geocoder',
 			'external-maplibre-versatiles-styler',
 		],
 		ignore: ['*.js.map', '*@3x.json', '*@3x.png', '*@4x.json', '*@4x.png', 'maplibre-gl-csp*', 'maplibre-gl-dev*'],
