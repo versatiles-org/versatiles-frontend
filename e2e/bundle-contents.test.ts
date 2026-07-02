@@ -34,24 +34,24 @@ describe('Bundle contents', () => {
 		expect(path.file('index.json')).toBeTruthy();
 
 		expect(path.count(/^noto_sans_\w+\/\d+-\d+\.pbf$/)).toStrictEqual({
-			frontend: 810,
-			'frontend-blank': 810,
-			'frontend-dev': 810,
-			'frontend-min': 810,
+			frontend: 512,
+			'frontend-blank': 512,
+			'frontend-dev': 512,
+			'frontend-min': 512,
 			'frontend-tiny': 8,
 		});
 		expectMinSizes(path.sizes(/^noto_sans_\w+\/\d+-\d+\.pbf$/), {
-			frontend: 78e6,
-			'frontend-blank': 78e6,
-			'frontend-dev': 78e6,
-			'frontend-min': 78e6,
+			frontend: 77e6,
+			'frontend-blank': 77e6,
+			'frontend-dev': 77e6,
+			'frontend-min': 77e6,
 			'frontend-tiny': 800e3,
 		});
 
 		expect(path.count(/^[a-z0-9_]+\/\d+-\d+\.pbf$/)).toStrictEqual({
-			'frontend-blank': 3244,
-			'frontend-dev': 3244,
-			frontend: 3244,
+			'frontend-blank': 47360,
+			'frontend-dev': 47360,
+			frontend: 47360,
 		});
 
 		expect(path.rest()).toStrictEqual({}); // no other files in glyphs/
