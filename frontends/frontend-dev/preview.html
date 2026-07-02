@@ -11,6 +11,17 @@
 
 		<script src="/assets/lib/maplibre-gl-geocoder/maplibre-gl-geocoder.js"></script>
 		<link href="/assets/lib/maplibre-gl-geocoder/maplibre-gl-geocoder.css" rel="stylesheet" />
+		<style>
+			/* Position the location search bar at the top center of the map. */
+			.maplibregl-ctrl-geocoder {
+				position: fixed;
+				top: 2px;
+				left: 50%;
+				transform: translateX(-50%);
+				margin: 0;
+				z-index: 2;
+			}
+		</style>
 
 		<script src="/assets/lib/versatiles-style/versatiles-style.js"></script>
 
