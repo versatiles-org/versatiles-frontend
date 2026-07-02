@@ -161,6 +161,30 @@ describe('Frontend class', () => {
 		expect(files).toStrictEqual(['a.txt']);
 	});
 
+	it('dedupes overlapping filenames first-wins across fileDBs', () => {
+		const dbs = new FileDBs({ all: {}, extra: {} });
+		dbs.get('all').setFileFromBuffer('shared.txt', Buffer.from('from-all'));
+		dbs.get('all').setFileFromBuffer('only-all.txt', Buffer.from('a'));
+		dbs.get('extra').setFileFromBuffer('shared.txt', Buffer.from('from-extra'));
+		dbs.get('extra').setFileFromBuffer('only-extra.txt', Buffer.from('e'));
+
+		const config: FrontendConfig = {
+			name: 'dedupe',
+			description: 'Dedupe frontend.',
+			fileDBs: ['all', 'extra'],
+		};
+
+		const frontend = new Frontend(dbs, config);
+		const files = [...frontend.iterate()];
+
+		// 'shared.txt' appears once, and its buffer comes from the first fileDB ('all'),
+		// consistent with getFile().
+		expect(files.map((f) => f.name).sort()).toStrictEqual(['only-all.txt', 'only-extra.txt', 'shared.txt']);
+		const shared = files.find((f) => f.name === 'shared.txt');
+		expect(shared?.bufferRaw).toEqual(Buffer.from('from-all'));
+		expect(frontend.getFile('shared.txt')).toEqual(Buffer.from('from-all'));
+	});
+
 	it('generates frontends', async () => {
 		await PromiseFunction.run(await generateFrontends(mockFileDBs, '/tmp/'));
 

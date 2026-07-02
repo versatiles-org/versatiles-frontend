@@ -91,10 +91,16 @@ export class Frontend {
 	 * Iterates over the frontend's files, filtering out those ignored.
 	 */
 	public *iterate(): IterableIterator<File> {
+		// Dedupe by name, first fileDB wins — matching getFile()'s first-match lookup, so
+		// overlapping filenames aren't double-counted in the overview or double-emitted in the tar.
+		const seen = new Set<string>();
 		for (const fileDBId of this.config.fileDBs) {
 			const fileDB = this.fileDBs.get(fileDBId);
 			for (const file of fileDB.iterate()) {
-				if (this.ignoreFilter(file.name)) yield file;
+				if (!this.ignoreFilter(file.name)) continue;
+				if (seen.has(file.name)) continue;
+				seen.add(file.name);
+				yield file;
 			}
 		}
 	}
