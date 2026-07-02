@@ -37,7 +37,9 @@ jobs:
         run: npm ci
 
       - name: Check vulnerabilities
-        run: npm audit --omit=dev
+        # All packages live under devDependencies (this is a build tool), so
+        # `--omit=dev` would audit nothing. Audit the full tree, failing on high+.
+        run: npm audit --audit-level=high
 
       - name: Check formatting
         run: npm run format:check
