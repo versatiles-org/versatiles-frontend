@@ -12,7 +12,9 @@ export async function getLatestGithubReleaseVersion(
 	repo: string,
 	allowPrerelease = false
 ): Promise<string> {
-	const url = `https://api.github.com/repos/${owner}/${repo}/releases`;
+	// Request up to 100 releases (the API returns 30 by default) so a burst of recent
+	// prereleases can't hide the latest stable release when allowPrerelease is false.
+	const url = `https://api.github.com/repos/${owner}/${repo}/releases?per_page=100`;
 
 	const headers = new Headers();
 	// Optionally use a GitHub token for authorization.
@@ -36,12 +38,13 @@ export async function getLatestGithubReleaseVersion(
 		throw Error(`Unexpected GitHub API response for ${url}, maybe set environment variable "GH_TOKEN"?`);
 	}
 
-	// Extract and return the latest version, ignoring the 'v' prefix.
+	// Return the first matching release (the API lists them newest-first), stripping an
+	// optional leading 'v' so repositories that tag without the prefix also work.
 	for (const entry of data) {
 		if (!allowPrerelease && entry.prerelease) continue;
 
 		const name = String(entry.tag_name);
-		if (name.startsWith('v')) return name.slice(1);
+		return name.startsWith('v') ? name.slice(1) : name;
 	}
 	// If no valid version is found, throw an error.
 	throw Error(`Could not fetch the version of the latest release: https://github.com/${owner}/${repo}/releases`);

@@ -37,7 +37,7 @@ describe('getLatestGithubReleaseVersion', () => {
 
 		expect(version).toBe('12.7.3');
 		expect(global.fetch).toHaveBeenCalledWith(
-			`https://api.github.com/repos/${owner}/${repo}/releases`,
+			`https://api.github.com/repos/${owner}/${repo}/releases?per_page=100`,
 			expect.anything()
 		);
 	});
@@ -51,6 +51,17 @@ describe('getLatestGithubReleaseVersion', () => {
 		const version = await getLatestGithubReleaseVersion(owner, repo);
 
 		expect(version).toBe('2.0.0');
+	});
+
+	it('accepts tags without a v prefix', async () => {
+		const owner = 'exampleOrg';
+		const repo = 'exampleRepo';
+
+		mockFetchResponse([{ tag_name: '2.5.1' }, { tag_name: '2.5.0' }]);
+
+		const version = await getLatestGithubReleaseVersion(owner, repo);
+
+		expect(version).toBe('2.5.1');
 	});
 
 	it('skips prerelease versions by default', async () => {
