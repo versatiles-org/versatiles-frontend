@@ -72,4 +72,29 @@ describe('StaticFileDB', () => {
 
 		expect(watchSpy).toHaveBeenCalledWith('/test/path', { recursive: true }, expect.any(Function));
 	});
+
+	it('watch callback updates an existing file on change', () => {
+		const db = new StaticFileDB('/test/path');
+		const watchSpy = vi.spyOn(fs, 'watch');
+		db.enterWatchMode();
+
+		const call = watchSpy.mock.calls.at(-1) as unknown as [string, unknown, (event: string, filename: string) => void];
+		const callback = call[2];
+		callback('change', 'file1.txt');
+
+		expect(db.getFile('file1.txt')).toEqual(Buffer.from('Content of file1'));
+	});
+
+	it('watch callback does not throw when a watched file is deleted', () => {
+		const db = new StaticFileDB('/test/path');
+		const watchSpy = vi.spyOn(fs, 'watch');
+		db.enterWatchMode();
+
+		const call = watchSpy.mock.calls.at(-1) as unknown as [string, unknown, (event: string, filename: string) => void];
+		const callback = call[2];
+
+		// A 'rename' event for a path that no longer exists must not crash the watcher.
+		expect(() => callback('rename', 'deleted.txt')).not.toThrow();
+		expect(db.getFile('deleted.txt')).toBeNull();
+	});
 });

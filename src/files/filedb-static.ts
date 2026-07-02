@@ -36,11 +36,31 @@ export class StaticFileDB extends FileDB {
 	public enterWatchMode(): void {
 		watch(this.path, { recursive: true }, (event, filename) => {
 			if (!filename || (event !== 'change' && event !== 'rename')) return;
-			this.setFileFromFilename(resolve(this.path, filename));
+			this.updateFileFromFilename(resolve(this.path, filename));
 		});
 	}
 
 	private setFileFromFilename(filename: string): void {
 		this.setFileFromBuffer(relative(this.path, filename), readFileSync(filename));
+	}
+
+	/**
+	 * Reflects a filesystem change into the in-memory database. A 'rename' event
+	 * also fires on deletions and on newly-created directories, so we must not
+	 * blindly read the path — that would crash the watcher with ENOENT/EISDIR.
+	 */
+	private updateFileFromFilename(filename: string): void {
+		const name = relative(this.path, filename);
+		try {
+			if (!existsSync(filename) || !statSync(filename).isFile()) {
+				// File was deleted or the event refers to a directory: drop any stale entry.
+				this.files.delete(name);
+				return;
+			}
+			this.setFileFromBuffer(name, readFileSync(filename));
+		} catch {
+			// The file may have been removed/replaced between the check and the read.
+			this.files.delete(name);
+		}
 	}
 }
