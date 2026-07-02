@@ -1,5 +1,4 @@
 import { existsSync, mkdirSync, rmSync } from 'fs';
-import { dirname } from 'path';
 
 /**
  * Deletes the contents of a folder recursively and recreates it.
@@ -21,7 +20,5 @@ export function cleanupFolder(path: string): void {
  * @param path - The path to the folder to ensure.
  */
 export function ensureFolder(path: string): void {
-	if (existsSync(path)) return; // If the folder already exists, do nothing.
-	ensureFolder(dirname(path)); // Ensure the parent directory exists.
-	mkdirSync(path); // Create the folder.
+	mkdirSync(path, { recursive: true });
 }
