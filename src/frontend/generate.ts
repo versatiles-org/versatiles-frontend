@@ -77,7 +77,6 @@ export function generateFrontend(
 					sGz.end();
 				})(),
 			]);
-			sGz.end();
 			s.end();
 		}
 	);
