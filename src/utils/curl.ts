@@ -34,18 +34,24 @@ export class Curl {
 	 */
 	public async ungzipUntar(cbFilter: (filename: string) => string | false): Promise<void> {
 		const buffer = await this.getBuffer();
+		// Track each entry's write so we can await them all; the stream's 'end'
+		// event only signals the end of parsing, not that every file was written.
+		const pending: Promise<void>[] = [];
 		await new Promise<void>((resolve, reject) => {
 			const streamIn = createGunzip();
 			const extract = tar.t({
-				onReadEntry: async (entry) => {
+				onReadEntry: (entry) => {
 					if (entry.type !== 'File') return entry.resume();
 					const path = cbFilter(entry.path);
-					if (path !== false) {
+					if (path === false) return entry.resume();
+					const work = (async (): Promise<void> => {
 						const buffers: Buffer[] = [];
 						for await (const buf of entry) buffers.push(buf);
 						this.fileDB.setFileFromBuffer(path, Buffer.concat(buffers));
-					}
-					entry.resume();
+					})();
+					// Propagate write/read failures instead of leaving them as unhandled rejections.
+					work.catch(reject);
+					pending.push(work);
 				},
 			});
 			streamIn.on('error', reject);
@@ -54,6 +60,8 @@ export class Curl {
 			streamIn.pipe(extract);
 			streamIn.end(buffer);
 		});
+		// Wait for all in-flight entry writes to complete before returning.
+		await Promise.all(pending);
 	}
 
 	/**
@@ -72,19 +80,27 @@ export class Curl {
 	 * @param cbFilter - A callback function that determines the save path for each unzipped file, or skips the file.
 	 */
 	public async unzip(cbFilter: (filename: string) => string | false): Promise<void> {
+		const buffer = await this.getBuffer();
+		// Track each entry's write; `finished(zip)` only resolves when the stream
+		// ends, not when the async entry.buffer() writes have completed.
+		const pending: Promise<void>[] = [];
 		const zip = unzipper.Parse();
 		zip.on('entry', (entry: Entry) => {
 			const path = cbFilter(entry.path);
-			if (path !== false) {
-				void entry.buffer().then((buffer) => {
-					this.fileDB.setFileFromBuffer(path, buffer);
-				});
-			} else {
+			if (path === false) {
 				entry.autodrain();
+				return;
 			}
+			pending.push(
+				entry.buffer().then((buf) => {
+					this.fileDB.setFileFromBuffer(path, buf);
+				})
+			);
 		});
-		zip.end(await this.getBuffer());
+		zip.end(buffer);
 		await finished(zip);
+		// Wait for all in-flight entry writes to complete before returning.
+		await Promise.all(pending);
 	}
 
 	/**
