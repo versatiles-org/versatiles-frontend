@@ -94,8 +94,13 @@ export default class PromiseFunction {
 			},
 			async () => {
 				s.start();
-				await pf.run();
-				s.end();
+				try {
+					await pf.run();
+				} finally {
+					// Always end the label, even if the work throws, so the progress
+					// display doesn't leave it stuck in the "running" state on failure.
+					s.end();
+				}
 			}
 		);
 	}
@@ -116,8 +121,13 @@ export default class PromiseFunction {
 			},
 			async () => {
 				s.start();
-				await af();
-				s.end();
+				try {
+					await af();
+				} finally {
+					// Always end the label, even if the work throws, so the progress
+					// display doesn't leave it stuck in the "running" state on failure.
+					s.end();
+				}
 			}
 		);
 	}

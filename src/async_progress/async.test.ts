@@ -160,6 +160,23 @@ describe('PromiseFunction', () => {
 			expect(progressLabel.start).toHaveBeenCalledBefore(mockRun);
 			expect(mockRun).toHaveBeenCalledBefore(vi.mocked(progressLabel.end));
 		});
+
+		it('ends the progress label even when the wrapped work throws', async () => {
+			vi.clearAllMocks();
+
+			const mockInit = getAsyncMock();
+			const mockRun = vi.fn(async () => {
+				throw new Error('boom');
+			});
+
+			await expect(
+				PromiseFunctions.run(PromiseFunctions.wrapProgress('Test Progress', PromiseFunctions.single(mockInit, mockRun)))
+			).rejects.toThrow('boom');
+
+			const progressLabel = vi.mocked(progress.add).mock.results[0].value as ProgressLabel;
+			expect(progressLabel.start).toHaveBeenCalledTimes(1);
+			expect(progressLabel.end).toHaveBeenCalledTimes(1);
+		});
 	});
 
 	describe('wrapAsync', () => {
@@ -182,6 +199,22 @@ describe('PromiseFunction', () => {
 			expect(progress.add).toHaveBeenCalledBefore(vi.mocked(progressLabel.start));
 			expect(progressLabel.start).toHaveBeenCalledBefore(mockAsync);
 			expect(mockAsync).toHaveBeenCalledBefore(vi.mocked(progressLabel.end));
+		});
+
+		it('ends the progress label even when the wrapped async function throws', async () => {
+			vi.clearAllMocks();
+
+			const mockAsync = vi.fn(async () => {
+				throw new Error('boom');
+			});
+
+			await expect(PromiseFunctions.run(PromiseFunctions.wrapAsync('Test Progress', 3, mockAsync))).rejects.toThrow(
+				'boom'
+			);
+
+			const progressLabel = vi.mocked(progress.add).mock.results[0].value as ProgressLabel;
+			expect(progressLabel.start).toHaveBeenCalledTimes(1);
+			expect(progressLabel.end).toHaveBeenCalledTimes(1);
 		});
 	});
 });
