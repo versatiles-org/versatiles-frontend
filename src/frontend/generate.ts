@@ -25,8 +25,8 @@ export function generateFrontends(fileDBs: FileDBs, dstFolder: string): PromiseF
 		async () => {
 			s = progress.add('generate frontends');
 			const configs = await loadFrontendConfigs();
-			const todos = configs.map(
-				(config: FrontendConfig): PromiseFunction => generateFrontend(config, fileDBs, dstFolder, frontends)
+			const todos = configs.map((config: FrontendConfig): PromiseFunction =>
+				generateFrontend(config, fileDBs, dstFolder, frontends)
 			);
 			parallel = PromiseFunction.parallel(...todos);
 			await parallel.init();
