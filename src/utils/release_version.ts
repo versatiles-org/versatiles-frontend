@@ -1,3 +1,5 @@
+import { fetchRetry } from './fetch';
+
 /**
  * Fetches the latest release version of a GitHub repository.
  *
@@ -16,8 +18,16 @@ export async function getLatestGithubReleaseVersion(
 	// Optionally use a GitHub token for authorization.
 	if (process.env.GH_TOKEN != null) headers.append('Authorization', 'Bearer ' + process.env.GH_TOKEN);
 
-	const response = await fetch(url, { headers, redirect: 'follow' });
+	const response = await fetchRetry(url, { headers, redirect: 'follow' });
 	if (!response.ok) {
+		// Detect the (very common) unauthenticated rate-limit case and give an actionable message.
+		if (response.status === 403 && response.headers.get('X-RateLimit-Remaining') === '0') {
+			const reset = response.headers.get('X-RateLimit-Reset');
+			const resetInfo = reset ? `, resets at ${new Date(Number(reset) * 1000).toISOString()}` : '';
+			throw Error(
+				`GitHub API rate limit exceeded for ${url}${resetInfo}. Set environment variable "GH_TOKEN" to raise the limit.`
+			);
+		}
 		throw Error(`GitHub API returned ${response.status} for ${url}, maybe set environment variable "GH_TOKEN"?`);
 	}
 	const data = await response.json();

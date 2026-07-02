@@ -5,6 +5,7 @@ import unzipper from 'unzipper';
 import type { Entry } from 'unzipper';
 import type { FileDB } from '../files/filedb';
 import { cache } from './cache';
+import { fetchRetry } from './fetch';
 
 /**
  * Provides utilities for fetching resources over HTTP(s), with support for caching,
@@ -115,7 +116,7 @@ export class Curl {
 			if (!url.startsWith('https://')) {
 				throw Error(`only secure https:// urls are supported, got: ${url}`);
 			}
-			const response = await fetch(url, { redirect: 'follow' });
+			const response = await fetchRetry(url, { redirect: 'follow' });
 			if (response.status !== 200) throw Error(`url "${url}" returned error ${response.status}`);
 			return Buffer.from(await response.arrayBuffer());
 		});

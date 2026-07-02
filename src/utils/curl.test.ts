@@ -125,7 +125,7 @@ describe('Curl', () => {
 		expect(buffer).toBeInstanceOf(Buffer);
 		expect(buffer.toString()).toEqual('mocked response');
 		// Ensure the fetch was called with the correct arguments
-		expect(fetch).toHaveBeenCalledWith(testUrl, { redirect: 'follow' });
+		expect(fetch).toHaveBeenCalledWith(testUrl, expect.objectContaining({ redirect: 'follow' }));
 	});
 
 	it('should throw an error for non-HTTPS URLs in getBuffer', async () => {
