@@ -5,6 +5,49 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.12.0] - 2026-07-02
+
+### Features
+
+- implement fetchRetry utility for enhanced fetch handling with retries and timeouts
+- implement safeJoinDest utility to prevent path traversal vulnerabilities
+- implement atomic file writes in cache function to prevent data corruption
+- update getLatestGithubReleaseVersion to fetch up to 100 releases and handle tags without 'v' prefix
+- ensure progress label ends even when wrapped functions throw errors
+- limit concurrency in parallel execution using forEachAsync to prevent unbounded connections
+- add deduplication of overlapping filenames in Frontend class
+- add support for maplibre-gl-geocoder in bundle contents and configuration, close #74
+- add maplibre-gl-geocoder support for location search in frontend files, close #71
+
+### Bug Fixes
+
+- update npm audit command to check full dependency tree for vulnerabilities
+- remove redundant progress end call in generateFrontend function
+- update playwright version in test:e2e:browser:update-linux script
+
+### Code Refactoring
+
+- simplify mapping of frontend configurations in generateFrontends function
+- improve handling of asynchronous file writes in ungzipUntar and unzip methods
+- enhance file change handling in StaticFileDB with robust update logic
+- simplify folder creation logic in ensureFolder function
+- remove unused TypeScript compiler options from tsconfig.json
+- update flowchart structure in README.md for better clarity
+
+### Tests
+
+- add proxy error handling tests for upstream responses
+- update expected counts and sizes for glyph assets in bundle-contents test, because of new font release
+- update e2e and screenshots
+
+### Chores
+
+- **deps-dev:** bump the npm group with 7 updates
+- update Docker release workflow inputs to include build_planetiler
+- **deps:** bump the action group with 2 updates
+- update dependencies in package.json
+- remove pre-commit hook for formatting and linting checks
+
 ## [3.11.4] - 2026-05-30
 
 ### Chores
