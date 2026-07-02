@@ -9,6 +9,9 @@
 		<script src="/assets/lib/maplibre-gl/maplibre-gl.js"></script>
 		<link href="/assets/lib/maplibre-gl/maplibre-gl.css" rel="stylesheet" />
 
+		<script src="/assets/lib/maplibre-gl-geocoder/maplibre-gl-geocoder.js"></script>
+		<link href="/assets/lib/maplibre-gl-geocoder/maplibre-gl-geocoder.css" rel="stylesheet" />
+
 		<script src="/assets/lib/versatiles-style/versatiles-style.js"></script>
 
 		<script src="/assets/lib/versatiles-svg-renderer/versatiles-svg-renderer.js"></script>
@@ -57,6 +60,25 @@
 
 				map.addControl(new MaplibreInspect());
 				map.addControl(new VersaTilesSVG.SVGExportControl(), 'top-right');
+
+				// Location search (address geocoding) powered by the VersaTiles Photon backend.
+				const geocoder = new MaplibreGeocoder(
+					{
+						forwardGeocode: async (config) => {
+							const url = `https://geocode.versatiles.org/api?q=${encodeURIComponent(config.query)}&limit=5`;
+							const geojson = await (await fetch(url)).json();
+							geojson.features.forEach((f) => {
+								const { name, city, country } = f.properties;
+								f.place_name = [name, city, country].filter(Boolean).join(', ');
+								f.place_type = ['place'];
+								f.center = f.geometry.coordinates;
+							});
+							return geojson;
+						},
+					},
+					{ maplibregl, marker: false, placeholder: 'Search location' }
+				);
+				map.addControl(geocoder, 'top-left');
 
 				// collapse attribution control
 				document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');
