@@ -143,6 +143,44 @@ describe('Server', () => {
 		}
 	});
 
+	it('forwards the upstream error status through the proxy', async () => {
+		const backend = http.createServer((_req, res) => {
+			res.writeHead(503, { 'content-type': 'text/plain' });
+			res.end('upstream down');
+		});
+		backend.listen(0);
+		const backendPort = (backend.address() as AddressInfo).port;
+
+		try {
+			setup({}, { proxy: [{ from: '/api/', to: `http://localhost:${backendPort}/api/` }] });
+			const res = await get(baseUrl, '/api/data');
+
+			expect(res.status).toBe(503);
+			expect(res.body).toBe('upstream down');
+		} finally {
+			backend.close();
+		}
+	});
+
+	it('serves an empty proxied body instead of turning it into a 404', async () => {
+		const backend = http.createServer((_req, res) => {
+			res.writeHead(200, { 'content-type': 'application/x-protobuf' });
+			res.end();
+		});
+		backend.listen(0);
+		const backendPort = (backend.address() as AddressInfo).port;
+
+		try {
+			setup({}, { proxy: [{ from: '/api/', to: `http://localhost:${backendPort}/api/` }] });
+			const res = await get(baseUrl, '/api/empty');
+
+			expect(res.status).toBe(200);
+			expect(res.body).toBe('');
+		} finally {
+			backend.close();
+		}
+	});
+
 	it('returns 502 when proxy fetch fails', async () => {
 		// Use a port that nothing is listening on
 		setup({}, { proxy: [{ from: '/api/', to: 'http://localhost:1/' }] });

@@ -115,15 +115,15 @@ export class Server {
 
 				const url = proxy.to + path.slice(proxy.from.length);
 
-				// Fetch the proxied URL
+				// A matching proxy rule always handles the request. Forward the upstream
+				// status and body verbatim — including error statuses and empty bodies —
+				// instead of masking them as 200 (hiding errors) or 404 (dropping empty
+				// but valid responses such as empty tiles).
 				const response = await fetch(url);
 				const contentType = response.headers.get('content-type') ?? lookup(url) ?? 'application/octet-stream';
-
-				// Fetch the proxied URL, using the cache to avoid repeated requests.
 				const buffer = Buffer.from(await response.arrayBuffer());
-				if (buffer.length === 0) return false;
 
-				res.header('content-type', contentType.toString()).status(200).end(buffer);
+				res.header('content-type', contentType).status(response.status).end(buffer);
 				return true;
 			}
 		});
