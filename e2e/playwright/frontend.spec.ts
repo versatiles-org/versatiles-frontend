@@ -104,6 +104,12 @@ test('MaplibreInspect control is present', async ({ page, serverUrl }) => {
 	await expect(page.locator('.maplibregl-ctrl-inspect')).toBeAttached();
 });
 
+test('location search (geocoder) control is present', async ({ page, serverUrl }) => {
+	await page.goto(serverUrl);
+	await waitForMapReady(page);
+	await expect(page.locator('.maplibregl-ctrl-geocoder--input')).toBeAttached();
+});
+
 test('screenshot', async ({ page, serverUrl }) => {
 	await installMapIdleHook(page);
 	await page.setViewportSize({ width: 1024, height: 768 });

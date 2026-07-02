@@ -177,6 +177,12 @@ test.describe('preview page', () => {
 		await expect(page.getByRole('button', { name: 'Toggle Inspect' })).toBeAttached();
 	});
 
+	test('location search (geocoder) control present', async ({ page, serverUrl }) => {
+		await page.goto(`${serverUrl}/preview.html?id=osm`);
+		await waitForMapReady(page);
+		await expect(page.locator('.maplibregl-ctrl-geocoder--input')).toBeVisible();
+	});
+
 	test('logo is present', async ({ page, serverUrl }) => {
 		await page.goto(`${serverUrl}/preview.html?id=osm`);
 		const logo = page.locator('img[alt="VersaTiles"]');
