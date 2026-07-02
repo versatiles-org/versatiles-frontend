@@ -1,7 +1,8 @@
 import { Curl } from '../utils/curl';
-import { basename, join } from 'path';
+import { basename } from 'path';
 import notes from '../utils/release_notes';
 import { FileDB } from './filedb';
+import { safeJoinDest } from './safe-path';
 import { getLatestGithubReleaseVersion } from '../utils/release_version';
 import type { ExternalSourceConfig, AssetConfig } from './source_config';
 
@@ -42,7 +43,12 @@ export class ExternalFileDB extends FileDB {
 			if (asset.include && !asset.include.test(filename)) return false;
 			let name = asset.flatten ? basename(filename) : filename;
 			if (asset.rename?.[name]) name = asset.rename[name];
-			return join(asset.dest, name);
+			const dest = safeJoinDest(asset.dest, name);
+			if (dest === false) {
+				console.warn(`Skipping unsafe archive entry "${filename}" (escapes "${asset.dest}")`);
+				return false;
+			}
+			return dest;
 		};
 
 		switch (asset.format) {

@@ -3,6 +3,7 @@ import { basename, dirname, join } from 'path';
 import { createRequire } from 'module';
 import notes from '../utils/release_notes';
 import { FileDB } from './filedb';
+import { safeJoinDest } from './safe-path';
 import type { NpmSourceConfig } from './source_config';
 
 export class NpmFileDB extends FileDB {
@@ -32,7 +33,12 @@ export class NpmFileDB extends FileDB {
 				if (config.include && !config.include.test(relPath)) return;
 				let destName = config.flatten ? basename(relPath) : relPath;
 				if (config.rename?.[destName]) destName = config.rename[destName];
-				db.setFileFromBuffer(join(config.dest, destName), readFileSync(absPath));
+				const dest = safeJoinDest(config.dest, destName);
+				if (dest === false) {
+					console.warn(`Skipping unsafe package entry "${relPath}" (escapes "${config.dest}")`);
+					return;
+				}
+				db.setFileFromBuffer(dest, readFileSync(absPath));
 			}
 		}
 	}
