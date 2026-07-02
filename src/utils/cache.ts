@@ -1,11 +1,12 @@
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
+import { createHash } from 'crypto';
 import { resolve } from 'path';
 import { ensureFolder } from './utils';
 
 // Define the path to the cache folder relative to the module location.
 const cacheFolder = new URL('../../cache', import.meta.url).pathname;
 
-// Initialize the "database" for caching with string keys and Buffer values.
+// Ensure the cache folder exists.
 mkdirSync(cacheFolder, { recursive: true });
 
 /**
@@ -19,7 +20,7 @@ mkdirSync(cacheFolder, { recursive: true });
  */
 export async function cache(action: string, key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> {
 	const folder = resolve(cacheFolder, sanitize(action));
-	const filename = resolve(folder, sanitize(key));
+	const filename = resolve(folder, filenameForKey(key));
 
 	if (existsSync(filename)) return readFileSync(filename);
 
@@ -27,12 +28,26 @@ export async function cache(action: string, key: string, cbBuffer: () => Promise
 	if (!(buffer instanceof Buffer)) throw Error('The callback function must return a Buffer');
 
 	ensureFolder(folder);
-	writeFileSync(filename, buffer);
+	// Write atomically: a crash or concurrent write mid-`writeFileSync` must not leave a
+	// truncated file that a later run would treat as a valid cache hit. Write to a unique
+	// temp file first, then rename (atomic on the same filesystem).
+	const tmpFilename = `${filename}.${process.pid}.tmp`;
+	writeFileSync(tmpFilename, buffer);
+	renameSync(tmpFilename, filename);
 
 	return buffer;
 
-	function sanitize(key: string): string {
-		return key
+	function filenameForKey(rawKey: string): string {
+		const name = sanitize(rawKey);
+		// Bound the filename to stay well under the typical 255-byte limit; disambiguate the
+		// truncated name with a short hash of the full key so long URLs don't collide/throw.
+		if (name.length <= 200) return name;
+		const hash = createHash('sha256').update(rawKey).digest('hex').slice(0, 16);
+		return `${name.slice(0, 200)}_${hash}`;
+	}
+
+	function sanitize(rawKey: string): string {
+		return rawKey
 			.replace(/[^a-z0-9-_. ]/gi, (c) => ' x' + c.charCodeAt(0) + ' ')
 			.trim()
 			.replace(/\s+/g, '_');

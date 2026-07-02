@@ -6,6 +6,7 @@ vi.mock('fs', () => ({
 	mkdirSync: vi.fn(),
 	readFileSync: vi.fn(),
 	writeFileSync: vi.fn(),
+	renameSync: vi.fn(),
 }));
 vi.mock('path', () => ({
 	resolve: vi.fn((...args: string[]) => args.join('/')),
@@ -45,7 +46,12 @@ describe('cache function', () => {
 
 		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key$/));
 		expect(fs.readFileSync).not.toHaveBeenCalled();
-		expect(fs.writeFileSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key$/), mockBuffer);
+		// Written atomically: to a temp file, then renamed to the final path.
+		expect(fs.writeFileSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key\.\d+\.tmp$/), mockBuffer);
+		expect(fs.renameSync).toHaveBeenCalledWith(
+			expect.stringMatching(/\/action\/key\.\d+\.tmp$/),
+			expect.stringMatching(/\/action\/key$/)
+		);
 		expect(result).toBe(mockBuffer);
 	});
 
@@ -67,8 +73,27 @@ describe('cache function', () => {
 		await cache('äçtion', 'key/with special@chars', async () => mockBuffer);
 
 		expect(fs.writeFileSync).toHaveBeenCalledWith(
-			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars$/),
+			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars\.\d+\.tmp$/),
 			mockBuffer
 		);
+		expect(fs.renameSync).toHaveBeenCalledWith(
+			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars\.\d+\.tmp$/),
+			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars$/)
+		);
+	});
+
+	it('bounds very long keys with a hash suffix to avoid ENAMETOOLONG', async () => {
+		vi.mocked(fs.existsSync).mockReturnValue(false);
+		const mockBuffer = Buffer.from('data');
+
+		await cache('action', 'a'.repeat(300), async () => mockBuffer);
+
+		const writtenPath = vi.mocked(fs.writeFileSync).mock.calls[0][0] as string;
+		const keySegment = writtenPath
+			.split('/')
+			.pop()!
+			.replace(/\.\d+\.tmp$/, '');
+		// 200 truncated chars + '_' + 16 hex chars of the sha256 hash.
+		expect(keySegment).toMatch(/^a{200}_[0-9a-f]{16}$/);
 	});
 });
