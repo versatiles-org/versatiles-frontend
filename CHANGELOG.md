@@ -5,6 +5,23 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.13.0] - 2026-07-08
+
+### Features
+
+- add styling for location search bar positioning in map view
+- implement file transformation logic in Frontend class and add tests for emptyGlyphPbf
+- improve fetchRetry to clear timeout timer and prevent uncaught exceptions
+
+### Tests
+
+- update expected count for noto_sans files in bundle contents test
+
+### Chores
+
+- update Playwright screenshot snapshots for Chromium on Darwin and Linux
+- update dependencies in package.json
+
 ## [3.12.0] - 2026-07-02
 
 ### Features
