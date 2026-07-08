@@ -33,13 +33,7 @@ describe('Bundle contents', () => {
 		expect(path.file('font_families.json')).toBeTruthy();
 		expect(path.file('index.json')).toBeTruthy();
 
-		expect(path.count(/^noto_sans_\w+\/\d+-\d+\.pbf$/)).toStrictEqual({
-			frontend: 512,
-			'frontend-blank': 512,
-			'frontend-dev': 512,
-			'frontend-min': 512,
-			'frontend-tiny': 8,
-		});
+		expect(path.count(/^noto_sans_\w+\/\d+-\d+\.pbf$/)).toStrictEqual(512);
 		expectMinSizes(path.sizes(/^noto_sans_\w+\/\d+-\d+\.pbf$/), {
 			frontend: 77e6,
 			'frontend-blank': 77e6,
