@@ -27,6 +27,27 @@ describe('fetchRetry', () => {
 		);
 	});
 
+	it('clears its timeout timer once the request settles, leaving none dangling', async () => {
+		// A leftover AbortSignal.timeout() timer fires later on the already-finished request and
+		// surfaces as an uncaught DOMException [TimeoutError] mid-build; the timer must be cleared.
+		vi.useFakeTimers();
+		try {
+			const clearSpy = vi.spyOn(global, 'clearTimeout');
+			// @ts-expect-error mocking global
+			global.fetch = vi.fn(async () => ({ status: 200 }));
+
+			await fetchRetry('https://example.com', {}, { retryDelayMs: 0 });
+
+			expect(clearSpy).toHaveBeenCalled();
+			expect(vi.getTimerCount()).toBe(0);
+			// Nothing fires even long past the 30s default timeout.
+			vi.advanceTimersByTime(120000);
+			expect(vi.getTimerCount()).toBe(0);
+		} finally {
+			vi.useRealTimers();
+		}
+	});
+
 	it('does not retry 4xx responses', async () => {
 		const res = { status: 404 };
 		// @ts-expect-error mocking global

@@ -27,8 +27,17 @@ export async function fetchRetry(
 
 	let lastError: unknown;
 	for (let attempt = 0; attempt <= retries; attempt++) {
+		// Use a manual controller instead of AbortSignal.timeout() so we can clear the timer
+		// as soon as the request settles. An uncleared AbortSignal.timeout() keeps a pending
+		// timer that fires later on the already-finished request, surfacing as an uncaught
+		// DOMException [TimeoutError] mid-build.
+		const controller = new AbortController();
+		const timer = setTimeout(
+			() => controller.abort(new DOMException('The operation was aborted due to timeout', 'TimeoutError')),
+			timeoutMs
+		);
 		try {
-			const response = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
+			const response = await fetch(url, { ...init, signal: controller.signal });
 
 			// Retry transient server errors; return everything else (incl. 4xx) to the caller.
 			if (response.status >= 500 && attempt < retries) {
@@ -42,6 +51,8 @@ export async function fetchRetry(
 			lastError = error;
 			if (attempt >= retries) break;
 			await delay(retryDelayMs * 2 ** attempt);
+		} finally {
+			clearTimeout(timer);
 		}
 	}
 
