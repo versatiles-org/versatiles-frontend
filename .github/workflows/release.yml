@@ -45,8 +45,13 @@ jobs:
           name: release
           path: release/
 
-      - name: Create release if needed
-        run: gh release view $RELEASE_TAG || gh release create $RELEASE_TAG --draft
+      - name: Create or reset release as draft
+        # Ensure the release is a draft while assets upload, even on re-runs
+        # where a previous attempt may have already created or published it.
+        run: |
+          gh release view $RELEASE_TAG >/dev/null 2>&1 \
+            && gh release edit $RELEASE_TAG --draft=true \
+            || gh release create $RELEASE_TAG --draft
 
       - name: Add files to release
         run: gh release upload $RELEASE_TAG --clobber release/*.tar.gz
