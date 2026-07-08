@@ -4,7 +4,7 @@ import { createWriteStream } from 'fs';
 import { pipeline } from 'stream/promises';
 import ignore from 'ignore';
 import tar from 'tar-stream';
-import type { File } from '../files/file';
+import { File } from '../files/file';
 import { FileDBs } from '../files/filedbs';
 
 /**
@@ -16,6 +16,12 @@ export interface FrontendConfig<fileDBKeys = string> {
 	fileDBs: fileDBKeys[];
 	ignore?: string[];
 	filter?: (filename: string) => boolean;
+	/**
+	 * Rewrites files just before they are emitted. Return the file unchanged to keep it,
+	 * a new {@link File} (same name, different content) to replace it, or `null` to drop it.
+	 * Applied after `ignore`/`filter`, so it only sees files that survived those.
+	 */
+	transform?: (file: File) => File | null;
 }
 
 /**
@@ -99,8 +105,12 @@ export class Frontend {
 			for (const file of fileDB.iterate()) {
 				if (!this.ignoreFilter(file.name)) continue;
 				if (seen.has(file.name)) continue;
+				const transformed = this.config.transform ? this.config.transform(file) : file;
+				// A transform returning null drops the file without claiming its name, so a
+				// later fileDB can still provide it — matching the ignore/filter `continue` above.
+				if (transformed == null) continue;
 				seen.add(file.name);
-				yield file;
+				yield transformed;
 			}
 		}
 	}
@@ -111,7 +121,12 @@ export class Frontend {
 		for (const fileDBId of this.config.fileDBs) {
 			const fileDB = this.fileDBs.get(fileDBId);
 			const buffer = fileDB.getFile(path);
-			if (buffer) return buffer;
+			if (!buffer) continue;
+			if (!this.config.transform) return buffer;
+			// Keep the dev server in sync with the tarball: apply the same rewrite here.
+			const transformed = this.config.transform(new File(path, buffer));
+			if (transformed == null) continue;
+			return transformed.bufferRaw;
 		}
 		return null;
 	}

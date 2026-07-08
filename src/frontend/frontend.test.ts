@@ -161,6 +161,55 @@ describe('Frontend class', () => {
 		expect(files).toStrictEqual(['a.txt']);
 	});
 
+	it('should apply transform callback to replace and drop files', async () => {
+		const { File } = await import('../files/file');
+		const dbs = new FileDBs({ all: {} });
+		const allDB = dbs.get('all');
+		allDB.setFileFromBuffer('keep.txt', Buffer.from('keep'));
+		allDB.setFileFromBuffer('replace.txt', Buffer.from('original'));
+		allDB.setFileFromBuffer('drop.txt', Buffer.from('gone'));
+
+		const transformConfig: FrontendConfig = {
+			name: 'transformed',
+			description: 'Transformed frontend.',
+			fileDBs: ['all'],
+			transform: (file) => {
+				if (file.name === 'drop.txt') return null;
+				if (file.name === 'replace.txt') return new File(file.name, Buffer.from('replaced'));
+				return file;
+			},
+		};
+
+		const frontend = new Frontend(dbs, transformConfig);
+		const files = [...frontend.iterate()].sort((a, b) => a.name.localeCompare(b.name));
+
+		expect(files.map((f) => f.name)).toStrictEqual(['keep.txt', 'replace.txt']);
+		expect(files.find((f) => f.name === 'replace.txt')?.bufferRaw).toEqual(Buffer.from('replaced'));
+		// getFile() applies the same rewrite, keeping the dev server consistent with the tarball.
+		expect(frontend.getFile('replace.txt')).toEqual(Buffer.from('replaced'));
+		expect(frontend.getFile('drop.txt')).toBeNull();
+	});
+
+	it('lets a later fileDB provide a name the first fileDB transformed to null', () => {
+		const dbs = new FileDBs({ all: {}, extra: {} });
+		dbs.get('all').setFileFromBuffer('shared.txt', Buffer.from('from-all'));
+		dbs.get('extra').setFileFromBuffer('shared.txt', Buffer.from('from-extra'));
+
+		const config: FrontendConfig = {
+			name: 'transform-null',
+			description: 'Transform-null frontend.',
+			fileDBs: ['all', 'extra'],
+			// Drop only the copy coming from the first fileDB.
+			transform: (file) => (file.bufferRaw.equals(Buffer.from('from-all')) ? null : file),
+		};
+
+		const frontend = new Frontend(dbs, config);
+		const files = [...frontend.iterate()];
+		expect(files.map((f) => f.name)).toStrictEqual(['shared.txt']);
+		expect(files[0].bufferRaw).toEqual(Buffer.from('from-extra'));
+		expect(frontend.getFile('shared.txt')).toEqual(Buffer.from('from-extra'));
+	});
+
 	it('dedupes overlapping filenames first-wins across fileDBs', () => {
 		const dbs = new FileDBs({ all: {}, extra: {} });
 		dbs.get('all').setFileFromBuffer('shared.txt', Buffer.from('from-all'));

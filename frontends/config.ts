@@ -1,5 +1,7 @@
 import { githubSource, npmSource, staticSource, type SourceConfig } from '../src/files/source_config';
 import type { FrontendConfig } from '../src/frontend/frontend';
+import { File } from '../src/files/file';
+import { emptyGlyphPbf } from '../src/files/glyphs';
 
 export const sourceConfigs = {
 	'external-fonts': githubSource('versatiles-org/versatiles-fonts', {
@@ -175,10 +177,15 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-maplibre-versatiles-styler',
 		],
 		ignore: ['*.js.map', '*@3x.json', '*@3x.png', '*@4x.json', '*@4x.png', 'maplibre-gl-csp*', 'maplibre-gl-dev*'],
-		filter: (filename: string): boolean => {
-			const match = filename.match(/^assets\/glyphs\/[^/]+\/(\d+)-\d+\.pbf/);
-			if (!match) return true;
-			return parseInt(match[1], 10) < 1024;
+		// Keep only Latin glyphs (codepoints < 1024). Higher ranges are not deleted but
+		// replaced with valid, empty glyph tiles, so clients get an HTTP 200 (no glyphs)
+		// instead of a 404 when they request an out-of-range codepoint.
+		transform: (file: File): File | null => {
+			const match = file.name.match(/^assets\/glyphs\/([^/]+)\/(\d+-\d+)\.pbf$/);
+			if (!match) return file;
+			const [, fontName, range] = match;
+			if (parseInt(range, 10) < 1024) return file;
+			return new File(file.name, emptyGlyphPbf(fontName, range));
 		},
 	},
 ];
