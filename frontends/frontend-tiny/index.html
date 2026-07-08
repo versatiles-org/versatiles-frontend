@@ -13,13 +13,26 @@
 		<link href="/assets/lib/maplibre-gl-geocoder/maplibre-gl-geocoder.css" rel="stylesheet" />
 		<style>
 			/* Position the location search bar at the top center of the map. */
-			.maplibregl-ctrl-geocoder {
+			.maplibregl-ctrl-top-left .maplibregl-ctrl-geocoder {
 				position: fixed;
-				top: 2px;
-				left: 50%;
-				transform: translateX(-50%);
-				margin: 0;
+				top: 10px;
+				left: 10px;
+				right: 10px;
+				width: auto;
+				max-width: 360px;
+				min-width: 0;
+				margin: 0 auto;
 				z-index: 2;
+			}
+
+			/* On narrow screens the full-width search bar would cover the
+			   top-left and top-right controls (e.g. the styler button), so
+			   push those controls below it. */
+			@media screen and (max-width: 639px) {
+				.maplibregl-ctrl-top-left,
+				.maplibregl-ctrl-top-right {
+					margin-top: 66px;
+				}
 			}
 		</style>
 
