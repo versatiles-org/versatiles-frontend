@@ -115,7 +115,9 @@
 			);
 			map.addControl(geocoder, 'top-left');
 
-			map.addControl(new VersaTilesStylerControl({ open: true }), 'top-left');
+			// Keep the styler collapsed on mobile, where screen space is tight.
+			const isMobile = window.matchMedia('(max-width: 639px)').matches;
+			map.addControl(new VersaTilesStylerControl({ open: !isMobile }), 'top-left');
 			map.addControl(new VersaTilesSVG.SVGExportControl(), 'top-right');
 
 			// collapse attribution control
