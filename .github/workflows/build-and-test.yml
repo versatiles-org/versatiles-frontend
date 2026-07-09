@@ -13,6 +13,7 @@ permissions:
 
 env:
   FORCE_COLOR: 1
+  GH_TOKEN: ${{ github.token }}
 
 jobs:
   build-and-test:
