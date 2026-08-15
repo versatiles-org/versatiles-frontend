@@ -44,6 +44,16 @@ jobs:
       - name: Check formatting
         run: npm run format:check
 
+      # `vrt doc-insert` has no check mode, so regenerate and see whether anything moved.
+      # The checkout is clean and thrown away afterwards, so rewriting README.md is safe.
+      - name: Check documentation is up to date
+        run: |
+          npm run doc
+          git diff --exit-code -- README.md || {
+            echo "::error file=README.md::Generated documentation is out of date. Run 'npm run doc' and commit the result."
+            exit 1
+          }
+
       - name: Typecheck
         run: npm run typecheck
 
