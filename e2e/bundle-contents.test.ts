@@ -57,13 +57,6 @@ describe('Bundle contents', () => {
 		expect(path.rest()).toStrictEqual({}); // no other files in images/
 	});
 
-	it('contains shared frontend assets', () => {
-		const path = bundles.withPrefix('assets/versatiles/');
-		expect(path.file('geocoder.js')).toBeTruthy();
-		expect(path.file('geocoder.css')).toBeTruthy();
-		expect(path.rest()).toStrictEqual({}); // no other shared assets
-	});
-
 	describe('libraries', () => {
 		let hasLibFailed = false;
 		beforeEach(() => {
@@ -128,6 +121,14 @@ describe('Bundle contents', () => {
 			expect(path.file('versatiles-style.d.ts')).toBeTruthy();
 			expect(path.file('versatiles-style.js.map')).toBeTruthy();
 			expect(path.file('versatiles-style.js')).toBeTruthy();
+			expect(path.rest()).toStrictEqual({});
+		});
+
+		// Not a third-party package: our own shared geocoder setup, served from frontends/all/.
+		it('contains versatiles-geocoder', () => {
+			const path = bundles.withPrefix('assets/lib/versatiles-geocoder/');
+			expect(path.file('versatiles-geocoder.js')).toBeTruthy();
+			expect(path.file('versatiles-geocoder.css')).toBeTruthy();
 			expect(path.rest()).toStrictEqual({});
 		});
 
