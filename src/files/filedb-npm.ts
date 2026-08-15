@@ -1,6 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
 import { basename, dirname, join } from 'path';
 import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
 import notes from '../utils/release_notes';
 import { FileDB } from './filedb';
 import { safeJoinDest } from './safe-path';
@@ -10,10 +11,7 @@ export class NpmFileDB extends FileDB {
 	public static async build(config: NpmSourceConfig): Promise<NpmFileDB> {
 		const db = new NpmFileDB();
 
-		// Resolve the main entry of the package, then walk up to find the package root
-		const require = createRequire(import.meta.url);
-		const entryPath = require.resolve(config.pkg);
-		const pkgDir = findPackageRoot(entryPath);
+		const pkgDir = resolvePackageRoot(config.pkg);
 
 		const pkgJsonPath = join(pkgDir, 'package.json');
 		const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
@@ -44,6 +42,37 @@ export class NpmFileDB extends FileDB {
 	}
 
 	public enterWatchMode(): void {}
+}
+
+function resolvePackageRoot(pkg: string): string {
+	const require = createRequire(import.meta.url);
+
+	// Fastest path: the package exports its own package.json
+	try {
+		return dirname(require.resolve(`${pkg}/package.json`));
+	} catch {
+		// package restricts "exports" - fall back to resolving an entry point
+	}
+
+	const errors: unknown[] = [];
+
+	// CommonJS resolution of the main entry
+	try {
+		return findPackageRoot(require.resolve(pkg));
+	} catch (error) {
+		errors.push(error);
+	}
+
+	// ESM-only packages have no "require" condition, so they only resolve via ESM
+	if (typeof import.meta.resolve === 'function') {
+		try {
+			return findPackageRoot(fileURLToPath(import.meta.resolve(pkg)));
+		} catch (error) {
+			errors.push(error);
+		}
+	}
+
+	throw new AggregateError(errors, `Could not resolve npm package "${pkg}"`);
 }
 
 function findPackageRoot(startPath: string): string {
