@@ -1,4 +1,11 @@
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+// Pass straight through to the fetch, so these tests exercise the request and parsing
+// without a shared on-disk cache leaking one test's answer into the next.
+const { cacheMock } = vi.hoisted(() => ({
+	cacheMock: vi.fn(async (_action: string, _key: string, cbBuffer: () => Promise<Buffer>) => cbBuffer()),
+}));
+vi.mock('./cache', () => ({ cache: cacheMock }));
 
 const { getLatestGithubReleaseVersion } = await import('../utils/release_version');
 
@@ -27,6 +34,31 @@ function mockFetchResponse(data: unknown, status = 200): void {
 }
 
 describe('getLatestGithubReleaseVersion', () => {
+	beforeEach(() => {
+		cacheMock.mockClear();
+	});
+
+	it('caches the version, keyed by repository and prerelease flag', async () => {
+		mockFetchResponse([{ tag_name: 'v1.2.3' }]);
+
+		await getLatestGithubReleaseVersion('someOrg', 'someRepo', true);
+
+		expect(cacheMock).toHaveBeenCalledWith(
+			'github-release-version',
+			'someOrg/someRepo/prerelease',
+			expect.any(Function),
+			60 * 60 * 1000
+		);
+	});
+
+	it('keys stable and prerelease lookups separately', async () => {
+		mockFetchResponse([{ tag_name: 'v1.2.3' }]);
+
+		await getLatestGithubReleaseVersion('someOrg', 'someRepo');
+
+		expect(cacheMock.mock.calls[0][1]).toBe('someOrg/someRepo/stable');
+	});
+
 	it('fetches the latest release version', async () => {
 		const owner = 'exampleOrg';
 		const repo = 'exampleRepo';

@@ -1,7 +1,18 @@
 import { fetchRetry } from './fetch';
+import { cache } from './cache';
+
+/**
+ * How long a resolved version is reused before asking GitHub again. Every build resolves a
+ * handful of repositories, and the unauthenticated API allows only 60 requests per hour, so
+ * repeated local builds would otherwise run into the rate limit. Short enough that a new
+ * release is picked up the same day; CI starts with an empty cache and is unaffected.
+ */
+const MAX_VERSION_AGE_MS = 60 * 60 * 1000; // 1 hour
 
 /**
  * Fetches the latest release version of a GitHub repository.
+ *
+ * The answer is cached on disk, since it changes rarely but is requested on every build.
  *
  * @param owner - The GitHub username or organization name of the repository owner.
  * @param repo - The name of the repository.
@@ -12,6 +23,18 @@ export async function getLatestGithubReleaseVersion(
 	repo: string,
 	allowPrerelease = false
 ): Promise<string> {
+	// Prereleases change the answer, so they belong in the key.
+	const key = `${owner}/${repo}/${allowPrerelease ? 'prerelease' : 'stable'}`;
+	const buffer = await cache(
+		'github-release-version',
+		key,
+		async () => Buffer.from(await fetchLatestGithubReleaseVersion(owner, repo, allowPrerelease), 'utf8'),
+		MAX_VERSION_AGE_MS
+	);
+	return buffer.toString('utf8');
+}
+
+async function fetchLatestGithubReleaseVersion(owner: string, repo: string, allowPrerelease: boolean): Promise<string> {
 	// Request up to 100 releases (the API returns 30 by default) so a burst of recent
 	// prereleases can't hide the latest stable release when allowPrerelease is false.
 	const url = `https://api.github.com/repos/${owner}/${repo}/releases?per_page=100`;
