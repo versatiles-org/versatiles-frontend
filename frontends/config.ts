@@ -187,7 +187,6 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-sprites',
 			'external-versatiles-style',
 			'external-maplibre',
-			'external-maplibre-gl-geocoder',
 			'external-maplibre-versatiles-styler',
 		],
 		ignore: ['*.js.map', '*@3x.json', '*@3x.png', '*@4x.json', '*@4x.png'],
