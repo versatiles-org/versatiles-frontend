@@ -5,6 +5,7 @@ import type { Server as HttpServer } from 'http';
 import { posix } from 'path';
 import { lookup } from 'mrmime';
 import { Frontend } from '../frontend/frontend';
+import { listen } from './listen';
 
 /**
  * Defines the structure for development server configurations,
@@ -110,27 +111,10 @@ export class Server {
 	 * @returns The bound port, which is the only way to learn the real one when passing 0.
 	 */
 	public async start(port = 8080, host = '127.0.0.1'): Promise<number> {
-		return new Promise((resolve, reject) => {
-			const server = this.app.listen(port, host);
-			this.server = server;
-
-			const onError = (error: Error): void => {
-				// A server that never bound has nothing to close, so forget it again.
-				this.server = undefined;
-				reject(error);
-			};
-
-			server.once('error', onError);
-			server.once('listening', () => {
-				server.removeListener('error', onError);
-				const address = server.address();
-				if (address == null || typeof address === 'string') {
-					reject(new Error(`server bound to an unexpected address: ${JSON.stringify(address)}`));
-					return;
-				}
-				resolve(address.port);
-			});
-		});
+		// Assigned only on success, so a server that never bound is not treated as running.
+		const listening = await listen(this.app, port, host);
+		this.server = listening.server;
+		return listening.port;
 	}
 
 	/**
