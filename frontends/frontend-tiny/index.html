@@ -6,10 +6,10 @@
 		<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 		<link rel="icon" type="image/png" href="/assets/images/versatiles-logo.png" />
 
-		<script src="/assets/lib/maplibre-gl/maplibre-gl.js"></script>
+		<script defer src="/assets/lib/maplibre-gl/maplibre-gl.js"></script>
 		<link href="/assets/lib/maplibre-gl/maplibre-gl.css" rel="stylesheet" />
 
-		<script src="/assets/lib/maplibre-gl-geocoder/maplibre-gl-geocoder.js"></script>
+		<script defer src="/assets/lib/maplibre-gl-geocoder/maplibre-gl-geocoder.js"></script>
 		<link href="/assets/lib/maplibre-gl-geocoder/maplibre-gl-geocoder.css" rel="stylesheet" />
 		<style>
 			/* Position the location search bar at the top center of the map. */
@@ -36,7 +36,7 @@
 			}
 		</style>
 
-		<script src="/assets/lib/maplibre-versatiles-styler/maplibre-versatiles-styler.js"></script>
+		<script defer src="/assets/lib/maplibre-versatiles-styler/maplibre-versatiles-styler.js"></script>
 	</head>
 
 	<body style="margin: 0; height: 100%">
@@ -45,45 +45,49 @@
 		</a>
 		<div id="map" class="maplibregl-compact" style="position: absolute; top: 0; bottom: 0; width: 100%"></div>
 		<script>
-			const map = new maplibregl.Map({
-				container: 'map',
-				bounds: [-180, -85, 180, 85],
-				zoom: 5,
-			});
+			// The library tags above are deferred, so they have not run yet while this inline
+			// script is parsed. DOMContentLoaded fires once they have all executed.
+			document.addEventListener('DOMContentLoaded', () => {
+				const map = new maplibregl.Map({
+					container: 'map',
+					bounds: [-180, -85, 180, 85],
+					zoom: 5,
+				});
 
-			map.addControl(new maplibregl.NavigationControl(), 'top-right');
-			map.addControl(
-				new maplibregl.GeolocateControl({
-					positionOptions: { enableHighAccuracy: true },
-					trackUserLocation: true,
-				}),
-				'top-right'
-			);
-			// Location search (address geocoding) powered by the VersaTiles Photon backend.
-			const geocoder = new MaplibreGeocoder(
-				{
-					forwardGeocode: async (config) => {
-						const url = `https://geocode.versatiles.org/api?q=${encodeURIComponent(config.query)}&limit=5`;
-						const geojson = await (await fetch(url)).json();
-						geojson.features.forEach((f) => {
-							const { name, city, country } = f.properties;
-							f.place_name = [name, city, country].filter(Boolean).join(', ');
-							f.place_type = ['place'];
-							f.center = f.geometry.coordinates;
-						});
-						return geojson;
+				map.addControl(new maplibregl.NavigationControl(), 'top-right');
+				map.addControl(
+					new maplibregl.GeolocateControl({
+						positionOptions: { enableHighAccuracy: true },
+						trackUserLocation: true,
+					}),
+					'top-right'
+				);
+				// Location search (address geocoding) powered by the VersaTiles Photon backend.
+				const geocoder = new MaplibreGeocoder(
+					{
+						forwardGeocode: async (config) => {
+							const url = `https://geocode.versatiles.org/api?q=${encodeURIComponent(config.query)}&limit=5`;
+							const geojson = await (await fetch(url)).json();
+							geojson.features.forEach((f) => {
+								const { name, city, country } = f.properties;
+								f.place_name = [name, city, country].filter(Boolean).join(', ');
+								f.place_type = ['place'];
+								f.center = f.geometry.coordinates;
+							});
+							return geojson;
+						},
 					},
-				},
-				{ maplibregl, marker: false, placeholder: 'Search location' }
-			);
-			map.addControl(geocoder, 'top-left');
+					{ maplibregl, marker: false, placeholder: 'Search location' }
+				);
+				map.addControl(geocoder, 'top-left');
 
-			// Keep the styler collapsed on mobile, where screen space is tight.
-			const isMobile = window.matchMedia('(max-width: 639px)').matches;
-			map.addControl(new VersaTilesStylerControl({ open: !isMobile }), 'top-left');
+				// Keep the styler collapsed on mobile, where screen space is tight.
+				const isMobile = window.matchMedia('(max-width: 639px)').matches;
+				map.addControl(new VersaTilesStylerControl({ open: !isMobile }), 'top-left');
 
-			// collapse attribution control
-			document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');
+				// collapse attribution control
+				document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');
+			});
 		</script>
 	</body>
 </html>
