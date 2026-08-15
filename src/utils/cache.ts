@@ -4,7 +4,7 @@ import { resolve } from 'path';
 import { ensureFolder } from './utils';
 
 // Define the path to the cache folder relative to the module location.
-const cacheFolder = new URL('../../cache', import.meta.url).pathname;
+const cacheFolder = resolve(import.meta.dirname, '../../cache');
 
 // Ensure the cache folder exists.
 mkdirSync(cacheFolder, { recursive: true });

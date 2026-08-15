@@ -3,11 +3,12 @@ import { PromiseFunction, ProgressLabel, progress } from '../async_progress';
 import { StaticFileDB } from './filedb-static';
 import { ExternalFileDB } from './filedb-external';
 import { NpmFileDB } from './filedb-npm';
+import { resolve } from 'path';
 import type { SourceConfig } from './source_config';
 
 export type { SourceConfig };
 
-const frontendFolder = new URL('../../frontends', import.meta.url).pathname;
+const frontendFolder = resolve(import.meta.dirname, '../../frontends');
 
 export class FileDBs {
 	fileDBs = new Map<string, FileDB>();

@@ -10,7 +10,7 @@ import { FileDBs, loadFileDBs } from './files/filedbs';
 //progress.disableAnsi();
 
 // Define the project and destination folders using relative and absolute paths.
-const projectFolder = new URL('..', import.meta.url).pathname;
+const projectFolder = resolve(import.meta.dirname, '..');
 const dstFolder = resolve(projectFolder, 'release');
 
 const frontendVersion = String(JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')).version);
