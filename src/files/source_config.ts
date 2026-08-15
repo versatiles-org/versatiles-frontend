@@ -25,9 +25,28 @@ export interface ExternalSourceConfig {
 	source?: SourceInfo;
 }
 
+/**
+ * Bundles an ESM-only package into a classic script that assigns a global,
+ * so it can be loaded with a plain `<script src>` tag.
+ */
+export interface NpmBundleConfig {
+	/** Entry point, relative to the package root, e.g. `dist/maplibre-gl.mjs`. */
+	entry: string;
+	/** Global variable the bundle assigns to, e.g. `maplibregl`. */
+	globalName: string;
+	/** Output file name, relative to `dest`, e.g. `maplibre-gl.js`. */
+	outfile: string;
+	/**
+	 * JavaScript run after the global object is assembled but before it is published,
+	 * with the object in scope under `globalName`. Use it to configure the library.
+	 */
+	setup?: string;
+}
+
 export interface NpmSourceConfig {
 	type: 'npm';
 	pkg: string;
+	bundle?: NpmBundleConfig;
 	include?: RegExp;
 	flatten?: boolean;
 	rename?: Record<string, string>;
@@ -60,11 +79,19 @@ export function githubSource(repo: string, options: GithubSourceOptions): Extern
 
 export function npmSource(
 	pkg: string,
-	options: { include?: RegExp; flatten?: boolean; rename?: Record<string, string>; dest: string; source: SourceInfo }
+	options: {
+		bundle?: NpmBundleConfig;
+		include?: RegExp;
+		flatten?: boolean;
+		rename?: Record<string, string>;
+		dest: string;
+		source: SourceInfo;
+	}
 ): NpmSourceConfig {
 	return {
 		type: 'npm',
 		pkg,
+		bundle: options.bundle,
 		include: options.include,
 		flatten: options.flatten,
 		rename: options.rename,

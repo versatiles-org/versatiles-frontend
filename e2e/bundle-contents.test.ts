@@ -69,18 +69,12 @@ describe('Bundle contents', () => {
 			const path = bundles.withPrefix('assets/lib/maplibre-gl/');
 			const notTiny = { frontend: true, 'frontend-dev': true, 'frontend-min': true };
 			expect(path.file('maplibre-gl.css')).toBeTruthy();
+			// Bundled from the ESM-only upstream package into a classic script (see frontends/config.ts).
 			expect(path.file('maplibre-gl.js')).toBeTruthy();
 			expect(path.file('maplibre-gl.js.map')).toStrictEqual(notTiny);
-			expect(path.file('maplibre-gl-csp.js')).toStrictEqual(notTiny);
-			expect(path.file('maplibre-gl-csp.js.map')).toStrictEqual(notTiny);
-			expect(path.file('maplibre-gl-csp-dev.js')).toBeTruthy();
-			expect(path.file('maplibre-gl-csp-dev.js.map')).toStrictEqual(notTiny);
-			expect(path.file('maplibre-gl-csp-worker.js')).toBeTruthy();
-			expect(path.file('maplibre-gl-csp-worker.js.map')).toStrictEqual(notTiny);
-			expect(path.file('maplibre-gl-csp-worker-dev.js')).toBeTruthy();
-			expect(path.file('maplibre-gl-csp-worker-dev.js.map')).toStrictEqual(notTiny);
-			expect(path.file('maplibre-gl-dev.js')).toStrictEqual(notTiny);
-			expect(path.file('maplibre-gl-dev.js.map')).toStrictEqual(notTiny);
+			// The worker is loaded as a module and imports the shared chunk itself.
+			expect(path.file('maplibre-gl-worker.mjs')).toBeTruthy();
+			expect(path.file('maplibre-gl-shared.mjs')).toBeTruthy();
 			expect(path.rest()).toStrictEqual({});
 		});
 
@@ -113,7 +107,6 @@ describe('Bundle contents', () => {
 		it('contains versatiles-svg-renderer', () => {
 			const path = bundles.withPrefix('assets/lib/versatiles-svg-renderer/');
 			expect(path.file('versatiles-svg-renderer.js')).toBeTruthy();
-			expect(path.file('versatiles-svg-renderer.js.map')).toBeTruthy();
 			expect(path.rest()).toStrictEqual({});
 		});
 

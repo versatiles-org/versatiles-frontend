@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import notes from '../utils/release_notes';
 import { FileDB } from './filedb';
 import { safeJoinDest } from './safe-path';
-import type { NpmSourceConfig } from './source_config';
+import type { NpmBundleConfig, NpmSourceConfig } from './source_config';
 
 export class NpmFileDB extends FileDB {
 	public static async build(config: NpmSourceConfig): Promise<NpmFileDB> {
@@ -19,6 +19,7 @@ export class NpmFileDB extends FileDB {
 		label.setVersion(pkgJson.version);
 
 		addPath(pkgDir, '');
+		if (config.bundle) await addBundle(db, pkgDir, config.dest, config.bundle);
 		return db;
 
 		function addPath(absPath: string, relPath: string): void {
@@ -42,6 +43,46 @@ export class NpmFileDB extends FileDB {
 	}
 
 	public enterWatchMode(): void {}
+}
+
+/**
+ * Bundles an ESM entry point into a classic script exposing a global, and adds
+ * it (plus its source map) to the database.
+ */
+async function addBundle(db: FileDB, pkgDir: string, dest: string, bundle: NpmBundleConfig): Promise<void> {
+	// Imported lazily so that packages without a bundle step never load esbuild.
+	const { build } = await import('esbuild');
+
+	const entryPath = join(pkgDir, bundle.entry);
+	const { globalName } = bundle;
+
+	// esbuild's own `globalName` would expose the ES module namespace, whose properties are
+	// getter-only and non-configurable. Consumers used to monkey-patch the UMD global, so we
+	// copy the namespace into a plain object and publish that instead.
+	const shim = [
+		`import * as __ns from './${basename(entryPath)}';`,
+		`const ${globalName} = { ...__ns };`,
+		bundle.setup ?? '',
+		`globalThis.${globalName} = ${globalName};`,
+	].join('\n');
+
+	const result = await build({
+		stdin: { contents: shim, resolveDir: dirname(entryPath), sourcefile: `${globalName}-bundle.js`, loader: 'js' },
+		outfile: bundle.outfile,
+		bundle: true,
+		format: 'iife',
+		minify: true,
+		sourcemap: true,
+		target: ['es2020'],
+		write: false,
+		logLevel: 'silent',
+	});
+
+	for (const file of result.outputFiles) {
+		const target = safeJoinDest(dest, basename(file.path));
+		if (target === false) throw new Error(`Unsafe bundle output "${file.path}" (escapes "${dest}")`);
+		db.setFileFromBuffer(target, Buffer.from(file.contents));
+	}
 }
 
 function resolvePackageRoot(pkg: string): string {

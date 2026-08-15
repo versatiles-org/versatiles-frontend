@@ -49,6 +49,7 @@
     "@vitest/coverage-v8": "^4.1.10",
     "arg": "^5.0.2",
     "dotenv": "^17.4.2",
+    "esbuild": "^0.28.2",
     "escape-html": "^1.0.3",
     "eslint": "^10.8.1",
     "express": "^5.2.1",

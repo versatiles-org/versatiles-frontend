@@ -49,8 +49,22 @@ export const sourceConfigs = {
 		source: { name: 'VersaTiles Style', url: 'https://github.com/versatiles-org/versatiles-style' },
 	}),
 
+	// MapLibre GL JS 6 is ESM-only and ships no UMD build, so we bundle it into a classic
+	// script exposing the `maplibregl` global. That keeps the plain `<script src>` tags in the
+	// frontends working, and the UMD plugins below still find the global they expect.
 	'external-maplibre': npmSource('maplibre-gl', {
-		include: /dist\/.*\.(js|css|map)$/,
+		bundle: {
+			entry: 'dist/maplibre-gl.mjs',
+			globalName: 'maplibregl',
+			outfile: 'maplibre-gl.js',
+			// The worker stays an untouched ES module shipped next to the bundle. Deriving its URL
+			// from the running script keeps the bundle working under any base path.
+			setup:
+				'try{const s=document.currentScript&&document.currentScript.src;' +
+				'if(s)maplibregl.setWorkerUrl(new URL("./maplibre-gl-worker.mjs",s).href)}catch{}',
+		},
+		// The worker resolves its own import of maplibre-gl-shared.mjs, so both must ship.
+		include: /dist\/(maplibre-gl\.css|maplibre-gl-worker\.mjs|maplibre-gl-shared\.mjs)$/,
 		flatten: true,
 		dest: 'assets/lib/maplibre-gl/',
 		source: { name: 'MapLibre GL JS', url: 'https://maplibre.org/maplibre-gl-js/docs/' },
@@ -176,7 +190,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-maplibre-gl-geocoder',
 			'external-maplibre-versatiles-styler',
 		],
-		ignore: ['*.js.map', '*@3x.json', '*@3x.png', '*@4x.json', '*@4x.png', 'maplibre-gl-csp*', 'maplibre-gl-dev*'],
+		ignore: ['*.js.map', '*@3x.json', '*@3x.png', '*@4x.json', '*@4x.png'],
 		// Keep only Latin glyphs (codepoints < 1024). Higher ranges are not deleted but
 		// replaced with valid, empty glyph tiles, so clients get an HTTP 200 (no glyphs)
 		// instead of a 404 when they request an out-of-range codepoint.
