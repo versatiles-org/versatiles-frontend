@@ -1,4 +1,4 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { resolve } from 'path';
 import { ensureFolder } from './utils';
@@ -16,13 +16,21 @@ mkdirSync(cacheFolder, { recursive: true });
  * @param key - The cache key to retrieve or store the value under.
  * @param cbBuffer - A callback function that returns a Promise resolving to the Buffer to be cached
  *                   if the key is not already present in the cache.
+ * @param maxAgeMs - How long an entry stays valid. Omit for entries that never go stale, such as
+ *                   content addressed by its own hash. Pass a duration for answers that can
+ *                   change over time, e.g. "the latest release of a repository".
  * @returns A Promise resolving to the Buffer associated with the key, either retrieved from cache or newly cached.
  */
-export async function cache(action: string, key: string, cbBuffer: () => Promise<Buffer>): Promise<Buffer> {
+export async function cache(
+	action: string,
+	key: string,
+	cbBuffer: () => Promise<Buffer>,
+	maxAgeMs?: number
+): Promise<Buffer> {
 	const folder = resolve(cacheFolder, sanitize(action));
 	const filename = resolve(folder, filenameForKey(key));
 
-	if (existsSync(filename)) return readFileSync(filename);
+	if (existsSync(filename) && !isExpired(filename, maxAgeMs)) return readFileSync(filename);
 
 	const buffer = await cbBuffer();
 	if (!(buffer instanceof Buffer)) throw Error('The callback function must return a Buffer');
@@ -36,6 +44,11 @@ export async function cache(action: string, key: string, cbBuffer: () => Promise
 	renameSync(tmpFilename, filename);
 
 	return buffer;
+
+	function isExpired(path: string, maxAge?: number): boolean {
+		if (maxAge == null) return false;
+		return Date.now() - statSync(path).mtimeMs > maxAge;
+	}
 
 	function filenameForKey(rawKey: string): string {
 		const name = sanitize(rawKey);

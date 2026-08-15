@@ -7,6 +7,7 @@ vi.mock('fs', () => ({
 	readFileSync: vi.fn(),
 	writeFileSync: vi.fn(),
 	renameSync: vi.fn(),
+	statSync: vi.fn(),
 }));
 vi.mock('path', () => ({
 	resolve: vi.fn((...args: string[]) => args.join('/')),
@@ -80,6 +81,49 @@ describe('cache function', () => {
 			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars\.\d+\.tmp$/),
 			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars$/)
 		);
+	});
+
+	it('reuses an entry that is younger than maxAgeMs', async () => {
+		const mockBuffer = Buffer.from('fresh');
+		vi.mocked(fs.existsSync).mockReturnValue(true);
+		vi.mocked(fs.statSync).mockReturnValue({ mtimeMs: Date.now() - 1000 } as ReturnType<typeof fs.statSync>);
+		vi.mocked(fs.readFileSync).mockReturnValue(mockBuffer);
+
+		const result = await cache(
+			'action',
+			'key',
+			async () => {
+				throw new Error('Callback should not be called while the entry is fresh');
+			},
+			60_000
+		);
+
+		expect(result).toBe(mockBuffer);
+	});
+
+	it('refetches an entry that is older than maxAgeMs', async () => {
+		const mockBuffer = Buffer.from('regenerated');
+		vi.mocked(fs.existsSync).mockReturnValue(true);
+		vi.mocked(fs.statSync).mockReturnValue({ mtimeMs: Date.now() - 120_000 } as ReturnType<typeof fs.statSync>);
+
+		const result = await cache('action', 'key', async () => mockBuffer, 60_000);
+
+		expect(fs.readFileSync).not.toHaveBeenCalled();
+		expect(fs.writeFileSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key\.\d+\.tmp$/), mockBuffer);
+		expect(result).toBe(mockBuffer);
+	});
+
+	it('never expires an entry when no maxAgeMs is given', async () => {
+		const mockBuffer = Buffer.from('immortal');
+		vi.mocked(fs.existsSync).mockReturnValue(true);
+		vi.mocked(fs.readFileSync).mockReturnValue(mockBuffer);
+
+		const result = await cache('action', 'key', async () => {
+			throw new Error('Callback should not be called for an entry without an age limit');
+		});
+
+		expect(fs.statSync).not.toHaveBeenCalled();
+		expect(result).toBe(mockBuffer);
 	});
 
 	it('bounds very long keys with a hash suffix to avoid ENAMETOOLONG', async () => {
