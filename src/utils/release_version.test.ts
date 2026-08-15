@@ -10,12 +10,12 @@ vi.mock('./cache', () => ({ cache: cacheMock }));
 const { getLatestGithubReleaseVersion } = await import('../utils/release_version');
 
 // Mock fetch helper
-function mockFetchResponse(data: unknown, status = 200): void {
+function mockFetchResponse(data: unknown, status = 200, headers: Record<string, string> = {}): void {
 	// @ts-expect-error mocking global
 	global.fetch = vi.fn(async () =>
 		Promise.resolve({
 			arrayBuffer: async () => Promise.resolve(getAsBuffer()),
-			headers: new Headers({ 'content-type': 'text/plain' }),
+			headers: new Headers({ 'content-type': 'text/plain', ...headers }),
 			json: async () => Promise.resolve(getAsJSON()),
 			ok: status >= 200 && status < 300,
 			status,
@@ -150,6 +150,32 @@ describe('getLatestGithubReleaseVersion', () => {
 		const version = await getLatestGithubReleaseVersion(owner, repo, true);
 
 		expect(version).toBe('2.0.0-beta');
+	});
+
+	it('explains the rate limit, with the reset time, instead of a bare 403', async () => {
+		mockFetchResponse({ message: 'API rate limit exceeded' }, 403, {
+			'X-RateLimit-Remaining': '0',
+			'X-RateLimit-Reset': '1767225600', // 2026-01-01T00:00:00Z
+		});
+
+		await expect(getLatestGithubReleaseVersion('exampleOrg', 'exampleRepo')).rejects.toThrow(
+			/rate limit exceeded .*, resets at 2026-01-01T00:00:00\.000Z\. Set environment variable "GH_TOKEN"/
+		);
+	});
+
+	it('omits the reset time when the header is missing', async () => {
+		mockFetchResponse({ message: 'API rate limit exceeded' }, 403, { 'X-RateLimit-Remaining': '0' });
+
+		const promise = getLatestGithubReleaseVersion('exampleOrg', 'exampleRepo');
+
+		await expect(promise).rejects.toThrow(/rate limit exceeded/);
+		await expect(promise).rejects.not.toThrow(/resets at/);
+	});
+
+	it('reports a 403 that is not a rate limit as a plain API error', async () => {
+		mockFetchResponse({ message: 'Forbidden' }, 403, { 'X-RateLimit-Remaining': '42' });
+
+		await expect(getLatestGithubReleaseVersion('exampleOrg', 'exampleRepo')).rejects.toThrow(/GitHub API returned 403/);
 	});
 
 	it('throws error when response is not an array', async () => {

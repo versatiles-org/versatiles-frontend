@@ -1,4 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { fileURLToPath } from 'url';
 import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../async_progress/progress';
 import type { NpmSourceConfig } from './source_config';
 
@@ -104,13 +105,21 @@ vi.mock('fs', async (importOriginal) => {
 	};
 });
 
-// Mock module (createRequire)
-vi.mock('module', () => ({
-	createRequire: vi.fn(() => ({
-		resolve: vi.fn((specifier: string) => {
+// Mock module (createRequire). `resolver.fn` is swappable so tests can decide which of the
+// resolution strategies in resolvePackageRoot succeeds.
+const { resolver } = vi.hoisted(() => ({
+	resolver: {
+		fn: (specifier: string): string => {
 			if (specifier === '@test/pkg') return '/fake/node_modules/@test/pkg/src/index.js';
 			throw new Error(`Cannot find module: ${specifier}`);
-		}),
+		},
+	},
+}));
+const defaultResolve = resolver.fn;
+
+vi.mock('module', () => ({
+	createRequire: vi.fn(() => ({
+		resolve: vi.fn((specifier: string) => resolver.fn(specifier)),
 	})),
 }));
 
@@ -119,6 +128,7 @@ import { NpmFileDB } from './filedb-npm';
 describe('NpmFileDB', () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
+		resolver.fn = defaultResolve;
 		for (const key of Object.keys(mockFiles)) delete mockFiles[key];
 	});
 
@@ -238,5 +248,69 @@ describe('NpmFileDB', () => {
 		// The release notes mock should have been called with the version from package.json
 		expect(releaseNotesMock.add).toHaveBeenCalledWith({ name: 'Test', url: 'https://example.com' });
 		expect(setVersionMock).toHaveBeenCalledWith('3.4.5');
+	});
+
+	// resolvePackageRoot tries three strategies in turn, because packages differ in what they
+	// expose. Only the middle one is exercised by the tests above.
+	describe('resolving the package root', () => {
+		const config: NpmSourceConfig = {
+			type: 'npm',
+			pkg: '@test/pkg',
+			include: /dist\/index\.js$/,
+			flatten: true,
+			dest: 'lib/',
+			source: { name: 'Test', url: 'https://example.com' },
+		};
+
+		it('uses the package.json export when the package offers one', async () => {
+			setupMockPackage();
+			// This is the path maplibre-gl takes: "./package.json" is exported, so the root is
+			// known directly and no entry point has to be resolved.
+			resolver.fn = (specifier) => {
+				if (specifier === '@test/pkg/package.json') return '/fake/node_modules/@test/pkg/package.json';
+				throw new Error(`should not resolve ${specifier}`);
+			};
+
+			const db = await NpmFileDB.build(config);
+
+			expect(Array.from(db.files.keys())).toStrictEqual(['lib/index.js']);
+			expect(setVersionMock).toHaveBeenCalledWith('3.4.5');
+		});
+
+		it('falls back to ESM resolution when require cannot resolve the package', async () => {
+			// A package that is ESM-only and does not export its package.json can only be found
+			// through import.meta.resolve. `tar` is a real dependency, so the resolution is real;
+			// only the file system underneath it is mocked.
+			const entry = fileURLToPath(import.meta.resolve('tar'));
+			const pkgDir = entry.slice(0, entry.indexOf('/node_modules/tar/') + '/node_modules/tar'.length);
+
+			mockFiles[pkgDir] = { content: '', isDir: true, mtimeMs: 0 };
+			mockFiles[`${pkgDir}/package.json`] = {
+				content: JSON.stringify({ name: 'tar', version: '7.0.0' }),
+				isDir: false,
+				mtimeMs: 0,
+			};
+			mockFiles[`${pkgDir}/dist`] = { content: '', isDir: true, mtimeMs: 0 };
+			mockFiles[`${pkgDir}/dist/index.js`] = { content: 'esm', isDir: false, mtimeMs: 0 };
+
+			resolver.fn = (specifier) => {
+				throw new Error(`no CommonJS entry for ${specifier}`);
+			};
+
+			const db = await NpmFileDB.build({ ...config, pkg: 'tar' });
+
+			expect(Array.from(db.files.keys())).toStrictEqual(['lib/index.js']);
+			expect(setVersionMock).toHaveBeenCalledWith('7.0.0');
+		});
+
+		it('reports every failed strategy when the package cannot be resolved at all', async () => {
+			resolver.fn = (specifier) => {
+				throw new Error(`Cannot find module: ${specifier}`);
+			};
+
+			await expect(NpmFileDB.build({ ...config, pkg: 'package-that-does-not-exist' })).rejects.toThrow(
+				'Could not resolve npm package "package-that-does-not-exist"'
+			);
+		});
 	});
 });

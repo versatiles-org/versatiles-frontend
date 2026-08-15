@@ -215,6 +215,50 @@ describe('getAssets', () => {
 		});
 	});
 
+	describe('pinned versions', () => {
+		const pinnedConfig = (pin: string): ExternalSourceConfig => ({
+			type: 'external',
+			version: { github: 'versatiles-org/versatiles-fonts', pin },
+			assets: [
+				{
+					url: 'https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/fonts.tar.gz',
+					format: 'tar.gz',
+					dest: 'assets/glyphs/',
+				},
+			],
+		});
+
+		beforeEach(() => {
+			vi.clearAllMocks();
+			curlCalls.length = 0;
+		});
+
+		it('downloads the pinned version instead of the latest one', async () => {
+			// The mocked backend reports 1.2.3 as the latest release.
+			await ExternalFileDB.build(pinnedConfig('1.0.0'));
+
+			expect(curlCalls).toStrictEqual([
+				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.0.0/fonts.tar.gz',
+			]);
+		});
+
+		it('warns when a newer release than the pin exists', async () => {
+			const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+			await ExternalFileDB.build(pinnedConfig('1.0.0'));
+
+			expect(warn).toHaveBeenCalledWith('Warning: versatiles-fonts 1.2.3 available (pinned to 1.0.0)');
+		});
+
+		it('stays quiet when the pin is already the latest release', async () => {
+			const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+
+			await ExternalFileDB.build(pinnedConfig('1.2.3'));
+
+			expect(warn).not.toHaveBeenCalled();
+		});
+	});
+
 	describe('filter callbacks', () => {
 		beforeEach(() => {
 			vi.clearAllMocks();
