@@ -41,6 +41,9 @@ export async function getLatestGithubReleaseVersion(
 	// Return the first matching release (the API lists them newest-first), stripping an
 	// optional leading 'v' so repositories that tag without the prefix also work.
 	for (const entry of data) {
+		// Drafts are unpublished: with GH_TOKEN set they show up here, but their tag may not
+		// exist yet and their assets are not publicly downloadable. Never pick one.
+		if (entry.draft) continue;
 		if (!allowPrerelease && entry.prerelease) continue;
 
 		const name = String(entry.tag_name);

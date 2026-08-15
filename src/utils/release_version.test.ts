@@ -92,6 +92,34 @@ describe('getLatestGithubReleaseVersion', () => {
 		expect(version).toBe('3.0.0-beta');
 	});
 
+	it('skips draft releases', async () => {
+		const owner = 'exampleOrg';
+		const repo = 'exampleRepo';
+
+		mockFetchResponse([
+			{ tag_name: 'v3.0.0', draft: true },
+			{ tag_name: 'v2.0.0', draft: false },
+		]);
+
+		const version = await getLatestGithubReleaseVersion(owner, repo);
+
+		expect(version).toBe('2.0.0');
+	});
+
+	it('skips draft releases even when allowPrerelease is true', async () => {
+		const owner = 'exampleOrg';
+		const repo = 'exampleRepo';
+
+		mockFetchResponse([
+			{ tag_name: 'v3.0.0-beta', draft: true, prerelease: true },
+			{ tag_name: 'v2.0.0-beta', draft: false, prerelease: true },
+		]);
+
+		const version = await getLatestGithubReleaseVersion(owner, repo, true);
+
+		expect(version).toBe('2.0.0-beta');
+	});
+
 	it('throws error when response is not an array', async () => {
 		const owner = 'exampleOrg';
 		const repo = 'exampleRepo';
