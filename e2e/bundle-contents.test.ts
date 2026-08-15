@@ -87,12 +87,14 @@ describe('Bundle contents', () => {
 			expect(path.rest()).toStrictEqual({});
 		});
 
-		it('contains maplibre-gl-geocoder', () => {
+		// No frontend loads this any more - the pages use versatiles-geocoder below - but it is
+		// still shipped for anyone building on the bundles. frontend-tiny leaves it out.
+		it('contains maplibre-gl-geocoder, except in frontend-tiny', () => {
 			const path = bundles.withPrefix('assets/lib/maplibre-gl-geocoder/');
-			const notTiny = { frontend: true, 'frontend-dev': true, 'frontend-min': true };
-			expect(path.file('maplibre-gl-geocoder.css')).toBeTruthy();
-			expect(path.file('maplibre-gl-geocoder.js')).toBeTruthy();
-			expect(path.file('maplibre-gl-geocoder.js.map')).toStrictEqual(notTiny);
+			const notTinyNorBlank = { frontend: true, 'frontend-dev': true, 'frontend-min': true };
+			expect(path.file('maplibre-gl-geocoder.css')).toStrictEqual(notTinyNorBlank);
+			expect(path.file('maplibre-gl-geocoder.js')).toStrictEqual(notTinyNorBlank);
+			expect(path.file('maplibre-gl-geocoder.js.map')).toStrictEqual(notTinyNorBlank);
 			expect(path.rest()).toStrictEqual({});
 		});
 
@@ -124,11 +126,13 @@ describe('Bundle contents', () => {
 			expect(path.rest()).toStrictEqual({});
 		});
 
-		// Not a third-party package: our own shared geocoder setup, served from frontends/all/.
-		it('contains versatiles-geocoder', () => {
+		// Not a third-party package: our own location search, served from frontends/all/ and
+		// used by every frontend that has a page. frontend-blank ships no HTML, so it has none.
+		it('contains versatiles-geocoder in every frontend with a page', () => {
 			const path = bundles.withPrefix('assets/lib/versatiles-geocoder/');
-			expect(path.file('versatiles-geocoder.js')).toBeTruthy();
-			expect(path.file('versatiles-geocoder.css')).toBeTruthy();
+			const withPages = { frontend: true, 'frontend-dev': true, 'frontend-min': true, 'frontend-tiny': true };
+			expect(path.file('versatiles-geocoder.js')).toStrictEqual(withPages);
+			expect(path.file('versatiles-geocoder.css')).toStrictEqual(withPages);
 			expect(path.rest()).toStrictEqual({});
 		});
 
