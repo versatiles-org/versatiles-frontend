@@ -1,5 +1,6 @@
 import { vi, describe, it, expect, afterEach } from 'vitest';
 import http from 'http';
+import { networkInterfaces } from 'os';
 import type { AddressInfo } from 'net';
 import type { Frontend } from '../frontend/frontend';
 import { Server } from './server';
@@ -175,5 +176,57 @@ describe('Server', () => {
 
 		expect(res.status).toBe(200);
 		expect(res.headers.get('content-type')).toContain('application/octet-stream');
+	});
+});
+
+describe('Server.start', () => {
+	const servers: Server[] = [];
+
+	function createServer(files: Record<string, string> = {}): Server {
+		const server = new Server(createMockFrontend(files));
+		servers.push(server);
+		return server;
+	}
+
+	afterEach(async () => {
+		while (servers.length > 0) await servers.pop()?.stop();
+	});
+
+	it('resolves with the port the operating system picked for port 0', async () => {
+		const port = await createServer().start(0);
+
+		expect(port).toBeGreaterThan(0);
+		expect(port).not.toBe(0);
+	});
+
+	it('actually serves on the returned port', async () => {
+		const port = await createServer({ 'hello.txt': 'hi' }).start(0);
+		const response = await fetch(`http://localhost:${port}/hello.txt`);
+
+		expect(await response.text()).toBe('hi');
+	});
+
+	it('rejects instead of reporting success when the port is taken', async () => {
+		const port = await createServer({ 'a.txt': 'first' }).start(0);
+
+		// Express invokes its listen callback even when the bind fails, so a second server on
+		// the same port used to look like it had started while the first one kept answering.
+		await expect(createServer({ 'a.txt': 'second' }).start(port)).rejects.toThrow(/EADDRINUSE/);
+
+		// The original server still owns the port.
+		const response = await fetch(`http://localhost:${port}/a.txt`);
+		expect(await response.text()).toBe('first');
+	});
+
+	it('binds to loopback only, so the server is not published to the network', async () => {
+		const port = await createServer().start(0);
+		const addresses = networkInterfaces();
+		const external = Object.values(addresses)
+			.flat()
+			.find((i) => i && i.family === 'IPv4' && !i.internal);
+
+		if (!external) return; // no external interface available to test against
+
+		await expect(fetch(`http://${external.address}:${port}/`, { signal: AbortSignal.timeout(2000) })).rejects.toThrow();
 	});
 });

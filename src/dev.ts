@@ -67,4 +67,5 @@ const devConfig = {
 	],
 };
 const server = new Server(frontend, devConfig);
-await server.start(args['--port']);
+const port = await server.start(args['--port']);
+console.log(`Server started: http://localhost:${port}/`);

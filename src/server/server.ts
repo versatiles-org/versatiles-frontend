@@ -1,6 +1,7 @@
 import express from 'express';
 import escapeHtml from 'escape-html';
 import type { Express } from 'express';
+import type { Server as HttpServer } from 'http';
 import { posix } from 'path';
 import { lookup } from 'mrmime';
 import { Frontend } from '../frontend/frontend';
@@ -18,6 +19,8 @@ export interface DevConfig {
  */
 export class Server {
 	private readonly app: Express;
+
+	private server?: HttpServer;
 
 	/**
 	 * Constructs a Server instance.
@@ -94,14 +97,52 @@ export class Server {
 	}
 
 	/**
-	 * Starts the server on a specified port, logging a message once it's running.
+	 * Starts the server and resolves with the port it is actually listening on.
+	 *
+	 * Express calls the `listen` callback even when the bind failed, so a taken port would
+	 * otherwise look like a successful start while another service answers the requests.
+	 * Only the `listening` event means the socket is ours; `error` (e.g. EADDRINUSE) is
+	 * reported to the caller so it can pick another port.
+	 *
+	 * @param port - The port to bind to, or 0 to let the operating system pick a free one.
+	 * @param host - The interface to bind to. Loopback by default, so a development server
+	 *               is not published to the network.
+	 * @returns The bound port, which is the only way to learn the real one when passing 0.
 	 */
-	public async start(port = 8080): Promise<void> {
-		return new Promise((res) =>
-			this.app.listen(port, () => {
-				console.log(`Server started: http://localhost:${port}/`);
-				res();
-			})
-		);
+	public async start(port = 8080, host = '127.0.0.1'): Promise<number> {
+		return new Promise((resolve, reject) => {
+			const server = this.app.listen(port, host);
+			this.server = server;
+
+			const onError = (error: Error): void => {
+				// A server that never bound has nothing to close, so forget it again.
+				this.server = undefined;
+				reject(error);
+			};
+
+			server.once('error', onError);
+			server.once('listening', () => {
+				server.removeListener('error', onError);
+				const address = server.address();
+				if (address == null || typeof address === 'string') {
+					reject(new Error(`server bound to an unexpected address: ${JSON.stringify(address)}`));
+					return;
+				}
+				resolve(address.port);
+			});
+		});
+	}
+
+	/**
+	 * Stops the server, if it is running.
+	 */
+	public async stop(): Promise<void> {
+		const server = this.server;
+		if (!server) return;
+		this.server = undefined;
+		server.closeAllConnections();
+		await new Promise<void>((resolve, reject) => {
+			server.close((error) => (error ? reject(error) : resolve()));
+		});
 	}
 }
