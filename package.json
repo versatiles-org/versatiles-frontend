@@ -28,6 +28,9 @@
     "upgrade": "vrt deps-upgrade"
   },
   "type": "module",
+  "engines": {
+    "node": ">=22.9.0"
+  },
   "author": "Michael Kreil <versatiles@michael-kreil.de>",
   "license": "MIT",
   "devDependencies": {
