@@ -14,44 +14,6 @@ export interface DevConfig {
 }
 
 /**
- * Parses and validates a development configuration object,
- * ensuring it meets the expected structure for `DevConfig`.
- *
- * @param configDef - The configuration object to parse.
- * @returns A validated `DevConfig` object.
- */
-export function parseDevConfig(configDef: unknown): DevConfig {
-	const config: DevConfig = {};
-	// Validate that configDef is an object.
-	if (typeof configDef !== 'object' || configDef == null) {
-		throw new Error("Invalid 'dev' property, must be an object");
-	}
-
-	// Check for and validate the 'proxy' property if present.
-	if ('proxy' in configDef) {
-		const { proxy } = configDef;
-		if (
-			!Array.isArray(proxy) ||
-			!proxy.every((p: unknown) => {
-				// Ensure each proxy rule is an object with 'from' and 'to' string properties.
-				if (typeof p !== 'object' || p == null) return false;
-				if (!('from' in p) || !('to' in p)) return false;
-				if (typeof p.from !== 'string' || typeof p.to !== 'string') return false;
-				return true;
-			})
-		) {
-			throw new Error(
-				"Invalid 'proxy' configuration, each proxy must be an object with 'from' and 'to' string properties"
-			);
-		}
-
-		config.proxy = proxy as [{ from: string; to: string }];
-	}
-
-	return config;
-}
-
-/**
  * Represents a development server capable of serving files and proxying requests based on configuration.
  */
 export class Server {

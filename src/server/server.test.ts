@@ -2,7 +2,7 @@ import { vi, describe, it, expect, afterEach } from 'vitest';
 import http from 'http';
 import type { AddressInfo } from 'net';
 import type { Frontend } from '../frontend/frontend';
-import { parseDevConfig, Server } from './server';
+import { Server } from './server';
 
 // Helper to create a mock Frontend
 function createMockFrontend(files: Record<string, string>): Frontend {
@@ -31,34 +31,6 @@ async function get(baseUrl: string, path: string): Promise<{ status: number; bod
 	const body = await response.text();
 	return { status: response.status, body, headers: response.headers };
 }
-
-describe('parseDevConfig', () => {
-	it('returns empty config for empty object', () => {
-		expect(parseDevConfig({})).toStrictEqual({});
-	});
-
-	it('parses valid proxy config', () => {
-		const config = parseDevConfig({
-			proxy: [{ from: '/api/', to: 'http://localhost:3000/api/' }],
-		});
-		expect(config).toStrictEqual({
-			proxy: [{ from: '/api/', to: 'http://localhost:3000/api/' }],
-		});
-	});
-
-	it('throws for non-object input', () => {
-		expect(() => parseDevConfig(null)).toThrow("Invalid 'dev' property");
-		expect(() => parseDevConfig('string')).toThrow("Invalid 'dev' property");
-		expect(() => parseDevConfig(42)).toThrow("Invalid 'dev' property");
-	});
-
-	it('throws for invalid proxy config', () => {
-		expect(() => parseDevConfig({ proxy: 'not-array' })).toThrow("Invalid 'proxy' configuration");
-		expect(() => parseDevConfig({ proxy: [{ from: '/a/' }] })).toThrow("Invalid 'proxy' configuration");
-		expect(() => parseDevConfig({ proxy: [{ from: 123, to: '/b/' }] })).toThrow("Invalid 'proxy' configuration");
-		expect(() => parseDevConfig({ proxy: [null] })).toThrow("Invalid 'proxy' configuration");
-	});
-});
 
 describe('Server', () => {
 	let httpServer: http.Server;

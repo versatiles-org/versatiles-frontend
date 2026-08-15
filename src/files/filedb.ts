@@ -43,10 +43,6 @@ export abstract class FileDB {
 		this.files.set(filename, new File(filename, buffer));
 	}
 
-	public setFile(file: File): void {
-		this.files.set(file.name, file);
-	}
-
 	/**
 	 * Retrieves a file's raw buffer by its name.
 	 *
