@@ -28,9 +28,12 @@ export class File {
 
 	/**
 	 * Compresses the raw buffer using Brotli algorithm and caches the result.
+	 *
+	 * @returns The compressed buffer, so callers get a defined value without re-checking
+	 *          the optional {@link bufferBr} field.
 	 */
-	public async compress(): Promise<void> {
-		if (this.bufferBr) return; // Skip if already compressed.
+	public async compress(): Promise<Buffer> {
+		if (this.bufferBr) return this.bufferBr; // Skip if already compressed.
 		this.bufferBr = await cache(
 			'compress',
 			this.hash,
@@ -51,5 +54,6 @@ export class File {
 					)
 				)
 		);
+		return this.bufferBr;
 	}
 }

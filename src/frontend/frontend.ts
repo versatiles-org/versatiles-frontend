@@ -8,6 +8,32 @@ import { File } from '../files/file';
 import { FileDBs } from '../files/filedbs';
 
 /**
+ * Starts writing the tarball before any entry is added. Without a consumer attached the pack
+ * queues every entry internally, holding the whole bundle in memory on top of the buffers the
+ * FileDBs already keep; consuming as we go bounds that to roughly one entry.
+ */
+function startPipeline(pack: tar.Pack, filename: string): Promise<void> {
+	const written = pipeline(pack, createGzip({ level: 9 }), createWriteStream(filename));
+	// The awaited result below reports failures. Attach a handler now so a pipeline error
+	// while the entry loop is still running is not reported as an unhandled rejection.
+	written.catch(() => undefined);
+	return written;
+}
+
+/**
+ * Adds one entry and resolves once the pack has flushed it, so the loop advances at the
+ * speed of the gzip/disk pipeline instead of racing ahead of it.
+ */
+function addEntry(pack: tar.Pack, name: string, buffer: Buffer): Promise<void> {
+	return new Promise((res, rej) => {
+		pack.entry({ name }, buffer, (error) => {
+			if (error) rej(error);
+			else res();
+		});
+	});
+}
+
+/**
  * Configuration for a frontend, detailing included and ignored paths, and development settings.
  */
 export interface FrontendConfig<fileDBKeys = string> {
@@ -69,12 +95,14 @@ export class Frontend {
 	 */
 	public async saveAsTarGz(folder: string): Promise<void> {
 		const pack = tar.pack();
+		const written = startPipeline(pack, resolve(folder, this.config.name + '.tar.gz'));
+
 		for (const file of this.iterate()) {
-			pack.entry({ name: file.name }, file.bufferRaw);
+			await addEntry(pack, file.name, file.bufferRaw);
 		}
 		pack.finalize();
 
-		await pipeline(pack, createGzip({ level: 9 }), createWriteStream(resolve(folder, this.config.name + '.tar.gz')));
+		await written;
 	}
 
 	/**
@@ -84,13 +112,14 @@ export class Frontend {
 	 */
 	public async saveAsBrTarGz(folder: string): Promise<void> {
 		const pack = tar.pack();
+		const written = startPipeline(pack, resolve(folder, this.config.name + '.br.tar.gz'));
+
 		for (const file of this.iterate()) {
-			if (!file.bufferBr) await file.compress();
-			pack.entry({ name: file.name + '.br' }, file.bufferBr);
+			await addEntry(pack, file.name + '.br', file.bufferBr ?? (await file.compress()));
 		}
 		pack.finalize();
 
-		await pipeline(pack, createGzip({ level: 9 }), createWriteStream(resolve(folder, this.config.name + '.br.tar.gz')));
+		await written;
 	}
 
 	/**
