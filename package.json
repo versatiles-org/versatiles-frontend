@@ -20,7 +20,7 @@
     "test:e2e": "vitest run --config vitest.config.e2e.ts",
     "test:e2e:browser": "npx playwright test --config e2e/playwright/playwright.config.ts",
     "test:e2e:browser:update": "npx playwright test --config e2e/playwright/playwright.config.ts --update-snapshots",
-    "test:e2e:browser:update-linux": "docker run --rm -v .:/work -v /work/node_modules -w /work mcr.microsoft.com/playwright:v$(node -p \"require('./package-lock.json').packages['node_modules/@playwright/test'].version\")-noble bash -c 'npm ci && npx playwright test --config e2e/playwright/playwright.config.ts --update-snapshots'",
+    "test:e2e:browser:update-linux": "./scripts/update-snapshots-linux.sh",
     "typecheck": "tsc --noEmit && tsc --noEmit -p e2e/playwright/tsconfig.json",
     "upgrade": "vrt deps-upgrade"
   },
