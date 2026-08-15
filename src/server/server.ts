@@ -1,7 +1,7 @@
 import express from 'express';
 import escapeHtml from 'escape-html';
 import type { Express } from 'express';
-import { resolve } from 'url';
+import { posix } from 'path';
 import { lookup } from 'mrmime';
 import { Frontend } from '../frontend/frontend';
 
@@ -71,7 +71,9 @@ export class Server {
 			if (tryFrontend(req.path)) return;
 
 			// Attempt to serve an index.html file if the request is for a directory.
-			if (tryFrontend(resolve(req.path + '/', 'index.html'))) return;
+			// `posix.join` (not the deprecated `url.resolve`) keeps the path a plain path:
+			// no percent-encoding, and no doubled slash when req.path already ends in one.
+			if (tryFrontend(posix.join(req.path, 'index.html'))) return;
 
 			// Attempt to proxy the request based on configuration.
 			void tryProxy(req.path)
