@@ -18,6 +18,20 @@ export interface DevConfig {
 /**
  * Represents a development server capable of serving files and proxying requests based on configuration.
  */
+/**
+ * Percent-decodes a request path, or returns false if it is malformed (e.g. "%ZZ").
+ *
+ * Decoding is safe here because lookups hit an in-memory map of known file names: a decoded
+ * "../" simply fails to match rather than reaching the file system.
+ */
+function decodePath(path: string): string | false {
+	try {
+		return decodeURIComponent(path);
+	} catch {
+		return false;
+	}
+}
+
 export class Server {
 	private readonly app: Express;
 
@@ -33,13 +47,22 @@ export class Server {
 		this.app = express();
 
 		this.app.get(/.*/, (req, res) => {
+			// File names are stored decoded, but req.path is not, so "my%20file.txt" would
+			// never match "my file.txt". Only the lookup is decoded; the proxy below forwards
+			// the original path, where the encoding is the upstream's business.
+			const path = decodePath(req.path);
+			if (path === false) {
+				res.status(400).end(`path "${escapeHtml(req.path)}" is not valid.`);
+				return;
+			}
+
 			// Attempt to serve the request from the file system.
-			if (tryFrontend(req.path)) return;
+			if (tryFrontend(path)) return;
 
 			// Attempt to serve an index.html file if the request is for a directory.
 			// `posix.join` (not the deprecated `url.resolve`) keeps the path a plain path:
 			// no percent-encoding, and no doubled slash when req.path already ends in one.
-			if (tryFrontend(posix.join(req.path, 'index.html'))) return;
+			if (tryFrontend(posix.join(path, 'index.html'))) return;
 
 			// Attempt to proxy the request based on configuration.
 			void tryProxy(req.path)

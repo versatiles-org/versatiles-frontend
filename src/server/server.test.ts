@@ -170,6 +170,54 @@ describe('Server', () => {
 		expect(res.status).toBe(404);
 	});
 
+	it('serves a file whose name contains a space', async () => {
+		setup({ 'assets/my file.txt': 'space' });
+		const res = await get(baseUrl, '/assets/my%20file.txt');
+
+		expect(res.status).toBe(200);
+		expect(res.body).toBe('space');
+	});
+
+	it('serves a file whose name contains non-ASCII characters', async () => {
+		setup({ 'assets/münchen.txt': 'unicode' });
+		const res = await get(baseUrl, '/assets/m%C3%BCnchen.txt');
+
+		expect(res.status).toBe(200);
+		expect(res.body).toBe('unicode');
+	});
+
+	it('rejects a malformed percent escape with 400', async () => {
+		setup({});
+		const res = await get(baseUrl, '/assets/%ZZ.txt');
+
+		expect(res.status).toBe(400);
+		expect(res.body).toContain('is not valid');
+	});
+
+	it('forwards the still-encoded path to the proxy', async () => {
+		let received: string | undefined;
+		const backend = http.createServer((req, res) => {
+			received = req.url;
+			res.writeHead(200, { 'content-type': 'text/plain' });
+			res.end('ok');
+		});
+		backend.listen(0);
+		const backendPort = (backend.address() as AddressInfo).port;
+
+		try {
+			setup({}, { proxy: [{ from: '/api/', to: `http://localhost:${backendPort}/api/` }] });
+			// %23 is the telling case: decoded to "#", everything after it becomes a URL
+			// fragment and never reaches the upstream. A space would survive, because fetch
+			// re-encodes it - so it would not notice the mistake.
+			const res = await get(baseUrl, '/api/a%23b');
+
+			expect(res.status).toBe(200);
+			expect(received).toBe('/api/a%23b');
+		} finally {
+			backend.close();
+		}
+	});
+
 	it('uses octet-stream for unknown file types', async () => {
 		setup({ 'data.xyz': 'binary' });
 		const res = await get(baseUrl, '/data.xyz');
