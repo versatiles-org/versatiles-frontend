@@ -1,5 +1,5 @@
 /* Position the location search bar at the top center of the map. */
-.maplibregl-ctrl-top-left .maplibregl-ctrl-geocoder {
+.maplibregl-ctrl-top-left .versatiles-geocoder {
 	position: fixed;
 	top: 10px;
 	left: 10px;
@@ -9,6 +9,71 @@
 	min-width: 0;
 	margin: 0 auto;
 	z-index: 2;
+}
+
+.versatiles-geocoder-input {
+	box-sizing: border-box;
+	width: 100%;
+	padding: 8px 12px;
+	border: none;
+	border-radius: 4px;
+	box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1);
+	background: #fff;
+	color: #000;
+	font: inherit;
+	font-size: 14px;
+}
+
+.versatiles-geocoder-input:focus {
+	outline: 2px solid #4264fb;
+	outline-offset: -2px;
+}
+
+.versatiles-geocoder-results {
+	margin: 4px 0 0;
+	padding: 0;
+	list-style: none;
+	border-radius: 4px;
+	box-shadow: 0 0 10px 2px rgba(0, 0, 0, 0.1);
+	background: #fff;
+	overflow: hidden;
+}
+
+.versatiles-geocoder-result {
+	padding: 7px 12px;
+	cursor: pointer;
+	font-size: 14px;
+	line-height: 1.3;
+}
+
+.versatiles-geocoder-result + .versatiles-geocoder-result {
+	border-top: 1px solid #eee;
+}
+
+.versatiles-geocoder-result:hover,
+.versatiles-geocoder-result.is-highlighted {
+	background: #f0f3ff;
+}
+
+.versatiles-geocoder-title {
+	display: block;
+	color: #000;
+}
+
+.versatiles-geocoder-context {
+	display: block;
+	color: #666;
+	font-size: 12px;
+}
+
+.versatiles-geocoder-context:empty {
+	display: none;
+}
+
+.versatiles-geocoder-message {
+	padding: 7px 12px;
+	color: #666;
+	font-size: 14px;
 }
 
 /* On narrow screens the full-width search bar would cover the

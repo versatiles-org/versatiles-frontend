@@ -87,7 +87,7 @@ test('GeolocateControl is visible', async ({ page, serverUrl }) => {
 test('location search (geocoder) control is present', async ({ page, serverUrl }) => {
 	await page.goto(serverUrl);
 	await waitForMapReady(page);
-	await expect(page.locator('.maplibregl-ctrl-geocoder--input')).toBeVisible();
+	await expect(page.locator('.versatiles-geocoder-input')).toBeVisible();
 });
 
 test('VersaTiles logo loads', async ({ page, serverUrl }) => {

@@ -180,7 +180,7 @@ test.describe('preview page', () => {
 	test('location search (geocoder) control present', async ({ page, serverUrl }) => {
 		await page.goto(`${serverUrl}/preview.html?id=osm`);
 		await waitForMapReady(page);
-		await expect(page.locator('.maplibregl-ctrl-geocoder--input')).toBeVisible();
+		await expect(page.locator('.versatiles-geocoder-input')).toBeVisible();
 	});
 
 	test('logo is present', async ({ page, serverUrl }) => {

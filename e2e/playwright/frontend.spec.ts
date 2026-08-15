@@ -107,7 +107,156 @@ test('MaplibreInspect control is present', async ({ page, serverUrl }) => {
 test('location search (geocoder) control is present', async ({ page, serverUrl }) => {
 	await page.goto(serverUrl);
 	await waitForMapReady(page);
-	await expect(page.locator('.maplibregl-ctrl-geocoder--input')).toBeAttached();
+	await expect(page.locator('.versatiles-geocoder-input')).toBeAttached();
+});
+
+/** Two results: the first carries an extent, the second only a point. */
+const GEOCODER_RESPONSE = {
+	type: 'FeatureCollection',
+	features: [
+		{
+			type: 'Feature',
+			geometry: { type: 'Point', coordinates: [13.3951309, 52.5173885] },
+			properties: {
+				name: 'Berlin',
+				type: 'city',
+				country: 'Germany',
+				// Photon order: [west, north, east, south]
+				extent: [13.088345, 52.6755087, 13.7611609, 52.3382448],
+			},
+		},
+		{
+			type: 'Feature',
+			geometry: { type: 'Point', coordinates: [-71.1810703, 44.4696602] },
+			properties: { name: 'Berlin', type: 'city', state: 'New Hampshire', country: 'United States' },
+		},
+	],
+};
+
+/**
+ * Answers the geocoding backend from a fixture and records the requests, so the tests do
+ * not depend on the live service.
+ */
+async function stubGeocoder(page: Page, body: unknown = GEOCODER_RESPONSE): Promise<string[]> {
+	const requests: string[] = [];
+	await page.route('**/geocode.versatiles.org/**', async (route) => {
+		requests.push(route.request().url());
+		await route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(body) });
+	});
+	return requests;
+}
+
+/** Reads the current camera, rounded, from the map exposed by {@link exposeMap}. */
+async function readCamera(page: Page): Promise<{ lng: number; lat: number; zoom: number }> {
+	return page.evaluate(() => {
+		const map = (window as unknown as { __map: { getCenter(): { lng: number; lat: number }; getZoom(): number } })
+			.__map;
+		const center = map.getCenter();
+		return { lng: Math.round(center.lng), lat: Math.round(center.lat), zoom: Math.round(map.getZoom()) };
+	});
+}
+
+/** Exposes the map instance as window.__map. Must be called before page.goto(). */
+async function exposeMap(page: Page) {
+	await page.addInitScript(() => {
+		let _ml: unknown;
+		Object.defineProperty(window, 'maplibregl', {
+			configurable: true,
+			enumerable: true,
+			get() {
+				return _ml;
+			},
+			set(val: Record<string, unknown>) {
+				_ml = val;
+				if (val?.Map) {
+					const OrigMap = val.Map as new (...args: unknown[]) => unknown;
+					val.Map = function (...args: unknown[]) {
+						const instance = new OrigMap(...args);
+						(window as unknown as Record<string, unknown>).__map = instance;
+						return instance;
+					};
+					(val.Map as Record<string, unknown>).prototype = OrigMap.prototype;
+					Object.setPrototypeOf(val.Map, OrigMap);
+				}
+			},
+		});
+	});
+}
+
+test('search lists results while typing', async ({ page, serverUrl }) => {
+	await stubGeocoder(page);
+	await page.goto(serverUrl);
+	await waitForMapReady(page);
+
+	await page.locator('.versatiles-geocoder-input').fill('Berlin');
+
+	await expect(page.locator('.versatiles-geocoder-result')).toHaveCount(2);
+	await expect(page.locator('.versatiles-geocoder-result').first()).toContainText('Berlin');
+	await expect(page.locator('.versatiles-geocoder-result').nth(1)).toContainText('New Hampshire');
+});
+
+test('search sends the query and biases towards the map center', async ({ page, serverUrl }) => {
+	const requests = await stubGeocoder(page);
+	await exposeMap(page);
+	await page.goto(serverUrl);
+	await waitForMapReady(page);
+
+	await page.locator('.versatiles-geocoder-input').fill('Berlin');
+	await expect(page.locator('.versatiles-geocoder-result').first()).toBeVisible();
+
+	const url = new URL(requests[requests.length - 1]);
+	expect(url.searchParams.get('q')).toBe('Berlin');
+
+	// The bias has to be the current map center, not merely present: a missing parameter
+	// would otherwise read as 0 and still look like a plausible coordinate.
+	const camera = await readCamera(page);
+	expect(url.searchParams.has('lat')).toBe(true);
+	expect(url.searchParams.has('lon')).toBe(true);
+	expect(Math.round(Number(url.searchParams.get('lat')))).toBe(camera.lat);
+	expect(Math.round(Number(url.searchParams.get('lon')))).toBe(camera.lng);
+});
+
+test('enter picks the first result, closes the list and moves the map', async ({ page, serverUrl }) => {
+	await stubGeocoder(page);
+	await exposeMap(page);
+	await page.goto(serverUrl);
+	await waitForMapReady(page);
+
+	await page.locator('.versatiles-geocoder-input').fill('Berlin');
+	await expect(page.locator('.versatiles-geocoder-result').first()).toBeVisible();
+	await page.locator('.versatiles-geocoder-input').press('Enter');
+
+	// The list closes on Enter, and the chosen result becomes the field's value.
+	await expect(page.locator('.versatiles-geocoder-results')).toBeHidden();
+	await expect(page.locator('.versatiles-geocoder-input')).toHaveValue('Berlin');
+
+	// The first result carries an extent, so the camera is fitted to it. Asserting the
+	// settled values (including zoom) matters: the camera animates, and a value it merely
+	// passes through on the way would make this pass for the wrong reason.
+	await expect.poll(async () => readCamera(page)).toStrictEqual({ lng: 13, lat: 53, zoom: 10 });
+});
+
+test('a result without an extent falls back to a zoom for its type', async ({ page, serverUrl }) => {
+	await stubGeocoder(page);
+	await exposeMap(page);
+	await page.goto(serverUrl);
+	await waitForMapReady(page);
+
+	await page.locator('.versatiles-geocoder-input').fill('Berlin');
+	// The second result is a point with no extent, so ZOOM_BY_TYPE.city applies.
+	await page.locator('.versatiles-geocoder-result').nth(1).click();
+
+	await expect.poll(async () => readCamera(page)).toStrictEqual({ lng: -71, lat: 44, zoom: 11 });
+});
+
+test('search reports when there are no results', async ({ page, serverUrl }) => {
+	await stubGeocoder(page, { type: 'FeatureCollection', features: [] });
+	await page.goto(serverUrl);
+	await waitForMapReady(page);
+
+	await page.locator('.versatiles-geocoder-input').fill('Berlin');
+
+	await expect(page.locator('.versatiles-geocoder-message')).toHaveText('No results');
 });
 
 test('screenshot', async ({ page, serverUrl }) => {
