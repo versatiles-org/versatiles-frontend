@@ -114,7 +114,8 @@ I["file.ts"]
 J["safe-path.ts"]
 K["filedb-npm.ts"]
 L["filedb-static.ts"]
-U["source_config.ts"]
+W["glyphs.ts"]
+X["source_config.ts"]
 end
 subgraph M["frontend"]
 N["generate.ts"]
@@ -124,7 +125,9 @@ Q["overview.ts"]
 end
 R["dev.ts"]
 subgraph S["server"]
-T["server.ts"]
+T["landing.ts"]
+U["listen.ts"]
+V["server.ts"]
 end
 end
 2-->4
@@ -148,6 +151,7 @@ A-->J
 B-->C
 B-->E
 C-->D
+G-->C
 G-->E
 H-->4
 H-->I
@@ -161,11 +165,15 @@ N-->F
 N-->O
 N-->P
 N-->Q
+O-->I
 R-->6
 R-->9
 R-->O
 R-->P
 R-->T
+R-->V
+T-->U
+V-->U
 
 class 0,1,3,8,M,S subgraphs;
 classDef subgraphs fill-opacity:0.1, fill:#888, color:#888, stroke:#888;
