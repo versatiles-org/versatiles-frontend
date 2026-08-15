@@ -207,11 +207,14 @@ describe('Bundle contents', () => {
 });
 
 describe('brotli bundles match regular bundles', () => {
+	// The regular bundles were already read at the top of this file. Reading them again here
+	// doubles the work of the slowest tests in the suite for no extra coverage.
+	const regularFiles = new Map(bundles.bundles.map((b) => [b.name, b.files.map((f) => f.name).sort()]));
+
 	for (const name of BUNDLE_NAMES) {
 		it(`${name}.br.tar.gz matches ${name}.tar.gz`, async () => {
-			const regular = (await listTarGzFiles(`${name}.tar.gz`)).map((f) => f.name).sort();
 			const brotli = (await listTarGzFiles(`${name}.br.tar.gz`)).map((f) => f.name.slice(0, -3)).sort();
-			expect(brotli).toStrictEqual(regular);
+			expect(brotli).toStrictEqual(regularFiles.get(name));
 		});
 	}
 });
