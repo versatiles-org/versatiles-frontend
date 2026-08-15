@@ -57,6 +57,13 @@ describe('Bundle contents', () => {
 		expect(path.rest()).toStrictEqual({}); // no other files in images/
 	});
 
+	it('contains shared frontend assets', () => {
+		const path = bundles.withPrefix('assets/versatiles/');
+		expect(path.file('geocoder.js')).toBeTruthy();
+		expect(path.file('geocoder.css')).toBeTruthy();
+		expect(path.rest()).toStrictEqual({}); // no other shared assets
+	});
+
 	describe('libraries', () => {
 		let hasLibFailed = false;
 		beforeEach(() => {
