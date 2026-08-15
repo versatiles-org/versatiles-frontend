@@ -82,11 +82,11 @@ export const sourceConfigs = {
 	}),
 
 	'external-versatiles-svg-renderer': npmSource('@versatiles/svg-renderer', {
-		include: /dist\/maplibre\.umd\.js(\.map)?$/,
+		include: /dist\/maplibre-svg-export\.umd\.js(\.map)?$/,
 		flatten: true,
 		rename: {
-			'maplibre.umd.js': 'versatiles-svg-renderer.js',
-			'maplibre.umd.js.map': 'versatiles-svg-renderer.js.map',
+			'maplibre-svg-export.umd.js': 'versatiles-svg-renderer.js',
+			'maplibre-svg-export.umd.js.map': 'versatiles-svg-renderer.js.map',
 		},
 		dest: 'assets/lib/versatiles-svg-renderer/',
 		source: { name: 'VersaTiles SVG Renderer', url: 'https://github.com/versatiles-org/versatiles-svg-renderer' },
