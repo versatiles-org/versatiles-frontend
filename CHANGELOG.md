@@ -5,6 +5,59 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.14.0] - 2026-08-15
+
+### Features
+
+- implement ESM bundling for MapLibre GL and update source configuration
+- implement shared geocoder functionality and update frontend assets
+- enhance server start method to return actual listening port and log URL
+- implement landing page for development server to list active frontends and their ports
+- replace MapLibre geocoder with custom VersaTiles geocoder and update related tests
+- enhance cache functionality with maxAgeMs support and add related tests
+- implement caching for GitHub release version retrieval with key differentiation for stable and prerelease
+- add documentation check to CI workflow to ensure README is up to date
+- add tests for file serving with spaces and non-ASCII characters, and improve path decoding logic
+- update end-to-end snapshot update script for Linux compatibility
+- add tests for pinned version handling in ExternalFileDB and enhance fetch response mock
+
+### Bug Fixes
+
+- ensure GH_TOKEN is set in the environment for workflow execution
+- update funding information to reflect organization details
+- simplify package resolution logic in NpmFileDB
+- update SVG renderer configuration in sourceConfigs
+- update @versatiles/svg-renderer to version 1.1.0 in package.json and package-lock.json
+- replace URL constructor with path.resolve for consistent folder path resolution
+- skip draft releases in getLatestGithubReleaseVersion function
+- replace deprecated url.resolve with posix.join for path handling in server
+- update playwright docker image versioning in test:e2e:browser:update-linux script
+- enhance typecheck script to include Playwright configuration
+- add typecheck step to CI workflow and update lint script
+- add engines field to specify required Node.js version
+- update compress method to return compressed buffer and improve tarball handling
+- defer script loading for improved performance and ensure DOM readiness
+- add log level to prettier commands for better output control
+- correct releaseDir path resolution to use resolve instead of URL
+
+### Code Refactoring
+
+- remove unused code
+- move geocoder
+- remove MapLibre GL Geocoder from source and frontend configurations
+- remove bin entry for versatiles-frontend from package.json
+- update diagram structure in README for improved clarity and organization
+
+### Tests
+
+- update geocoder tests to reflect frontend changes and clarify conditions
+- optimize brotli bundle tests by reusing regular bundle file lists
+
+### Chores
+
+- **deps:** bump actions/setup-node from 6 to 7 in the action group
+- update dependencies in package.json
+
 ## [3.13.1] - 2026-07-08
 
 ### Features
