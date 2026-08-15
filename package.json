@@ -3,9 +3,6 @@
   "version": "3.13.1",
   "private": true,
   "description": "",
-  "bin": {
-    "versatiles-frontend": "src/index.ts"
-  },
   "scripts": {
     "build": "tsx --env-file-if-exists=.env src/build.ts",
     "check": "npm run format:check && npm run typecheck && npm run lint && npm run test && npm run build && npm run test:e2e && npm run test:e2e:browser",
