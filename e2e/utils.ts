@@ -5,7 +5,7 @@ import * as tar from 'tar';
 import { resolve } from 'path';
 import { expect } from 'vitest';
 
-export const releaseDir = new URL('../release', import.meta.url).pathname;
+export const releaseDir = resolve(import.meta.dirname, '../release');
 
 export const hasRelease = existsSync(releaseDir) && existsSync(resolve(releaseDir, 'frontend.tar.gz'));
 
