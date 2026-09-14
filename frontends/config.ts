@@ -1,7 +1,7 @@
 import { githubSource, npmSource, staticSource, type SourceConfig } from '../src/files/source_config';
 import type { FrontendConfig } from '../src/frontend/frontend';
 import { File } from '../src/files/file';
-import { emptyGlyphPbf } from '../src/files/glyphs';
+import { emptyGlyphPbf, limitFontFamiliesCodeblocks } from '../src/files/glyphs';
 
 export const sourceConfigs = {
 	'external-fonts': githubSource('versatiles-org/versatiles-fonts', {
@@ -193,7 +193,11 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 		// Keep only Latin glyphs (codepoints < 1024). Higher ranges are not deleted but
 		// replaced with valid, empty glyph tiles, so clients get an HTTP 200 (no glyphs)
 		// instead of a 404 when they request an out-of-range codepoint.
+		// font_families.json is updated to match, so its codeblocks do not claim the removed glyphs.
 		transform: (file: File): File | null => {
+			if (file.name === 'assets/glyphs/font_families.json') {
+				return new File(file.name, limitFontFamiliesCodeblocks(file.bufferRaw, 1024));
+			}
 			const match = file.name.match(/^assets\/glyphs\/([^/]+)\/(\d+-\d+)\.pbf$/);
 			if (!match) return file;
 			const [, fontName, range] = match;

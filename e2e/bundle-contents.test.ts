@@ -33,7 +33,8 @@ describe('Bundle contents', () => {
 		expect(path.file('font_families.json')).toBeTruthy();
 		expect(path.file('index.json')).toBeTruthy();
 
-		expect(path.count(/^noto_sans_\w+\/\d+-\d+\.pbf$/)).toStrictEqual(512);
+		// 4 faces (regular, bold and their italics since versatiles-fonts v3) × 256 ranges
+		expect(path.count(/^noto_sans_\w+\/\d+-\d+\.pbf$/)).toStrictEqual(1024);
 		expectMinSizes(path.sizes(/^noto_sans_\w+\/\d+-\d+\.pbf$/), {
 			frontend: 77e6,
 			'frontend-blank': 77e6,
