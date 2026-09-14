@@ -18,6 +18,78 @@
 
 		<script defer src="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.js"></script>
 		<link href="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet" />
+
+		<style>
+			.metadata-ctrl {
+				position: relative;
+			}
+
+			.metadata-ctrl button svg {
+				display: block;
+				margin: auto;
+			}
+
+			.metadata-panel {
+				position: absolute;
+				top: 0;
+				right: calc(100% + 10px);
+				width: 360px;
+				max-width: calc(100vw - 80px);
+				max-height: calc(100vh - 40px);
+				overflow: auto;
+				box-sizing: border-box;
+				padding: 10px 12px;
+				background: #fff;
+				border-radius: 4px;
+				box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+				font: 12px/1.4 sans-serif;
+				color: #333;
+			}
+
+			.metadata-panel h3 {
+				margin: 0 0 8px;
+				font-size: 14px;
+			}
+
+			.metadata-panel table {
+				border-collapse: collapse;
+				width: 100%;
+			}
+
+			.metadata-panel th,
+			.metadata-panel td {
+				padding: 2px 4px;
+				text-align: left;
+				vertical-align: top;
+				overflow-wrap: anywhere;
+			}
+
+			.metadata-panel th {
+				white-space: nowrap;
+				color: #666;
+				font-weight: normal;
+			}
+
+			.metadata-panel details {
+				margin-top: 8px;
+			}
+
+			.metadata-panel summary {
+				cursor: pointer;
+				font-weight: bold;
+			}
+
+			.metadata-panel .fields {
+				color: #666;
+			}
+
+			.metadata-panel pre {
+				margin: 4px 0 0;
+				white-space: pre-wrap;
+				overflow-wrap: anywhere;
+				font-size: 11px;
+			}
+		</style>
 	</head>
 
 	<body style="margin: 0; height: 100%">
@@ -38,6 +110,7 @@
 					const tileJSONUrl = `/tiles/${id}/tiles.json`;
 					const response = await fetch(tileJSONUrl);
 					const tileJSON = await response.json();
+					const metadata = structuredClone(tileJSON);
 					tileJSON.tiles = [`/tiles/${id}/{z}/{x}/{y}`];
 
 					const style = VersaTilesStyle.guessStyle(tileJSON);
@@ -64,12 +137,103 @@
 					map.addControl(new MaplibreInspect());
 					map.addControl(new VersaTilesSVG.SVGExportControl(), 'top-right');
 
+					map.addControl(new MetadataControl(id, metadata), 'top-right');
+
 					map.addControl(createVersaTilesGeocoder(), 'top-left');
 
 					// collapse attribution control
 					document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');
 				})();
 			});
+
+			// Button that toggles a panel listing the metadata (tiles.json) of the previewed source.
+			class MetadataControl {
+				constructor(id, tileJSON) {
+					this._id = id;
+					this._tileJSON = tileJSON;
+				}
+
+				onAdd() {
+					this._container = document.createElement('div');
+					this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group metadata-ctrl';
+
+					const button = document.createElement('button');
+					button.type = 'button';
+					button.title = 'Show source metadata';
+					button.setAttribute('aria-label', 'Show source metadata');
+					button.setAttribute('aria-expanded', 'false');
+					button.innerHTML =
+						'<svg width="20" height="20" viewBox="0 0 20 20" aria-hidden="true">' +
+						'<circle cx="10" cy="10" r="8" fill="none" stroke="#333" stroke-width="1.8"/>' +
+						'<circle cx="10" cy="6" r="1.2" fill="#333"/>' +
+						'<path d="M10 9v6" stroke="#333" stroke-width="2" stroke-linecap="round"/></svg>';
+
+					const panel = document.createElement('div');
+					panel.className = 'metadata-panel';
+					panel.hidden = true;
+					panel.innerHTML = this._render();
+
+					button.addEventListener('click', () => {
+						panel.hidden = !panel.hidden;
+						button.setAttribute('aria-expanded', String(!panel.hidden));
+					});
+
+					this._container.append(button, panel);
+					return this._container;
+				}
+
+				onRemove() {
+					this._container.remove();
+				}
+
+				_render() {
+					const m = this._tileJSON;
+					const rows = [
+						['id', this._id],
+						['description', m.description],
+						['type', m.type],
+						['format', m.tile_format ?? m.format],
+						['schema', m.tile_schema],
+						['zoom', m.minzoom != null || m.maxzoom != null ? `${m.minzoom ?? '?'} – ${m.maxzoom ?? '?'}` : undefined],
+						['bounds', m.bounds?.join(', ')],
+						['center', m.center?.join(', ')],
+						// attribution is HTML, so show only its text
+						[
+							'attribution',
+							m.attribution && new DOMParser().parseFromString(m.attribution, 'text/html').body.textContent,
+						],
+						['version', m.version],
+						['tilejson', m.tilejson],
+					].filter(([, value]) => value != null && value !== '');
+
+					let html = `<h3>${escapeHTML(m.name ?? this._id)}</h3><table>`;
+					for (const [key, value] of rows) {
+						html += `<tr><th>${key}</th><td>${escapeHTML(value)}</td></tr>`;
+					}
+					html += '</table>';
+
+					if (Array.isArray(m.vector_layers) && m.vector_layers.length > 0) {
+						html += `<details class="metadata-layers"><summary>vector layers (${m.vector_layers.length})</summary><table>`;
+						for (const layer of m.vector_layers) {
+							const fields = Object.keys(layer.fields ?? {});
+							html += `<tr><th>${escapeHTML(layer.id)}</th><td>z${layer.minzoom ?? '?'}–${layer.maxzoom ?? '?'}`;
+							if (fields.length > 0) html += `<div class="fields">${escapeHTML(fields.join(', '))}</div>`;
+							html += '</td></tr>';
+						}
+						html += '</table></details>';
+					}
+
+					html += `<details><summary>tiles.json</summary><pre>${escapeHTML(JSON.stringify(m, null, 2))}</pre></details>`;
+					return html;
+				}
+			}
+
+			function escapeHTML(value) {
+				return String(value).replace(
+					/[&<>"']/g,
+					(c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]
+				);
+			}
 		</script>
 	</body>
 </html>

@@ -12,6 +12,7 @@ test.use({
 			type: 'baselayer',
 			tile_format: 'vnd.mapbox-vector-tile',
 			tile_schema: 'shortbread@1.0',
+			attribution: '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>',
 			tiles: ['/tiles/osm/{z}/{x}/{y}'],
 			bounds: [-180, -85.051129, 180, 85.051129],
 			minzoom: 0,
@@ -181,6 +182,39 @@ test.describe('preview page', () => {
 		await page.goto(`${serverUrl}/preview.html?id=osm`);
 		await waitForMapReady(page);
 		await expect(page.locator('.versatiles-geocoder-input')).toBeVisible();
+	});
+
+	test('metadata panel shows tiles.json of the source', async ({ page, serverUrl }) => {
+		await page.goto(`${serverUrl}/preview.html?id=osm`);
+		await waitForMapReady(page);
+		const button = page.getByRole('button', { name: 'Show source metadata' });
+		const panel = page.locator('.metadata-panel');
+		await expect(panel).toBeHidden();
+
+		await button.click();
+		await expect(panel).toBeVisible();
+		await expect(button).toHaveAttribute('aria-expanded', 'true');
+		await expect(panel.locator('h3')).toHaveText('VersaTiles OSM');
+		await expect(panel).toContainText('Vector tiles based on OSM in Shortbread scheme');
+		await expect(panel).toContainText('vnd.mapbox-vector-tile');
+		await expect(panel).toContainText('shortbread@1.0');
+		await expect(panel.locator('tr', { hasText: 'attribution' }).locator('td')).toHaveText(
+			'© OpenStreetMap contributors'
+		);
+		await expect(panel.locator('.metadata-layers summary')).toHaveText('vector layers (26)');
+
+		await button.click();
+		await expect(panel).toBeHidden();
+	});
+
+	test('metadata panel works for raster sources', async ({ page, serverUrl }) => {
+		await page.goto(`${serverUrl}/preview.html?id=hillshade`);
+		await waitForMapReady(page);
+		await page.getByRole('button', { name: 'Show source metadata' }).click();
+		const panel = page.locator('.metadata-panel');
+		await expect(panel.locator('h3')).toHaveText('Hillshade');
+		await expect(panel).toContainText('webp');
+		await expect(panel.locator('.metadata-layers')).toHaveCount(0);
 	});
 
 	test('logo is present', async ({ page, serverUrl }) => {
