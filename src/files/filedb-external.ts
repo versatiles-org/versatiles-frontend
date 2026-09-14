@@ -55,6 +55,9 @@ export class ExternalFileDB extends FileDB {
 			case 'tar.gz':
 				await curl.ungzipUntar(mapFilename);
 				break;
+			case 'tar.zst':
+				await curl.unzstdUntar(mapFilename);
+				break;
 			case 'zip':
 				await curl.unzip(mapFilename);
 				break;

@@ -7,8 +7,8 @@ export const sourceConfigs = {
 	'external-fonts': githubSource('versatiles-org/versatiles-fonts', {
 		assets: [
 			{
-				url: 'https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/fonts.tar.gz',
-				format: 'tar.gz',
+				url: 'https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/fonts.tar.zst',
+				format: 'tar.zst',
 				dest: 'assets/glyphs/',
 			},
 		],
@@ -18,8 +18,8 @@ export const sourceConfigs = {
 	'external-fonts-noto': githubSource('versatiles-org/versatiles-fonts', {
 		assets: [
 			{
-				url: 'https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/noto_sans.tar.gz',
-				format: 'tar.gz',
+				url: 'https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/noto_sans.tar.zst',
+				format: 'tar.zst',
 				dest: 'assets/glyphs/',
 			},
 		],

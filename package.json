@@ -26,7 +26,7 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=22.9.0"
+    "node": ">=22.15.0"
   },
   "author": "Michael Kreil <versatiles@michael-kreil.de>",
   "license": "MIT",

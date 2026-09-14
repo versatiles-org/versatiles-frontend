@@ -1,6 +1,6 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { join } from 'path';
-import { gzipSync } from 'zlib';
+import { gunzipSync, gzipSync, zstdCompressSync } from 'zlib';
 import tarStream from 'tar-stream';
 import { File } from '../files/file';
 
@@ -112,6 +112,22 @@ describe('Curl', () => {
 		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledTimes(2);
 		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(1, '/test/folder/file1.txt', expect.any(Buffer));
 		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(2, '/test/folder/file2.txt', expect.any(Buffer));
+	});
+
+	it('should fetch and unzstd/untar a resource', async () => {
+		// The same tarball as testGzipTar, compressed with zstd instead of gzip.
+		mockFetchResponse(zstdCompressSync(gunzipSync(testGzipTar)));
+		await curl.unzstdUntar((f) => join(testFolder, f));
+
+		expect(cache).toHaveBeenCalledWith('getBuffer', testUrl, expect.any(Function));
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenCalledTimes(2);
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(1, '/test/folder/file1.txt', expect.any(Buffer));
+		expect(mockFileDB.setFileFromBuffer).toHaveBeenNthCalledWith(2, '/test/folder/file2.txt', expect.any(Buffer));
+	});
+
+	it('should reject a gzipped tarball in unzstdUntar', async () => {
+		mockFetchResponse(testGzipTar);
+		await expect(curl.unzstdUntar((f) => join(testFolder, f))).rejects.toThrow();
 	});
 
 	it('should save a resource directly to a file', async () => {

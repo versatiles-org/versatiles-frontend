@@ -5,7 +5,7 @@ export interface SourceInfo {
 
 export interface AssetConfig {
 	url: string;
-	format: 'tar.gz' | 'zip';
+	format: 'tar.gz' | 'tar.zst' | 'zip';
 	dest: string;
 	include?: RegExp;
 	flatten?: boolean;

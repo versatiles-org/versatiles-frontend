@@ -9,6 +9,7 @@ const { curlCalls, filterCallbacks } = vi.hoisted(() => {
 		curlCalls: [] as string[],
 		filterCallbacks: {
 			ungzipUntar: null as ((filename: string) => string | false) | null,
+			unzstdUntar: null as ((filename: string) => string | false) | null,
 			unzip: null as ((filename: string) => string | false) | null,
 		},
 	};
@@ -21,6 +22,7 @@ vi.mock('../utils/curl', () => {
 		url: string;
 		fileDB: unknown;
 		ungzipUntar: CurlInstance['ungzipUntar'];
+		unzstdUntar: CurlInstance['unzstdUntar'];
 		save: CurlInstance['save'];
 		unzip: CurlInstance['unzip'];
 		getBuffer: CurlInstance['getBuffer'];
@@ -34,6 +36,11 @@ vi.mock('../utils/curl', () => {
 				// Capture the filter callback for testing
 				filterCallbacks.ungzipUntar = filter;
 			}) as CurlInstance['ungzipUntar'];
+
+			this.unzstdUntar = vi.fn(async (filter) => {
+				// Capture the filter callback for testing
+				filterCallbacks.unzstdUntar = filter;
+			}) as CurlInstance['unzstdUntar'];
 
 			this.save = vi.fn(async () => {
 				// no-op in tests
@@ -264,7 +271,17 @@ describe('getAssets', () => {
 			vi.clearAllMocks();
 			curlCalls.length = 0;
 			filterCallbacks.ungzipUntar = null;
+			filterCallbacks.unzstdUntar = null;
 			filterCallbacks.unzip = null;
+		});
+
+		it('extracts tar.zst assets with unzstdUntar', async () => {
+			await ExternalFileDB.build({
+				...fontsAllConfig,
+				assets: [{ ...fontsAllConfig.assets[0], format: 'tar.zst' }],
+			});
+			expect(filterCallbacks.ungzipUntar).toBeNull();
+			expect(filterCallbacks.unzstdUntar?.('fonts.json')).toBe('assets/glyphs/index.json');
 		});
 
 		it('fonts filter renames fonts.json to index.json', async () => {

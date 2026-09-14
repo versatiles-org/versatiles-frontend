@@ -1,5 +1,6 @@
-import { createGunzip } from 'zlib';
+import { createGunzip, createZstdDecompress } from 'zlib';
 import { posix } from 'path';
+import type { Transform } from 'stream';
 import { finished } from 'stream/promises';
 import * as tar from 'tar';
 import unzipper from 'unzipper';
@@ -54,7 +55,7 @@ function resolveLink(
 
 /**
  * Provides utilities for fetching resources over HTTP(s), with support for caching,
- * decompression (gunzip), and extraction (untar and unzip).
+ * decompression (gunzip, zstd), and extraction (untar and unzip).
  */
 export class Curl {
 	private readonly url: string;
@@ -73,15 +74,36 @@ export class Curl {
 	}
 
 	/**
-	 * Fetches a gzipped tarball from the URL, decompresses, untars it, and saves the contents
-	 * to the specified folder. Directories are skipped.
-	 *
-	 * Hardlinks and symlinks are saved as files with the content of their target, sharing the
-	 * target's buffer. Dangling links and links pointing outside the archive are skipped.
+	 * Fetches a gzipped tarball from the URL, decompresses, untars it, and saves the contents.
+	 * See {@link untar} for how entries are handled.
 	 *
 	 * @param cbFilter - A callback function that determines the save path for each entry, or skips the entry.
 	 */
 	public async ungzipUntar(cbFilter: (filename: string) => string | false): Promise<void> {
+		await this.untar(createGunzip(), cbFilter);
+	}
+
+	/**
+	 * Fetches a zstd-compressed tarball from the URL, decompresses, untars it, and saves the
+	 * contents. See {@link untar} for how entries are handled.
+	 *
+	 * @param cbFilter - A callback function that determines the save path for each entry, or skips the entry.
+	 */
+	public async unzstdUntar(cbFilter: (filename: string) => string | false): Promise<void> {
+		await this.untar(createZstdDecompress(), cbFilter);
+	}
+
+	/**
+	 * Decompresses the fetched tarball with the given stream, untars it, and saves the contents.
+	 * Directories are skipped.
+	 *
+	 * Hardlinks and symlinks are saved as files with the content of their target, sharing the
+	 * target's buffer. Dangling links and links pointing outside the archive are skipped.
+	 *
+	 * @param streamIn - A fresh decompression stream, e.g. from `createGunzip()`.
+	 * @param cbFilter - A callback function that determines the save path for each entry, or skips the entry.
+	 */
+	private async untar(streamIn: Transform, cbFilter: (filename: string) => string | false): Promise<void> {
 		const buffer = await this.getBuffer();
 		// Track each entry's read so we can await them all; the stream's 'end'
 		// event only signals the end of parsing, not that every file was read.
@@ -91,7 +113,6 @@ export class Curl {
 		const files = new Map<string, { path: string; content: Buffer }>();
 		const links = new Map<string, TarLink>();
 		await new Promise<void>((resolve, reject) => {
-			const streamIn = createGunzip();
 			const extract = tar.t({
 				onReadEntry: (entry) => {
 					const name = posix.normalize(entry.path);
