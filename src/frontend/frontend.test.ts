@@ -2,7 +2,11 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { FrontendConfig } from './frontend';
 import { tmpdir } from 'os';
 import { resolve } from 'path';
+import { execFileSync } from 'child_process';
+import { gunzipSync } from 'zlib';
+import tar from 'tar-stream';
 import { FileDB } from '../files/filedb';
+import { emptyGlyphPbf } from '../files/glyphs';
 
 // Mock cache module
 vi.mock('../utils/cache', () => ({
@@ -115,6 +119,112 @@ describe('Frontend class', () => {
 
 		expect(createWriteStream).toHaveBeenCalledTimes(1);
 		expect(createWriteStream).toHaveBeenCalledWith('/tmp/frontend.br.tar.gz');
+	});
+
+	describe('hardlinks', () => {
+		const content = Buffer.from('duplicated content');
+
+		function createFrontend(hardlinks?: boolean): InstanceType<typeof Frontend> {
+			const dbs = new FileDBs({ all: {}, extra: {} });
+			dbs.get('all').setFileFromBuffer('a/first.txt', content);
+			dbs.get('all').setFileFromBuffer('empty1.txt', Buffer.alloc(0));
+			dbs.get('all').setFileFromBuffer('empty2.txt', Buffer.alloc(0));
+			// Same content from another fileDB, in a separate buffer.
+			dbs.get('extra').setFileFromBuffer('b/second.txt', Buffer.from(content));
+			dbs.get('extra').setFileFromBuffer('unique.txt', Buffer.from('unique'));
+			return new Frontend(dbs, { name: 'links', description: 'Links frontend.', fileDBs: ['all', 'extra'], hardlinks });
+		}
+
+		// The path of the temporary file the mocked createWriteStream wrote the tarball to.
+		function writtenTarball(): string {
+			return vi.mocked(createWriteStream).mock.results[0].value.path;
+		}
+
+		async function listEntries(filename: string): Promise<Record<string, string>> {
+			const { readFileSync } = await vi.importActual<typeof import('fs')>('fs');
+			const entries: Record<string, string> = {};
+			const extract = tar.extract();
+			extract.end(gunzipSync(readFileSync(filename)));
+			for await (const entry of extract) {
+				const { name, type, linkname } = entry.header;
+				entries[name] = type === 'link' ? `link -> ${linkname}` : type;
+				entry.resume();
+			}
+			return entries;
+		}
+
+		it('writes duplicated content as link entries', async () => {
+			await createFrontend(true).saveAsTarGz('/tmp/');
+			expect(await listEntries(writtenTarball())).toStrictEqual({
+				'a/first.txt': 'file',
+				'empty1.txt': 'file',
+				'empty2.txt': 'file',
+				'b/second.txt': 'link -> a/first.txt',
+				'unique.txt': 'file',
+			});
+		});
+
+		it('links .br entries to the first .br entry with the same raw content', async () => {
+			await createFrontend(true).saveAsBrTarGz('/tmp/');
+			expect(await listEntries(writtenTarball())).toStrictEqual({
+				'a/first.txt.br': 'file',
+				'empty1.txt.br': 'file',
+				'empty2.txt.br': 'file',
+				'b/second.txt.br': 'link -> a/first.txt.br',
+				'unique.txt.br': 'file',
+			});
+		});
+
+		it('writes only regular files by default', async () => {
+			await createFrontend().saveAsTarGz('/tmp/');
+			expect(Object.values(await listEntries(writtenTarball())).every((type) => type === 'file')).toBe(true);
+		});
+
+		it('recreates both files when extracting', async () => {
+			const fs = await vi.importActual<typeof import('fs')>('fs');
+			await createFrontend(true).saveAsTarGz('/tmp/');
+			const dir = fs.mkdtempSync(resolve(tmpdir(), 'hardlinks-'));
+			try {
+				execFileSync('tar', ['-xzf', writtenTarball(), '-C', dir]);
+				expect(fs.readFileSync(resolve(dir, 'a/first.txt'))).toEqual(content);
+				expect(fs.readFileSync(resolve(dir, 'b/second.txt'))).toEqual(content);
+			} finally {
+				fs.rmSync(dir, { recursive: true, force: true });
+			}
+		});
+
+		it("keeps frontend-tiny's glyph transform working for ranges that share a buffer", async () => {
+			const tiny = (await loadFrontendConfigs()).find((c) => c.name === 'frontend-tiny');
+			if (!tiny?.transform) throw Error('frontend-tiny has no transform');
+
+			// As loaded from a deduplicated fonts release: the italic ranges are links to the upright ones.
+			const low = Buffer.from('glyphs 0-255');
+			const high = Buffer.from('glyphs 19968-20223');
+			const dbs = new FileDBs({ all: {} });
+			const db = dbs.get('all');
+			db.setFileFromBuffer('assets/glyphs/noto_sans_regular/0-255.pbf', low);
+			db.setFileFromBuffer('assets/glyphs/noto_sans_regular_italic/0-255.pbf', low);
+			db.setFileFromBuffer('assets/glyphs/noto_sans_regular/19968-20223.pbf', high);
+			db.setFileFromBuffer('assets/glyphs/noto_sans_regular_italic/19968-20223.pbf', high);
+
+			const frontend = new Frontend(dbs, { ...tiny, fileDBs: ['all'], hardlinks: true });
+			const files = Object.fromEntries([...frontend.iterate()].map((f) => [f.name, f.bufferRaw]));
+			expect(files['assets/glyphs/noto_sans_regular/19968-20223.pbf']).toEqual(
+				emptyGlyphPbf('noto_sans_regular', '19968-20223')
+			);
+			expect(files['assets/glyphs/noto_sans_regular_italic/19968-20223.pbf']).toEqual(
+				emptyGlyphPbf('noto_sans_regular_italic', '19968-20223')
+			);
+
+			await frontend.saveAsTarGz('/tmp/');
+			expect(await listEntries(writtenTarball())).toStrictEqual({
+				'assets/glyphs/noto_sans_regular/0-255.pbf': 'file',
+				'assets/glyphs/noto_sans_regular_italic/0-255.pbf': 'link -> assets/glyphs/noto_sans_regular/0-255.pbf',
+				// The empty replacement tiles differ per font, so they stay regular files.
+				'assets/glyphs/noto_sans_regular/19968-20223.pbf': 'file',
+				'assets/glyphs/noto_sans_regular_italic/19968-20223.pbf': 'file',
+			});
+		});
 	});
 
 	it('loads frontend configurations correctly', async () => {

@@ -34,6 +34,30 @@ function addEntry(pack: tar.Pack, name: string, buffer: Buffer): Promise<void> {
 }
 
 /**
+ * Adds a hardlink entry pointing to an earlier entry of the same tarball.
+ */
+function addLink(pack: tar.Pack, name: string, linkname: string): Promise<void> {
+	return new Promise((res, rej) => {
+		pack.entry({ name, type: 'link', linkname }, (error) => {
+			if (error) rej(error);
+			else res();
+		});
+	});
+}
+
+/**
+ * Remembers the first entry name for each content. Returns that name if an earlier entry has
+ * the same content (so this one can become a hardlink), or undefined if this is the first.
+ */
+function findEarlierEntry(firstNames: Map<string, string> | null, file: File, name: string): string | undefined {
+	// Empty files take no space in a tarball, so a link would save nothing.
+	if (!firstNames || file.bufferRaw.length === 0) return undefined;
+	const firstName = firstNames.get(file.contentHash);
+	if (firstName == null) firstNames.set(file.contentHash, name);
+	return firstName;
+}
+
+/**
  * Configuration for a frontend, detailing included and ignored paths, and development settings.
  */
 export interface FrontendConfig<fileDBKeys = string> {
@@ -48,6 +72,13 @@ export interface FrontendConfig<fileDBKeys = string> {
 	 * Applied after `ignore`/`filter`, so it only sees files that survived those.
 	 */
 	transform?: (file: File) => File | null;
+	/**
+	 * Writes files whose content already appeared earlier in the tarball as hardlink entries,
+	 * which keeps duplicated glyph ranges from growing the bundles.
+	 * Off by default: versatiles-rs must support hardlinks in tar sources first
+	 * (versatiles-org/versatiles-rs#273).
+	 */
+	hardlinks?: boolean;
 }
 
 /**
@@ -96,9 +127,12 @@ export class Frontend {
 	public async saveAsTarGz(folder: string): Promise<void> {
 		const pack = tar.pack();
 		const written = startPipeline(pack, resolve(folder, this.config.name + '.tar.gz'));
+		const firstNames = this.config.hardlinks ? new Map<string, string>() : null;
 
 		for (const file of this.iterate()) {
-			await addEntry(pack, file.name, file.bufferRaw);
+			const linkname = findEarlierEntry(firstNames, file, file.name);
+			if (linkname != null) await addLink(pack, file.name, linkname);
+			else await addEntry(pack, file.name, file.bufferRaw);
 		}
 		pack.finalize();
 
@@ -113,9 +147,14 @@ export class Frontend {
 	public async saveAsBrTarGz(folder: string): Promise<void> {
 		const pack = tar.pack();
 		const written = startPipeline(pack, resolve(folder, this.config.name + '.br.tar.gz'));
+		const firstNames = this.config.hardlinks ? new Map<string, string>() : null;
 
 		for (const file of this.iterate()) {
-			await addEntry(pack, file.name + '.br', file.bufferBr ?? (await file.compress()));
+			const name = file.name + '.br';
+			// Same raw content compresses to the same bytes, so link to the earlier .br entry.
+			const linkname = findEarlierEntry(firstNames, file, name);
+			if (linkname != null) await addLink(pack, name, linkname);
+			else await addEntry(pack, name, file.bufferBr ?? (await file.compress()));
 		}
 		pack.finalize();
 

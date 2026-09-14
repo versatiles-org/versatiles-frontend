@@ -19,14 +19,23 @@ export abstract class FileDB {
 	public async compress(cbProgress: (sizePos: number, sizeSum: number) => void): Promise<void> {
 		const files = Array.from(this.iterate().filter((file) => file.bufferBr == null));
 
+		// Files resolved from tar links share one buffer: compress it once and share the result.
+		const groups = new Map<Buffer, File[]>();
+		for (const file of files) {
+			const group = groups.get(file.bufferRaw);
+			if (group) group.push(file);
+			else groups.set(file.bufferRaw, [file]);
+		}
+
 		// Calculate total size for progress calculation if callback provided.
 		const sizeSum = files.reduce((s, f) => s + f.bufferRaw.length, 0);
 		cbProgress(0, sizeSum);
 
 		let sizePos = 0;
-		await forEachAsync(files, async (file) => {
-			await file.compress();
-			sizePos += file.bufferRaw.length;
+		await forEachAsync(groups.values(), async ([first, ...others]) => {
+			const bufferBr = await first.compress();
+			for (const file of others) file.bufferBr = bufferBr;
+			sizePos += first.bufferRaw.length * (others.length + 1);
 			cbProgress(sizePos, sizeSum);
 		});
 		cbProgress(sizeSum, sizeSum);

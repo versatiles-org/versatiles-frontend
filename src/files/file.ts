@@ -10,6 +10,8 @@ export class File {
 
 	public readonly hash: string; // Unique hash based on name and content.
 
+	public readonly contentHash: string; // Hash based on content only.
+
 	public readonly bufferRaw: Buffer; // Raw buffer content of the file.
 
 	public bufferBr?: Buffer; // Optional compressed buffer content.
@@ -22,7 +24,8 @@ export class File {
 	 */
 	public constructor(name: string, bufferRaw: Buffer) {
 		this.name = name;
-		this.hash = name + ';' + createHash('sha256').update(bufferRaw).digest('hex');
+		this.contentHash = createHash('sha256').update(bufferRaw).digest('hex');
+		this.hash = name + ';' + this.contentHash;
 		this.bufferRaw = bufferRaw;
 	}
 

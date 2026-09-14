@@ -18,12 +18,16 @@ export interface FileEntry {
 export async function listTarGzFiles(filename: string): Promise<FileEntry[]> {
 	const filePath = resolve(releaseDir, filename);
 	const files: FileEntry[] = [];
+	const sizes = new Map<string, number>();
 	await pipeline(
 		createReadStream(filePath),
 		createGunzip(),
 		tar.t({
 			onReadEntry: (entry) => {
-				files.push({ name: entry.path, size: entry.size });
+				// A hardlink entry has no data of its own; count the size of the file it links to.
+				const size = entry.type === 'Link' ? (sizes.get(entry.linkpath ?? '') ?? 0) : entry.size;
+				sizes.set(entry.path, size);
+				files.push({ name: entry.path, size });
 				entry.resume();
 			},
 		})

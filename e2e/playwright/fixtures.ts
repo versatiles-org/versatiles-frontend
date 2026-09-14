@@ -28,6 +28,7 @@ export const test = base.extend<object, WorkerFixtures>({
 		async ({ bundleName, tileIndex, tilesMeta }, use) => {
 			// Stream tar.gz entries directly into memory (no temp directory needed)
 			const files = new Map<string, Buffer>();
+			const hardlinks = new Map<string, string>();
 			await pipeline(
 				createReadStream(resolve(releaseDir, `${bundleName}.tar.gz`)),
 				createGunzip(),
@@ -38,11 +39,17 @@ export const test = base.extend<object, WorkerFixtures>({
 							entry.on('data', (chunk: Buffer) => chunks.push(chunk));
 							entry.on('end', () => files.set(entry.path, Buffer.concat(chunks)));
 						} else {
+							if (entry.type === 'Link' && entry.linkpath) hardlinks.set(entry.path, entry.linkpath);
 							entry.resume();
 						}
 					},
 				})
 			);
+			// Bundles built with `hardlinks` store repeated content as links to an earlier file.
+			for (const [path, linkpath] of hardlinks) {
+				const content = files.get(linkpath);
+				if (content) files.set(path, content);
+			}
 
 			// Create server that serves static files and proxies /tiles/ requests
 			const server: Server = createServer(async (req: IncomingMessage, res: ServerResponse) => {

@@ -1,5 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { join } from 'path';
+import { gzipSync } from 'zlib';
+import tarStream from 'tar-stream';
 import { File } from '../files/file';
 
 // Mock cache module
@@ -58,6 +60,21 @@ function mockFetchResponse(data: unknown, status = 200): void {
 	function getAsJSON(): unknown {
 		return data;
 	}
+}
+
+// Build a gzipped tarball from a list of entries; entries with content are regular files.
+async function createTarGz(
+	entries: (Partial<tarStream.Header> & { name: string; content?: string })[]
+): Promise<Buffer> {
+	const pack = tarStream.pack();
+	for (const { content, ...header } of entries) {
+		if (content == null) pack.entry(header);
+		else pack.entry(header, content);
+	}
+	pack.finalize();
+	const chunks: Buffer[] = [];
+	for await (const chunk of pack) chunks.push(chunk as Buffer);
+	return gzipSync(Buffer.concat(chunks));
 }
 
 describe('Curl', () => {
@@ -150,6 +167,74 @@ describe('Curl', () => {
 
 		// Should complete without error, but no files should be saved
 		expect(mockFileDB.setFileFromBuffer).not.toHaveBeenCalled();
+	});
+
+	describe('ungzipUntar with links', () => {
+		const linkTarGz = createTarGz([
+			{ name: 'dir/a.txt', content: 'content of a' },
+			{ name: 'dir/hardlink.txt', type: 'link', linkname: 'dir/a.txt' },
+			{ name: 'dir/symlink.txt', type: 'symlink', linkname: 'a.txt' },
+			{ name: 'dir/sub/symlink-up.txt', type: 'symlink', linkname: '../a.txt' },
+			{ name: 'chain.txt', type: 'symlink', linkname: 'dir/hardlink.txt' },
+			{ name: 'dir/dangling.txt', type: 'link', linkname: 'dir/missing.txt' },
+			{ name: 'dir/escaping.txt', type: 'symlink', linkname: '../../etc/passwd' },
+			{ name: 'dir/absolute.txt', type: 'link', linkname: '/etc/passwd' },
+			{ name: 'cycle-a.txt', type: 'symlink', linkname: 'cycle-b.txt' },
+			{ name: 'cycle-b.txt', type: 'symlink', linkname: 'cycle-a.txt' },
+			{ name: 'forward.txt', type: 'symlink', linkname: 'later.txt' },
+			{ name: 'later.txt', content: 'content of later' },
+		]);
+
+		async function untar(filter: (filename: string) => string | false): Promise<InstanceType<typeof FileDB>> {
+			mockFetchResponse(await linkTarGz);
+			// @ts-expect-error TS is not aware of the mock implementation
+			const fileDB: InstanceType<typeof FileDB> = new FileDB();
+			await new Curl(fileDB, testUrl).ungzipUntar(filter);
+			return fileDB;
+		}
+
+		it('saves links with the content of their target and skips bad ones', async () => {
+			const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+			const fileDB = await untar((f) => join('out', f));
+
+			expect(
+				Object.fromEntries([...fileDB.files].map(([name, file]) => [name, file.bufferRaw.toString()]))
+			).toStrictEqual({
+				'out/dir/a.txt': 'content of a',
+				'out/later.txt': 'content of later',
+				'out/dir/hardlink.txt': 'content of a',
+				'out/dir/symlink.txt': 'content of a',
+				'out/dir/sub/symlink-up.txt': 'content of a',
+				'out/chain.txt': 'content of a',
+				'out/forward.txt': 'content of later',
+			});
+
+			// Links share the target's buffer instead of copying it.
+			const target = fileDB.files.get('out/dir/a.txt')?.bufferRaw;
+			expect(fileDB.files.get('out/dir/hardlink.txt')?.bufferRaw).toBe(target);
+			expect(fileDB.files.get('out/chain.txt')?.bufferRaw).toBe(target);
+
+			expect(warn.mock.calls.map((call) => call[0]).sort()).toStrictEqual([
+				'Skipping dangling link "cycle-a.txt" -> "cycle-b.txt"',
+				'Skipping dangling link "cycle-b.txt" -> "cycle-a.txt"',
+				'Skipping dangling link "dir/dangling.txt" -> "dir/missing.txt"',
+				'Skipping unsafe link "dir/absolute.txt" -> "/etc/passwd" (escapes the archive)',
+				'Skipping unsafe link "dir/escaping.txt" -> "../../etc/passwd" (escapes the archive)',
+			]);
+			warn.mockRestore();
+		});
+
+		it('runs link paths through the filter and resolves targets the filter skipped', async () => {
+			const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+			const fileDB = await untar((f) => (f === 'dir/a.txt' || f.includes('dangling') ? false : join('out', f)));
+
+			expect(fileDB.getFile('out/dir/a.txt')).toBeNull();
+			expect(fileDB.getFile('out/dir/hardlink.txt')?.toString()).toBe('content of a');
+			expect(fileDB.getFile('out/dir/dangling.txt')).toBeNull();
+			// A link the filter rejects is skipped silently, like a regular file.
+			expect(warn.mock.calls.some((call) => String(call[0]).includes('dir/dangling.txt'))).toBe(false);
+			warn.mockRestore();
+		});
 	});
 
 	it('should filter files in ungzipUntar when filter returns false', async () => {

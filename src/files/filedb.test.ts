@@ -69,6 +69,23 @@ describe('FileDB.compress', () => {
 		expect(done.bufferBr).toStrictEqual(Buffer.from('already'));
 	});
 
+	it('compresses a buffer shared by several files only once', async () => {
+		const db = createDB({ 'other.txt': 5 });
+		const shared = Buffer.alloc(10, 2);
+		db.setFileFromBuffer('upright.pbf', shared);
+		db.setFileFromBuffer('italic.pbf', shared);
+
+		const calls: [number, number][] = [];
+		await db.compress((sizePos, sizeSum) => calls.push([sizePos, sizeSum]));
+
+		const files = Object.fromEntries([...db.iterate()].map((f) => [f.name, f as File & { compressCalls: number }]));
+		expect(files['upright.pbf'].compressCalls + files['italic.pbf'].compressCalls).toBe(1);
+		expect(files['italic.pbf'].bufferBr).toBe(files['upright.pbf'].bufferBr);
+		expect(files['other.txt'].compressCalls).toBe(1);
+		// Progress still counts every file.
+		expect(calls[calls.length - 1]).toStrictEqual([25, 25]);
+	});
+
 	it('reports a total of zero when there is nothing to compress', async () => {
 		const db = createDB({});
 		const calls: [number, number][] = [];
