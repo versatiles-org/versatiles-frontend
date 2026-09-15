@@ -133,7 +133,7 @@ describe('Frontend class', () => {
 	describe('hardlinks', () => {
 		const content = Buffer.from('duplicated content');
 
-		function createFrontend(hardlinks?: boolean): InstanceType<typeof Frontend> {
+		function createFrontend(): InstanceType<typeof Frontend> {
 			const dbs = new FileDBs({ all: {}, extra: {} });
 			dbs.get('all').setFileFromBuffer('a/first.txt', content);
 			dbs.get('all').setFileFromBuffer('empty1.txt', Buffer.alloc(0));
@@ -141,7 +141,7 @@ describe('Frontend class', () => {
 			// Same content from another fileDB, in a separate buffer.
 			dbs.get('extra').setFileFromBuffer('b/second.txt', Buffer.from(content));
 			dbs.get('extra').setFileFromBuffer('unique.txt', Buffer.from('unique'));
-			return new Frontend(dbs, { name: 'links', description: 'Links frontend.', fileDBs: ['all', 'extra'], hardlinks });
+			return new Frontend(dbs, { name: 'links', description: 'Links frontend.', fileDBs: ['all', 'extra'] });
 		}
 
 		// The path of the temporary file the mocked createWriteStream wrote the tarball to.
@@ -165,8 +165,7 @@ describe('Frontend class', () => {
 			return entries;
 		}
 
-		it('always writes duplicated content as link entries into the .tar.zst bundle', async () => {
-			// No hardlinks flag: .tar.zst readers support links, so the bundle uses them anyway.
+		it('writes duplicated content as link entries into the .tar.zst bundle', async () => {
 			await createFrontend().saveAsTarZst('/tmp/');
 			expect(await listEntries(writtenTarball())).toStrictEqual({
 				'a/first.txt': 'file',
@@ -177,8 +176,8 @@ describe('Frontend class', () => {
 			});
 		});
 
-		it('writes duplicated content as link entries', async () => {
-			await createFrontend(true).saveAsTarGz('/tmp/');
+		it('writes duplicated content as link entries into the .tar.gz bundle', async () => {
+			await createFrontend().saveAsTarGz('/tmp/');
 			expect(await listEntries(writtenTarball())).toStrictEqual({
 				'a/first.txt': 'file',
 				'empty1.txt': 'file',
@@ -189,7 +188,7 @@ describe('Frontend class', () => {
 		});
 
 		it('links .br entries to the first .br entry with the same raw content', async () => {
-			await createFrontend(true).saveAsBrTarGz('/tmp/');
+			await createFrontend().saveAsBrTarGz('/tmp/');
 			expect(await listEntries(writtenTarball())).toStrictEqual({
 				'a/first.txt.br': 'file',
 				'empty1.txt.br': 'file',
@@ -199,14 +198,9 @@ describe('Frontend class', () => {
 			});
 		});
 
-		it('writes only regular files by default', async () => {
-			await createFrontend().saveAsTarGz('/tmp/');
-			expect(Object.values(await listEntries(writtenTarball())).every((type) => type === 'file')).toBe(true);
-		});
-
 		it('recreates both files when extracting', async () => {
 			const fs = await vi.importActual<typeof import('fs')>('fs');
-			await createFrontend(true).saveAsTarGz('/tmp/');
+			await createFrontend().saveAsTarGz('/tmp/');
 			const dir = fs.mkdtempSync(resolve(tmpdir(), 'hardlinks-'));
 			try {
 				execFileSync('tar', ['-xzf', writtenTarball(), '-C', dir]);
@@ -231,7 +225,7 @@ describe('Frontend class', () => {
 			db.setFileFromBuffer('assets/glyphs/noto_sans_regular/19968-20223.pbf', high);
 			db.setFileFromBuffer('assets/glyphs/noto_sans_regular_italic/19968-20223.pbf', high);
 
-			const frontend = new Frontend(dbs, { ...tiny, fileDBs: ['all'], hardlinks: true });
+			const frontend = new Frontend(dbs, { ...tiny, fileDBs: ['all'] });
 			const files = Object.fromEntries([...frontend.iterate()].map((f) => [f.name, f.bufferRaw]));
 			expect(files['assets/glyphs/noto_sans_regular/19968-20223.pbf']).toEqual(
 				emptyGlyphPbf('noto_sans_regular', '19968-20223')

@@ -45,7 +45,7 @@ export const test = base.extend<object, WorkerFixtures>({
 					},
 				})
 			);
-			// Bundles built with `hardlinks` store repeated content as links to an earlier file.
+			// Bundles store repeated content as hardlinks to an earlier file.
 			for (const [path, linkpath] of hardlinks) {
 				const content = files.get(linkpath);
 				if (content) files.set(path, content);

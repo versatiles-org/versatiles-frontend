@@ -53,9 +53,9 @@ function addLink(pack: tar.Pack, name: string, linkname: string): Promise<void> 
  * Remembers the first entry name for each content. Returns that name if an earlier entry has
  * the same content (so this one can become a hardlink), or undefined if this is the first.
  */
-function findEarlierEntry(firstNames: Map<string, string> | null, file: File, name: string): string | undefined {
+function findEarlierEntry(firstNames: Map<string, string>, file: File, name: string): string | undefined {
 	// Empty files take no space in a tarball, so a link would save nothing.
-	if (!firstNames || file.bufferRaw.length === 0) return undefined;
+	if (file.bufferRaw.length === 0) return undefined;
 	const firstName = firstNames.get(file.contentHash);
 	if (firstName == null) firstNames.set(file.contentHash, name);
 	return firstName;
@@ -76,13 +76,6 @@ export interface FrontendConfig<fileDBKeys = string> {
 	 * Applied after `ignore`/`filter`, so it only sees files that survived those.
 	 */
 	transform?: (file: File) => File | null;
-	/**
-	 * Writes files whose content already appeared earlier in the .tar.gz and .br.tar.gz bundles
-	 * as hardlink entries, which keeps duplicated glyph ranges from growing the bundles.
-	 * Off by default: only versatiles-rs 4.14.0 and later serve hardlinks from tar sources
-	 * (versatiles-org/versatiles-rs#273). The .tar.zst bundle always uses hardlinks.
-	 */
-	hardlinks?: boolean;
 }
 
 /**
@@ -130,7 +123,6 @@ export class Frontend {
 	 */
 	public async saveAsTarGz(folder: string): Promise<void> {
 		await this.saveTarball(resolve(folder, this.config.name + '.tar.gz'), createGzip({ level: 9 }), {
-			hardlinks: this.config.hardlinks ?? false,
 			content: (file) => file.bufferRaw,
 		});
 	}
@@ -142,15 +134,13 @@ export class Frontend {
 	 */
 	public async saveAsBrTarGz(folder: string): Promise<void> {
 		await this.saveTarball(resolve(folder, this.config.name + '.br.tar.gz'), createGzip({ level: 9 }), {
-			hardlinks: this.config.hardlinks ?? false,
 			suffix: '.br',
 			content: async (file) => file.bufferBr ?? (await file.compress()),
 		});
 	}
 
 	/**
-	 * Saves the frontend as a Zstandard-compressed tarball. Files with content that already
-	 * appeared earlier are always written as hardlinks.
+	 * Saves the frontend as a Zstandard-compressed tarball.
 	 *
 	 * @param folder - The destination folder for the tarball.
 	 */
@@ -164,28 +154,28 @@ export class Frontend {
 			},
 		});
 		await this.saveTarball(resolve(folder, this.config.name + '.tar.zst'), compressor, {
-			hardlinks: true,
 			content: (file) => file.bufferRaw,
 		});
 	}
 
 	/**
-	 * Writes all files of the frontend into a compressed tarball.
+	 * Writes all files of the frontend into a compressed tarball. A file whose content already
+	 * appeared earlier is written as a hardlink to that entry, which keeps duplicated glyph ranges
+	 * from growing the bundles. versatiles-rs serves hardlinks from tar sources since 4.14.0.
 	 *
 	 * @param filename - The path of the tarball.
 	 * @param compressor - A fresh compression stream, e.g. from `createGzip()`.
-	 * @param options.hardlinks - Write files whose content already appeared earlier as hardlinks.
 	 * @param options.suffix - Appended to every entry name, e.g. `.br`.
 	 * @param options.content - Returns the bytes to store for a file.
 	 */
 	private async saveTarball(
 		filename: string,
 		compressor: Transform,
-		options: { hardlinks: boolean; suffix?: string; content: (file: File) => Buffer | Promise<Buffer> }
+		options: { suffix?: string; content: (file: File) => Buffer | Promise<Buffer> }
 	): Promise<void> {
 		const pack = tar.pack();
 		const written = startPipeline(pack, compressor, filename);
-		const firstNames = options.hardlinks ? new Map<string, string>() : null;
+		const firstNames = new Map<string, string>();
 
 		for (const file of this.iterate()) {
 			const name = file.name + (options.suffix ?? '');

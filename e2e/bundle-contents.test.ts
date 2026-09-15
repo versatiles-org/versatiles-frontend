@@ -235,12 +235,16 @@ describe('zstd bundles match regular bundles', () => {
 			}
 		});
 	}
+});
 
-	it('uses hardlinks for duplicated glyph ranges', async () => {
-		// The italic Noto Sans faces share many ranges with the upright faces.
-		const files = await listTarFiles('frontend-min.tar.zst');
-		const links = files.filter((f) => f.linkTo != null);
-		expect(links.length).toBeGreaterThan(0);
-		expect(links.every((f) => f.name.startsWith('assets/glyphs/'))).toBe(true);
-	});
+describe('bundles use hardlinks for duplicated glyph ranges', () => {
+	for (const ext of ['.tar.gz', '.br.tar.gz', '.tar.zst']) {
+		it(`frontend-min${ext}`, async () => {
+			// The italic Noto Sans faces share many ranges with the upright faces.
+			const files = await listTarFiles(`frontend-min${ext}`);
+			const links = files.filter((f) => f.linkTo != null);
+			expect(links.length).toBeGreaterThan(0);
+			expect(links.every((f) => f.name.startsWith('assets/glyphs/'))).toBe(true);
+		});
+	}
 });
