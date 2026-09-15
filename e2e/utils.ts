@@ -1,5 +1,5 @@
 import { createReadStream, existsSync } from 'fs';
-import { createGunzip } from 'zlib';
+import { createGunzip, createZstdDecompress } from 'zlib';
 import { pipeline } from 'stream/promises';
 import * as tar from 'tar';
 import { resolve } from 'path';
@@ -12,22 +12,26 @@ export const hasRelease = existsSync(releaseDir) && existsSync(resolve(releaseDi
 export interface FileEntry {
 	name: string;
 	size: number;
+	linkTo?: string; // target of a hardlink entry
 	verified?: boolean;
 }
 
-export async function listTarGzFiles(filename: string): Promise<FileEntry[]> {
+/**
+ * Lists the entries of a .tar.gz or .tar.zst file in the release folder.
+ */
+export async function listTarFiles(filename: string): Promise<FileEntry[]> {
 	const filePath = resolve(releaseDir, filename);
 	const files: FileEntry[] = [];
 	const sizes = new Map<string, number>();
 	await pipeline(
 		createReadStream(filePath),
-		createGunzip(),
+		filename.endsWith('.zst') ? createZstdDecompress() : createGunzip(),
 		tar.t({
 			onReadEntry: (entry) => {
 				// A hardlink entry has no data of its own; count the size of the file it links to.
 				const size = entry.type === 'Link' ? (sizes.get(entry.linkpath ?? '') ?? 0) : entry.size;
 				sizes.set(entry.path, size);
-				files.push({ name: entry.path, size });
+				files.push({ name: entry.path, size, ...(entry.type === 'Link' && { linkTo: entry.linkpath }) });
 				entry.resume();
 			},
 		})

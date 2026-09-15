@@ -3,7 +3,7 @@ import { FrontendConfig } from './frontend';
 import { tmpdir } from 'os';
 import { resolve } from 'path';
 import { execFileSync } from 'child_process';
-import { gunzipSync } from 'zlib';
+import { gunzipSync, zstdDecompressSync } from 'zlib';
 import tar from 'tar-stream';
 import { FileDB } from '../files/filedb';
 import { emptyGlyphPbf } from '../files/glyphs';
@@ -121,6 +121,15 @@ describe('Frontend class', () => {
 		expect(createWriteStream).toHaveBeenCalledWith('/tmp/frontend.br.tar.gz');
 	});
 
+	it('should create zstd tarball', async () => {
+		const frontend = new Frontend(mockFileDBs, testConfig);
+
+		await frontend.saveAsTarZst('/tmp/');
+
+		expect(createWriteStream).toHaveBeenCalledTimes(1);
+		expect(createWriteStream).toHaveBeenCalledWith('/tmp/frontend.tar.zst');
+	});
+
 	describe('hardlinks', () => {
 		const content = Buffer.from('duplicated content');
 
@@ -142,9 +151,12 @@ describe('Frontend class', () => {
 
 		async function listEntries(filename: string): Promise<Record<string, string>> {
 			const { readFileSync } = await vi.importActual<typeof import('fs')>('fs');
+			const compressed = readFileSync(filename);
+			// The temporary file has no meaningful extension, so detect gzip by its magic bytes.
+			const isGzip = compressed[0] === 0x1f && compressed[1] === 0x8b;
 			const entries: Record<string, string> = {};
 			const extract = tar.extract();
-			extract.end(gunzipSync(readFileSync(filename)));
+			extract.end(isGzip ? gunzipSync(compressed) : zstdDecompressSync(compressed));
 			for await (const entry of extract) {
 				const { name, type, linkname } = entry.header;
 				entries[name] = type === 'link' ? `link -> ${linkname}` : type;
@@ -152,6 +164,18 @@ describe('Frontend class', () => {
 			}
 			return entries;
 		}
+
+		it('always writes duplicated content as link entries into the .tar.zst bundle', async () => {
+			// No hardlinks flag: .tar.zst readers support links, so the bundle uses them anyway.
+			await createFrontend().saveAsTarZst('/tmp/');
+			expect(await listEntries(writtenTarball())).toStrictEqual({
+				'a/first.txt': 'file',
+				'empty1.txt': 'file',
+				'empty2.txt': 'file',
+				'b/second.txt': 'link -> a/first.txt',
+				'unique.txt': 'file',
+			});
+		});
 
 		it('writes duplicated content as link entries', async () => {
 			await createFrontend(true).saveAsTarGz('/tmp/');
@@ -347,7 +371,7 @@ describe('Frontend class', () => {
 	it('generates frontends', async () => {
 		await PromiseFunction.run(await generateFrontends(mockFileDBs, '/tmp/'));
 
-		expect(createWriteStream).toHaveBeenCalledTimes(10);
+		expect(createWriteStream).toHaveBeenCalledTimes(15);
 
 		const calledFilenames = vi
 			.mocked(createWriteStream)
@@ -356,14 +380,19 @@ describe('Frontend class', () => {
 		expect(calledFilenames).toStrictEqual([
 			'/tmp/frontend-blank.br.tar.gz',
 			'/tmp/frontend-blank.tar.gz',
+			'/tmp/frontend-blank.tar.zst',
 			'/tmp/frontend-dev.br.tar.gz',
 			'/tmp/frontend-dev.tar.gz',
+			'/tmp/frontend-dev.tar.zst',
 			'/tmp/frontend-min.br.tar.gz',
 			'/tmp/frontend-min.tar.gz',
+			'/tmp/frontend-min.tar.zst',
 			'/tmp/frontend-tiny.br.tar.gz',
 			'/tmp/frontend-tiny.tar.gz',
+			'/tmp/frontend-tiny.tar.zst',
 			'/tmp/frontend.br.tar.gz',
 			'/tmp/frontend.tar.gz',
+			'/tmp/frontend.tar.zst',
 		]);
 	});
 });

@@ -180,6 +180,9 @@ vi.mock('./frontend/frontend', async (originalImport) => {
 		async saveAsBrTarGz() {
 			// no-op in tests
 		}
+		async saveAsTarZst() {
+			// no-op in tests
+		}
 	}
 
 	const Frontend = vi.fn(function (fileDBs: FileDBs, config: FrontendConfig) {

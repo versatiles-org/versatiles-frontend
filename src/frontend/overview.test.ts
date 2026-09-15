@@ -130,15 +130,17 @@ describe('generateOverview', () => {
 			rmSync(tmpDir, { recursive: true });
 		});
 
-		it('appends compressed archive sizes', () => {
+		it('appends the size of the .tar.zst archive', () => {
 			const f = mockFrontend('frontend', [{ name: 'index.html', size: 1000000 }]);
+			writeFileSync(join(tmpDir, 'frontend.tar.zst'), Buffer.alloc(400000));
 			writeFileSync(join(tmpDir, 'frontend.tar.gz'), Buffer.alloc(500000));
 			writeFileSync(join(tmpDir, 'frontend.br.tar.gz'), Buffer.alloc(300000));
 
 			const result = generateOverview([f], tmpDir);
 
-			expect(result).toMatch(/\.tar\.gz\s+500/);
-			expect(result).toMatch(/\.br\.tar\.gz\s+300/);
+			expect(result).toMatch(/\.tar\.zst\s+400/);
+			// Only the .zst containers are measured.
+			expect(result).not.toContain('.tar.gz');
 		});
 
 		it('shows dash when archive file is missing', () => {
@@ -146,8 +148,7 @@ describe('generateOverview', () => {
 
 			const result = generateOverview([f], tmpDir);
 
-			expect(result).toMatch(/\.tar\.gz\s+-/);
-			expect(result).toMatch(/\.br\.tar\.gz\s+-/);
+			expect(result).toMatch(/\.tar\.zst\s+-/);
 		});
 
 		it('does not append archive rows without dstFolder', () => {
@@ -155,8 +156,7 @@ describe('generateOverview', () => {
 
 			const result = generateOverview([f]);
 
-			expect(result).not.toContain('.tar.gz');
-			expect(result).not.toContain('.br.tar.gz');
+			expect(result).not.toContain('.tar.zst');
 		});
 	});
 });

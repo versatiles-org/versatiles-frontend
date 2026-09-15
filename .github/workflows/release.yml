@@ -54,7 +54,7 @@ jobs:
             || gh release create $RELEASE_TAG --draft
 
       - name: Add files to release
-        run: gh release upload $RELEASE_TAG --clobber release/*.tar.gz
+        run: gh release upload $RELEASE_TAG --clobber release/*.tar.gz release/*.tar.zst
 
       - name: Update release
         run: gh release edit $RELEASE_TAG --draft=false --latest --prerelease=false --notes-file=release/notes.md

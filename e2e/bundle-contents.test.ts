@@ -1,5 +1,5 @@
 import { describe, it, expect, afterAll, beforeEach, onTestFailed } from 'vitest';
-import { Bundles, listTarGzFiles } from './utils';
+import { Bundles, listTarFiles } from './utils';
 import { frontendConfigs } from '../frontends/config';
 
 function expectMinSizes(actual: Record<string, number> | number, expected: Record<string, number>) {
@@ -15,7 +15,7 @@ const bundles = new Bundles(
 	await Promise.all(
 		BUNDLE_NAMES.map(async (name) => ({
 			name,
-			files: await listTarGzFiles(name + '.tar.gz'),
+			files: await listTarFiles(name + '.tar.gz'),
 		}))
 	)
 );
@@ -214,8 +214,33 @@ describe('brotli bundles match regular bundles', () => {
 
 	for (const name of BUNDLE_NAMES) {
 		it(`${name}.br.tar.gz matches ${name}.tar.gz`, async () => {
-			const brotli = (await listTarGzFiles(`${name}.br.tar.gz`)).map((f) => f.name.slice(0, -3)).sort();
+			const brotli = (await listTarFiles(`${name}.br.tar.gz`)).map((f) => f.name.slice(0, -3)).sort();
 			expect(brotli).toStrictEqual(regularFiles.get(name));
 		});
 	}
+});
+
+describe('zstd bundles match regular bundles', () => {
+	const regularFiles = new Map(bundles.bundles.map((b) => [b.name, b.files.map((f) => f.name).sort()]));
+
+	for (const name of BUNDLE_NAMES) {
+		it(`${name}.tar.zst matches ${name}.tar.gz`, async () => {
+			const files = await listTarFiles(`${name}.tar.zst`);
+			expect(files.map((f) => f.name).sort()).toStrictEqual(regularFiles.get(name));
+
+			// Every hardlink points to a regular file of the same archive.
+			const regular = new Set(files.filter((f) => f.linkTo == null).map((f) => f.name));
+			for (const file of files) {
+				if (file.linkTo != null) expect(regular.has(file.linkTo), `${file.name} -> ${file.linkTo}`).toBe(true);
+			}
+		});
+	}
+
+	it('uses hardlinks for duplicated glyph ranges', async () => {
+		// The italic Noto Sans faces share many ranges with the upright faces.
+		const files = await listTarFiles('frontend-min.tar.zst');
+		const links = files.filter((f) => f.linkTo != null);
+		expect(links.length).toBeGreaterThan(0);
+		expect(links.every((f) => f.name.startsWith('assets/glyphs/'))).toBe(true);
+	});
 });

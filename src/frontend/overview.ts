@@ -75,21 +75,19 @@ export function generateOverview(frontends: Frontend[], dstFolder?: string): str
 		}),
 	]);
 
-	// Compressed archive sizes
+	// Compressed archive size, measured on the .tar.zst container
 	if (dstFolder) {
 		rows.push(null); // separator
-		for (const ext of ['.tar.gz', '.br.tar.gz']) {
-			rows.push([
-				ext,
-				...names.map((name) => {
-					try {
-						return formatSize(statSync(resolve(dstFolder, name + ext)).size);
-					} catch {
-						return '-';
-					}
-				}),
-			]);
-		}
+		rows.push([
+			'.tar.zst',
+			...names.map((name) => {
+				try {
+					return formatSize(statSync(resolve(dstFolder, name + '.tar.zst')).size);
+				} catch {
+					return '-';
+				}
+			}),
+		]);
 	}
 
 	// Compute column widths

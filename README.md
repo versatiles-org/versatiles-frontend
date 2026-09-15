@@ -19,7 +19,7 @@ See the [latest release notes](https://github.com/versatiles-org/versatiles-fron
 
 ## Download the latest release.
 
-You can [download the packaged frontends as the latest release](https://github.com/versatiles-org/versatiles-frontend/releases/latest/). Packages ending with `*.tar.gz` contain the original web frontend files. Packages ending with `*.br.tar.gz` contain the web frontend files pre-compressed with Brotli for faster serving.
+You can [download the packaged frontends as the latest release](https://github.com/versatiles-org/versatiles-frontend/releases/latest/). Packages ending with `*.tar.gz` contain the original web frontend files. Packages ending with `*.br.tar.gz` contain the web frontend files pre-compressed with Brotli for faster serving. Packages ending with `*.tar.zst` contain the original files in a much smaller Zstandard-compressed container. They store duplicate files as tar hardlinks, which versatiles-rs serves from version 4.14.0 on.
 
 ## Improve the frontends
 
@@ -38,6 +38,7 @@ This will generate all four frontends: `frontend`, `frontend-dev`, `frontend-min
 
 - `frontend*.tar.gz`: Standard gzip-compressed container.
 - `frontend*.br.tar.gz`: Precompressed with Brotli for fast serving.
+- `frontend*.tar.zst`: Zstandard-compressed container (level 19). Duplicate files are stored as hardlinks.
 
 ## Use a frontend with `versatiles-rs`
 

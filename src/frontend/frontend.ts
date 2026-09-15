@@ -1,19 +1,23 @@
 import { resolve } from 'path';
-import { createGzip } from 'zlib';
+import { constants, createGzip, createZstdCompress } from 'zlib';
 import { createWriteStream } from 'fs';
+import type { Transform } from 'stream';
 import { pipeline } from 'stream/promises';
 import ignore from 'ignore';
 import tar from 'tar-stream';
 import { File } from '../files/file';
 import { FileDBs } from '../files/filedbs';
 
+// Compression level of the .tar.zst bundles: close to the maximum (22), but much faster.
+const ZSTD_LEVEL = 19;
+
 /**
  * Starts writing the tarball before any entry is added. Without a consumer attached the pack
  * queues every entry internally, holding the whole bundle in memory on top of the buffers the
  * FileDBs already keep; consuming as we go bounds that to roughly one entry.
  */
-function startPipeline(pack: tar.Pack, filename: string): Promise<void> {
-	const written = pipeline(pack, createGzip({ level: 9 }), createWriteStream(filename));
+function startPipeline(pack: tar.Pack, compressor: Transform, filename: string): Promise<void> {
+	const written = pipeline(pack, compressor, createWriteStream(filename));
 	// The awaited result below reports failures. Attach a handler now so a pipeline error
 	// while the entry loop is still running is not reported as an unhandled rejection.
 	written.catch(() => undefined);
@@ -22,7 +26,7 @@ function startPipeline(pack: tar.Pack, filename: string): Promise<void> {
 
 /**
  * Adds one entry and resolves once the pack has flushed it, so the loop advances at the
- * speed of the gzip/disk pipeline instead of racing ahead of it.
+ * speed of the compression/disk pipeline instead of racing ahead of it.
  */
 function addEntry(pack: tar.Pack, name: string, buffer: Buffer): Promise<void> {
 	return new Promise((res, rej) => {
@@ -73,10 +77,10 @@ export interface FrontendConfig<fileDBKeys = string> {
 	 */
 	transform?: (file: File) => File | null;
 	/**
-	 * Writes files whose content already appeared earlier in the tarball as hardlink entries,
-	 * which keeps duplicated glyph ranges from growing the bundles.
-	 * Off by default: versatiles-rs must support hardlinks in tar sources first
-	 * (versatiles-org/versatiles-rs#273).
+	 * Writes files whose content already appeared earlier in the .tar.gz and .br.tar.gz bundles
+	 * as hardlink entries, which keeps duplicated glyph ranges from growing the bundles.
+	 * Off by default: only versatiles-rs 4.14.0 and later serve hardlinks from tar sources
+	 * (versatiles-org/versatiles-rs#273). The .tar.zst bundle always uses hardlinks.
 	 */
 	hardlinks?: boolean;
 }
@@ -125,18 +129,10 @@ export class Frontend {
 	 * @param folder - The destination folder for the tarball.
 	 */
 	public async saveAsTarGz(folder: string): Promise<void> {
-		const pack = tar.pack();
-		const written = startPipeline(pack, resolve(folder, this.config.name + '.tar.gz'));
-		const firstNames = this.config.hardlinks ? new Map<string, string>() : null;
-
-		for (const file of this.iterate()) {
-			const linkname = findEarlierEntry(firstNames, file, file.name);
-			if (linkname != null) await addLink(pack, file.name, linkname);
-			else await addEntry(pack, file.name, file.bufferRaw);
-		}
-		pack.finalize();
-
-		await written;
+		await this.saveTarball(resolve(folder, this.config.name + '.tar.gz'), createGzip({ level: 9 }), {
+			hardlinks: this.config.hardlinks ?? false,
+			content: (file) => file.bufferRaw,
+		});
 	}
 
 	/**
@@ -145,16 +141,58 @@ export class Frontend {
 	 * @param folder - The destination folder for the tarball.
 	 */
 	public async saveAsBrTarGz(folder: string): Promise<void> {
+		await this.saveTarball(resolve(folder, this.config.name + '.br.tar.gz'), createGzip({ level: 9 }), {
+			hardlinks: this.config.hardlinks ?? false,
+			suffix: '.br',
+			content: async (file) => file.bufferBr ?? (await file.compress()),
+		});
+	}
+
+	/**
+	 * Saves the frontend as a Zstandard-compressed tarball. Files with content that already
+	 * appeared earlier are always written as hardlinks.
+	 *
+	 * @param folder - The destination folder for the tarball.
+	 */
+	public async saveAsTarZst(folder: string): Promise<void> {
+		const compressor = createZstdCompress({
+			params: {
+				[constants.ZSTD_c_compressionLevel]: ZSTD_LEVEL,
+				[constants.ZSTD_c_checksumFlag]: 1,
+				// No ZSTD_c_nbWorkers: in Node 24.16 a multithreaded zstd stream fed by tar-stream
+				// fails with ERR_STREAM_PUSH_AFTER_EOF. The frontends are compressed in parallel anyway.
+			},
+		});
+		await this.saveTarball(resolve(folder, this.config.name + '.tar.zst'), compressor, {
+			hardlinks: true,
+			content: (file) => file.bufferRaw,
+		});
+	}
+
+	/**
+	 * Writes all files of the frontend into a compressed tarball.
+	 *
+	 * @param filename - The path of the tarball.
+	 * @param compressor - A fresh compression stream, e.g. from `createGzip()`.
+	 * @param options.hardlinks - Write files whose content already appeared earlier as hardlinks.
+	 * @param options.suffix - Appended to every entry name, e.g. `.br`.
+	 * @param options.content - Returns the bytes to store for a file.
+	 */
+	private async saveTarball(
+		filename: string,
+		compressor: Transform,
+		options: { hardlinks: boolean; suffix?: string; content: (file: File) => Buffer | Promise<Buffer> }
+	): Promise<void> {
 		const pack = tar.pack();
-		const written = startPipeline(pack, resolve(folder, this.config.name + '.br.tar.gz'));
-		const firstNames = this.config.hardlinks ? new Map<string, string>() : null;
+		const written = startPipeline(pack, compressor, filename);
+		const firstNames = options.hardlinks ? new Map<string, string>() : null;
 
 		for (const file of this.iterate()) {
-			const name = file.name + '.br';
-			// Same raw content compresses to the same bytes, so link to the earlier .br entry.
+			const name = file.name + (options.suffix ?? '');
+			// Same raw content gives the same stored bytes (also after brotli), so link to the earlier entry.
 			const linkname = findEarlierEntry(firstNames, file, name);
 			if (linkname != null) await addLink(pack, name, linkname);
-			else await addEntry(pack, name, file.bufferBr ?? (await file.compress()));
+			else await addEntry(pack, name, await options.content(file));
 		}
 		pack.finalize();
 

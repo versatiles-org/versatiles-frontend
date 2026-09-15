@@ -50,7 +50,7 @@ export function generateFrontend(
 	frontends: Frontend[]
 ): PromiseFunction {
 	const { name } = config;
-	let s: ProgressLabel, sBr: ProgressLabel, sGz: ProgressLabel;
+	let s: ProgressLabel, sBr: ProgressLabel, sGz: ProgressLabel, sZst: ProgressLabel;
 
 	return PromiseFunction.single(
 		async () => {
@@ -58,12 +58,14 @@ export function generateFrontend(
 			s = progress.add(name, 1);
 			sBr = progress.add(name + '.br.tar.gz', 2);
 			sGz = progress.add(name + '.tar.gz', 2);
+			sZst = progress.add(name + '.tar.zst', 2);
 		},
 		async () => {
 			// Start the progress trackers.
 			s.start();
 			sBr.start();
 			sGz.start();
+			sZst.start();
 			// Create a new Frontend instance and generate the compressed tarballs.
 			const frontend = new Frontend(fileDBs, config);
 			frontends.push(frontend);
@@ -75,6 +77,10 @@ export function generateFrontend(
 				(async () => {
 					await frontend.saveAsTarGz(dstFolder);
 					sGz.end();
+				})(),
+				(async () => {
+					await frontend.saveAsTarZst(dstFolder);
+					sZst.end();
 				})(),
 			]);
 			s.end();
