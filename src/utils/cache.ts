@@ -51,12 +51,12 @@ export async function cache(
 	}
 
 	function filenameForKey(rawKey: string): string {
-		const name = sanitize(rawKey);
-		// Bound the filename to stay well under the typical 255-byte limit; disambiguate the
-		// truncated name with a short hash of the full key so long URLs don't collide/throw.
-		if (name.length <= 200) return name;
+		// `sanitize` is lossy and not injective: it rewrites "a/b" to "a_x47_b", which is also
+		// what a key literally named "a_x47_b" produces. Truncation collides too. So the name
+		// is only there to make the cache folder readable - the hash is what identifies the
+		// entry. Truncating keeps the result well under the typical 255-byte filename limit.
 		const hash = createHash('sha256').update(rawKey).digest('hex').slice(0, 16);
-		return `${name.slice(0, 200)}_${hash}`;
+		return `${sanitize(rawKey).slice(0, 200)}_${hash}`;
 	}
 
 	function sanitize(rawKey: string): string {

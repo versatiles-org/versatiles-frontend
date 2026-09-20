@@ -34,8 +34,8 @@ describe('cache function', () => {
 			throw new Error('Callback should not be called when the key exists');
 		});
 
-		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key$/));
-		expect(fs.readFileSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key$/));
+		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key_[0-9a-f]{16}$/));
+		expect(fs.readFileSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key_[0-9a-f]{16}$/));
 		expect(result).toBe(mockBuffer);
 	});
 
@@ -45,13 +45,16 @@ describe('cache function', () => {
 
 		const result = await cache('action', 'key', async () => mockBuffer);
 
-		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key$/));
+		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key_[0-9a-f]{16}$/));
 		expect(fs.readFileSync).not.toHaveBeenCalled();
 		// Written atomically: to a temp file, then renamed to the final path.
-		expect(fs.writeFileSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key\.\d+\.tmp$/), mockBuffer);
+		expect(fs.writeFileSync).toHaveBeenCalledWith(
+			expect.stringMatching(/\/action\/key_[0-9a-f]{16}\.\d+\.tmp$/),
+			mockBuffer
+		);
 		expect(fs.renameSync).toHaveBeenCalledWith(
-			expect.stringMatching(/\/action\/key\.\d+\.tmp$/),
-			expect.stringMatching(/\/action\/key$/)
+			expect.stringMatching(/\/action\/key_[0-9a-f]{16}\.\d+\.tmp$/),
+			expect.stringMatching(/\/action\/key_[0-9a-f]{16}$/)
 		);
 		expect(result).toBe(mockBuffer);
 	});
@@ -63,7 +66,7 @@ describe('cache function', () => {
 			'The callback function must return a Buffer'
 		);
 
-		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key$/));
+		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key_[0-9a-f]{16}$/));
 		expect(fs.readFileSync).not.toHaveBeenCalled();
 		expect(fs.writeFileSync).not.toHaveBeenCalled();
 	});
@@ -74,12 +77,12 @@ describe('cache function', () => {
 		await cache('äçtion', 'key/with special@chars', async () => mockBuffer);
 
 		expect(fs.writeFileSync).toHaveBeenCalledWith(
-			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars\.\d+\.tmp$/),
+			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars_[0-9a-f]{16}\.\d+\.tmp$/),
 			mockBuffer
 		);
 		expect(fs.renameSync).toHaveBeenCalledWith(
-			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars\.\d+\.tmp$/),
-			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars$/)
+			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars_[0-9a-f]{16}\.\d+\.tmp$/),
+			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars_[0-9a-f]{16}$/)
 		);
 	});
 
@@ -109,7 +112,10 @@ describe('cache function', () => {
 		const result = await cache('action', 'key', async () => mockBuffer, 60_000);
 
 		expect(fs.readFileSync).not.toHaveBeenCalled();
-		expect(fs.writeFileSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key\.\d+\.tmp$/), mockBuffer);
+		expect(fs.writeFileSync).toHaveBeenCalledWith(
+			expect.stringMatching(/\/action\/key_[0-9a-f]{16}\.\d+\.tmp$/),
+			mockBuffer
+		);
 		expect(result).toBe(mockBuffer);
 	});
 
@@ -139,5 +145,31 @@ describe('cache function', () => {
 			.replace(/\.\d+\.tmp$/, '');
 		// 200 truncated chars + '_' + 16 hex chars of the sha256 hash.
 		expect(keySegment).toMatch(/^a{200}_[0-9a-f]{16}$/);
+	});
+
+	/**
+	 * Reads back the final (post-rename) cache path a call wrote to.
+	 */
+	async function pathWrittenFor(key: string): Promise<string> {
+		vi.clearAllMocks();
+		vi.mocked(fs.existsSync).mockReturnValue(false);
+		await cache('action', key, async () => Buffer.from('data'));
+		return vi.mocked(fs.renameSync).mock.calls[0][1] as string;
+	}
+
+	it('gives distinct keys distinct files even when they sanitize alike', async () => {
+		// `sanitize` rewrites '/' to '_x47_', so these two keys share a sanitized name. Only
+		// the hash suffix keeps them apart - without it, one would serve the other's content.
+		expect(await pathWrittenFor('a/b')).not.toBe(await pathWrittenFor('a_x47_b'));
+	});
+
+	it('gives distinct keys distinct files even when they truncate alike', async () => {
+		// Both exceed the 200-char bound and share their first 200 characters.
+		expect(await pathWrittenFor('b'.repeat(250) + 'one')).not.toBe(await pathWrittenFor('b'.repeat(250) + 'two'));
+	});
+
+	it('gives the same key the same file every time', async () => {
+		// The counterpart to the two tests above: the hash must be stable, or nothing ever hits.
+		expect(await pathWrittenFor('a/b')).toBe(await pathWrittenFor('a/b'));
 	});
 });
