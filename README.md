@@ -13,6 +13,7 @@ VersaTiles Frontend provides pre-packaged web assets to serve interactive maps, 
 - **frontend**: Full standard frontend with all fonts, sprites, and libraries.
 - **frontend-dev**: Full standard frontend but with development-specific UI.
 - **frontend-min**: Full standard frontend but with only Noto Sans fonts.
+- **frontend-blank**: Blank frontend with only fonts and sprites.
 - **frontend-tiny**: Minimal frontend with sprites, MapLibre, VersaTiles style and Noto Sans fonts supporting only Latin characters.
 
 See the [latest release notes](https://github.com/versatiles-org/versatiles-frontend/releases/latest) for details on included components and asset sizes.
@@ -34,7 +35,7 @@ npm install
 npm run build
 ```
 
-This will generate all four frontends: `frontend`, `frontend-dev`, `frontend-min` and `frontend-tiny`.
+This will generate all five frontends: `frontend`, `frontend-dev`, `frontend-min`, `frontend-blank` and `frontend-tiny`.
 
 - `frontend*.tar.gz`: Standard gzip-compressed container.
 - `frontend*.br.tar.gz`: Precompressed with Brotli for fast serving.
