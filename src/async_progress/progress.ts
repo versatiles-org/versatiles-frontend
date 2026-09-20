@@ -107,7 +107,7 @@ export class Progress {
 
 	private finished = false; // Flag indicating if the progress display is marked as finished.
 
-	private started = false; // Flag indicating if the progress display has been started.
+	#linesDrawn = 0; // Height of the block written by the last redraw, so the next one can replace it.
 
 	#useAnsi: boolean; // Flag for using ANSI color codes in output.
 
@@ -187,21 +187,23 @@ export class Progress {
 		if (this.#disabled) return;
 		if (!this.#useAnsi) return;
 
-		if (!this.started) {
-			// Clear the terminal and set up for drawing.
-			this.write('\x1b[2J\x1b[3J\x1b[H\x1b7');
-			this.started = true;
-		}
+		const block = [
+			`\x1b[${this.finished ? 2 : 1}m${this.header ?? ''}\x1b[0m\x1b[0K\n`, // Header, styled.
+			...this.labelList.map((l) => l.getOutputAnsi()), // Generate ANSI output for each label.
+			this.finished ? '\x1b[2mFinished\x1b[0m\x1b[0K\n' : '', // Optionally mark as finished.
+		].join('');
 
-		// Re-draw the progress display, including the header and all labels.
-		this.write(
-			[
-				'\x1b8', // Restore cursor position.
-				`\x1b[${this.finished ? 2 : 1}m${this.header ?? ''}\x1b[0m\n`, // Optionally set header with styling.
-				...this.labelList.map((l) => l.getOutputAnsi()), // Generate ANSI output for each label.
-				this.finished ? '\x1b[2mFinished\x1b[0m\n' : '', // Optionally mark as finished.
-			].join('')
-		);
+		// Redraw in place by stepping back over the block written last time, rather than clearing
+		// the screen. The previous implementation opened with `\x1b[2J\x1b[3J\x1b[H`, and `3J`
+		// erases the terminal's scrollback - so every build threw away whatever the user had in
+		// their terminal beforehand, which is not a build tool's to discard.
+		//
+		// `\x1b[<n>A` is relative, so the block follows the content as the terminal scrolls;
+		// `\r` returns to column 0, and `\x1b[0J` clears anything below a block that got shorter.
+		const rewind = this.#linesDrawn > 0 ? `\x1b[${this.#linesDrawn}A\r` : '';
+		this.write(rewind + block + '\x1b[0J');
+
+		this.#linesDrawn = block.split('\n').length - 1;
 	}
 
 	/**
