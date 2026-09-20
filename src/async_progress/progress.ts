@@ -107,6 +107,8 @@ export class Progress {
 
 	private finished = false; // Flag indicating if the progress display is marked as finished.
 
+	#failed = false; // Whether the run that the display is closing on ended in an error.
+
 	#linesDrawn = 0; // Height of the block written by the last redraw, so the next one can replace it.
 
 	#useAnsi: boolean; // Flag for using ANSI color codes in output.
@@ -166,6 +168,24 @@ export class Progress {
 	}
 
 	/**
+	 * Closes the progress display after a failure.
+	 *
+	 * Without it a build that throws simply stops redrawing, leaving a block that is
+	 * indistinguishable from one still in progress - the only sign of trouble being the stack
+	 * trace printed underneath. Closing it also leaves the cursor below the block, so whatever
+	 * is reported next cannot be stepped back over by a later redraw.
+	 */
+	public fail(): void {
+		if (this.#useAnsi) {
+			this.finished = true;
+			this.#failed = true;
+			this.redraw();
+		} else {
+			this.writeLine('Failed');
+		}
+	}
+
+	/**
 	 * Adds a new ProgressLabel to the collection and triggers a redraw of the progress display.
 	 *
 	 * @param name - The text label for the new progress item.
@@ -187,10 +207,13 @@ export class Progress {
 		if (this.#disabled) return;
 		if (!this.#useAnsi) return;
 
+		// Red rather than dim for a failure, so a glance at the closing line is enough.
+		const closing = this.#failed ? '\x1b[31mFailed\x1b[0m\x1b[0K\n' : '\x1b[2mFinished\x1b[0m\x1b[0K\n';
+
 		const block = [
 			`\x1b[${this.finished ? 2 : 1}m${this.header ?? ''}\x1b[0m\x1b[0K\n`, // Header, styled.
 			...this.labelList.map((l) => l.getOutputAnsi()), // Generate ANSI output for each label.
-			this.finished ? '\x1b[2mFinished\x1b[0m\x1b[0K\n' : '', // Optionally mark as finished.
+			this.finished ? closing : '', // Optionally mark as finished or failed.
 		].join('');
 
 		// Redraw in place by stepping back over the block written last time, rather than clearing

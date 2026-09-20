@@ -153,4 +153,41 @@ describe('Progress', () => {
 
 		expect(rawOutput().endsWith('\x1b[0J')).toBe(true);
 	});
+
+	describe('fail', () => {
+		it('closes the block with Failed instead of Finished', () => {
+			progress.setHeader('Building Release');
+			progress.add('load file sources', 1).start();
+
+			write.mockClear();
+			progress.fail();
+
+			const output = rawOutput();
+			expect(output).toContain('Failed');
+			expect(output).not.toContain('Finished');
+			// Red, so the outcome is legible at a glance rather than only from the stack below.
+			expect(output).toContain('\x1b[31mFailed');
+		});
+
+		it('leaves the cursor below the block, so the error report is not drawn over', () => {
+			progress.setHeader('Building Release');
+			progress.add('load file sources', 1).start();
+
+			write.mockClear();
+			progress.fail();
+
+			// The block ends with the clear-below; anything written next starts on a fresh line
+			// underneath it, and no further redraw steps back over it.
+			expect(rawOutput().endsWith('\x1b[0J')).toBe(true);
+		});
+
+		it('reports the failure on the plain-text path too', () => {
+			progress.setAnsi(false);
+			write.mockClear();
+
+			progress.fail();
+
+			expect(getNewWriteCalls()).toStrictEqual(['Failed']);
+		});
+	});
 });
