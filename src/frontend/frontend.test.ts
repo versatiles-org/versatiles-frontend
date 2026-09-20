@@ -227,20 +227,18 @@ describe('Frontend class', () => {
 
 			const frontend = new Frontend(dbs, { ...tiny, fileDBs: ['all'] });
 			const files = Object.fromEntries([...frontend.iterate()].map((f) => [f.name, f.bufferRaw]));
-			expect(files['assets/glyphs/noto_sans_regular/19968-20223.pbf']).toEqual(
-				emptyGlyphPbf('noto_sans_regular', '19968-20223')
-			);
-			expect(files['assets/glyphs/noto_sans_regular_italic/19968-20223.pbf']).toEqual(
-				emptyGlyphPbf('noto_sans_regular_italic', '19968-20223')
-			);
+			expect(files['assets/glyphs/noto_sans_regular/19968-20223.pbf']).toEqual(emptyGlyphPbf());
+			expect(files['assets/glyphs/noto_sans_regular_italic/19968-20223.pbf']).toEqual(emptyGlyphPbf());
 
 			await frontend.saveAsTarGz('/tmp/');
 			expect(await listEntries(writtenTarball())).toStrictEqual({
 				'assets/glyphs/noto_sans_regular/0-255.pbf': 'file',
 				'assets/glyphs/noto_sans_regular_italic/0-255.pbf': 'link -> assets/glyphs/noto_sans_regular/0-255.pbf',
-				// The empty replacement tiles differ per font, so they stay regular files.
+				// The empty replacement tiles are identical for every font, so all but the first
+				// become links. Two bytes still cost a full 512-byte tar block, so linking pays off.
 				'assets/glyphs/noto_sans_regular/19968-20223.pbf': 'file',
-				'assets/glyphs/noto_sans_regular_italic/19968-20223.pbf': 'file',
+				'assets/glyphs/noto_sans_regular_italic/19968-20223.pbf':
+					'link -> assets/glyphs/noto_sans_regular/19968-20223.pbf',
 			});
 		});
 	});

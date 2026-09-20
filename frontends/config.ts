@@ -198,11 +198,10 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			if (file.name === 'assets/glyphs/font_families.json') {
 				return new File(file.name, limitFontFamiliesCodeblocks(file.bufferRaw, 1024));
 			}
-			const match = file.name.match(/^assets\/glyphs\/([^/]+)\/(\d+-\d+)\.pbf$/);
+			const match = file.name.match(/^assets\/glyphs\/[^/]+\/(\d+)-\d+\.pbf$/);
 			if (!match) return file;
-			const [, fontName, range] = match;
-			if (parseInt(range, 10) < 1024) return file;
-			return new File(file.name, emptyGlyphPbf(fontName, range));
+			if (parseInt(match[1], 10) < 1024) return file;
+			return new File(file.name, emptyGlyphPbf());
 		},
 	},
 ];
