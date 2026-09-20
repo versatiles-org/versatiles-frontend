@@ -88,6 +88,16 @@ describe('Bundle contents', () => {
 			expect(path.rest()).toStrictEqual({});
 		});
 
+		// Shipped for anyone building on the bundles; no page loads it, because the frontends
+		// show a single map and Compare needs two. frontend-tiny and frontend-blank leave it out.
+		it('contains maplibre-gl-compare, except in frontend-tiny', () => {
+			const path = bundles.withPrefix('assets/lib/maplibre-gl-compare/');
+			const notTinyNorBlank = { frontend: true, 'frontend-dev': true, 'frontend-min': true };
+			expect(path.file('maplibre-gl-compare.css')).toStrictEqual(notTinyNorBlank);
+			expect(path.file('maplibre-gl-compare.js')).toStrictEqual(notTinyNorBlank);
+			expect(path.rest()).toStrictEqual({});
+		});
+
 		// No frontend loads this any more - the pages use versatiles-geocoder below - but it is
 		// still shipped for anyone building on the bundles. frontend-tiny leaves it out.
 		it('contains maplibre-gl-geocoder, except in frontend-tiny', () => {

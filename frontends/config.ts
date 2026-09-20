@@ -77,6 +77,16 @@ export const sourceConfigs = {
 		source: { name: 'MapLibre GL Inspect', url: 'https://github.com/maplibre/maplibre-gl-inspect' },
 	}),
 
+	// Attaches itself as `maplibregl.Compare` when it finds the global, so it needs no bundling -
+	// but it must be loaded after maplibre-gl. Our maplibre global is a plain object (see the
+	// bundle shim in filedb-npm.ts), so the plugin can write to it.
+	'external-maplibre-gl-compare': npmSource('@maplibre/maplibre-gl-compare', {
+		include: /dist\/maplibre-gl-compare\.(js|css)$/,
+		flatten: true,
+		dest: 'assets/lib/maplibre-gl-compare/',
+		source: { name: 'MapLibre GL Compare', url: 'https://github.com/maplibre/maplibre-gl-compare' },
+	}),
+
 	'external-maplibre-gl-geocoder': npmSource('@maplibre/maplibre-gl-geocoder', {
 		include: /dist\/maplibre-gl-geocoder\.(js|css)(\.map)?$/,
 		flatten: true,
@@ -131,6 +141,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-versatiles-style',
 			'external-maplibre',
 			'external-maplibre-inspect',
+			'external-maplibre-gl-compare',
 			'external-maplibre-gl-geocoder',
 			'external-maplibre-versatiles-styler',
 			'external-versatiles-svg-renderer',
@@ -148,6 +159,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-versatiles-style',
 			'external-maplibre',
 			'external-maplibre-inspect',
+			'external-maplibre-gl-compare',
 			'external-maplibre-gl-geocoder',
 			'external-maplibre-versatiles-styler',
 			'external-versatiles-svg-renderer',
@@ -165,6 +177,7 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-versatiles-style',
 			'external-maplibre',
 			'external-maplibre-inspect',
+			'external-maplibre-gl-compare',
 			'external-maplibre-gl-geocoder',
 			'external-maplibre-versatiles-styler',
 			'external-versatiles-svg-renderer',
