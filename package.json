@@ -2,7 +2,11 @@
   "name": "versatiles-frontend",
   "version": "3.14.0",
   "private": true,
-  "description": "",
+  "description": "Pre-packaged web assets for serving interactive maps with versatiles-rs or node-versatiles-server.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/versatiles-org/versatiles-frontend.git"
+  },
   "scripts": {
     "build": "tsx --env-file-if-exists=.env src/build.ts",
     "cache:clean": "tsx src/clean-cache.ts",
