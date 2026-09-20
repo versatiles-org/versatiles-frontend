@@ -113,7 +113,9 @@
 					const metadata = structuredClone(tileJSON);
 					tileJSON.tiles = [`/tiles/${id}/{z}/{x}/{y}`];
 
-					const style = VersaTilesStyle.guessStyle(tileJSON);
+					// Async since @versatiles/style 6.0.1: without the await this is a Promise, and
+					// reading `.sources` off it throws in Object.keys below.
+					const style = await VersaTilesStyle.guessStyle(tileJSON);
 					const sourceId = Object.keys(style.sources);
 					if (sourceId.length === 1) style.sources[sourceId[0]].url = tileJSONUrl;
 

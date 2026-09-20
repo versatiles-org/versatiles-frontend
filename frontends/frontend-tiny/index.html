@@ -40,9 +40,10 @@
 				);
 				map.addControl(createVersaTilesGeocoder(), 'top-left');
 
-				// Keep the styler collapsed on mobile, where screen space is tight.
-				const isMobile = window.matchMedia('(max-width: 639px)').matches;
-				map.addControl(new VersaTilesStylerControl({ open: !isMobile }), 'top-left');
+				// Collapsed until asked for: the map is what the page is about, and the styler
+				// covers a good part of it. Stated explicitly rather than left to the control's
+				// own default, which is not ours to rely on.
+				map.addControl(new VersaTilesStylerControl({ open: false }), 'top-left');
 
 				// collapse attribution control
 				document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');
