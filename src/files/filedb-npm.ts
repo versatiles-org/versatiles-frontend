@@ -14,9 +14,11 @@ export class NpmFileDB extends FileDB {
 		const pkgDir = resolvePackageRoot(config.pkg);
 
 		const pkgJsonPath = join(pkgDir, 'package.json');
-		const pkgJson = JSON.parse(readFileSync(pkgJsonPath, 'utf-8'));
+		const pkgJson = readPackageJson(pkgJsonPath);
 		const label = notes.add(config.source);
-		label.setVersion(pkgJson.version);
+		// An empty version renders as "?.?.?" in the release notes, which reads better than the
+		// string "undefined" a missing field would otherwise produce.
+		label.setVersion(pkgJson.version ?? '');
 
 		addPath(pkgDir, '');
 		if (config.bundle) await addBundle(db, pkgDir, config.dest, config.bundle);
@@ -116,13 +118,23 @@ function resolvePackageRoot(pkg: string): string {
 	throw new AggregateError(errors, `Could not resolve npm package "${pkg}"`);
 }
 
+/** The fields of a package.json this module reads. */
+interface PackageJson {
+	version?: string;
+}
+
+function readPackageJson(path: string): PackageJson {
+	return JSON.parse(readFileSync(path, 'utf-8')) as PackageJson;
+}
+
 function findPackageRoot(startPath: string): string {
 	let dir = dirname(startPath);
 	while (dir !== dirname(dir)) {
 		const pkgPath = join(dir, 'package.json');
 		if (existsSync(pkgPath)) {
-			const pkg = JSON.parse(readFileSync(pkgPath, 'utf-8'));
-			if (pkg.version) return dir;
+			// Some packages ship a stub package.json in a subfolder (e.g. dist/ declaring the
+			// module type); the version field is what marks the real package root.
+			if (readPackageJson(pkgPath).version) return dir;
 		}
 		dir = dirname(dir);
 	}

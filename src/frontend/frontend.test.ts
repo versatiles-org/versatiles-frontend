@@ -361,7 +361,7 @@ describe('Frontend class', () => {
 	});
 
 	it('generates frontends', async () => {
-		await PromiseFunction.run(await generateFrontends(mockFileDBs, '/tmp/'));
+		await PromiseFunction.run(generateFrontends(mockFileDBs, '/tmp/'));
 
 		expect(createWriteStream).toHaveBeenCalledTimes(15);
 

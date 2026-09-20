@@ -51,8 +51,8 @@ export const test = base.extend<object, WorkerFixtures>({
 				if (content) files.set(path, content);
 			}
 
-			// Create server that serves static files and proxies /tiles/ requests
-			const server: Server = createServer(async (req: IncomingMessage, res: ServerResponse) => {
+			// Serves static files and proxies /tiles/ requests.
+			const handleRequest = async (req: IncomingMessage, res: ServerResponse): Promise<void> => {
 				const url = new URL(req.url ?? '/', 'http://localhost');
 				let path = url.pathname;
 
@@ -120,6 +120,16 @@ export const test = base.extend<object, WorkerFixtures>({
 
 				res.writeHead(404);
 				res.end('Not Found');
+			};
+
+			// createServer wants a void-returning listener. Handing it an async function would turn
+			// any rejection into an unhandled rejection that tears the worker down, instead of
+			// failing the one request and letting the assertion report what happened.
+			const server: Server = createServer((req, res) => {
+				handleRequest(req, res).catch((error: unknown) => {
+					if (!res.headersSent) res.writeHead(500);
+					res.end(`Request failed: ${error instanceof Error ? error.message : String(error)}`);
+				});
 			});
 
 			const url = await new Promise<string>((res) => {

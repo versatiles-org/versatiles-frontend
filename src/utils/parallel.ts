@@ -13,14 +13,17 @@ export function forEachAsync<I>(
 		let running = 0;
 		const iterator = getIterator(items);
 
-		async function next() {
+		// `next` never rejects: its whole body is wrapped below, and a failure is reported through
+		// `reject` instead of thrown. That is why the recursive calls can be left unawaited -
+		// awaiting them would serialise the very work this function exists to run in parallel.
+		async function next(): Promise<void> {
 			if (finished) return;
 			if (running >= concurrency) return;
 
 			try {
 				running++;
-				const { done, value } = await iterator.next();
-				if (done) {
+				const result = await iterator.next();
+				if (result.done) {
 					running--;
 					if (running === 0) {
 						finished = true;
@@ -31,19 +34,19 @@ export function forEachAsync<I>(
 
 				const currentIndex = index++;
 
-				callback(value as I, currentIndex)
+				callback(result.value, currentIndex)
 					.then(() => {
 						running--;
 						// Schedule the next task after completing the current one
-						if (!finished) next();
+						if (!finished) void next();
 					})
-					.catch((err) => {
+					.catch((err: unknown) => {
 						finished = true;
 						reject(err);
 					});
 
 				// Recursively start additional tasks if below concurrency limit
-				if (running < concurrency && !finished) next();
+				if (running < concurrency && !finished) void next();
 			} catch (err) {
 				// If an error occurs in the iterator's next method
 				finished = true;
@@ -53,7 +56,7 @@ export function forEachAsync<I>(
 
 		// Start the initial tasks up to the concurrency limit
 		for (let i = 0; i < concurrency; i++) {
-			next();
+			void next();
 		}
 	});
 }

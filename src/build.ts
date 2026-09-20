@@ -13,8 +13,8 @@ import { FileDBs, loadFileDBs } from './files/filedbs';
 const projectFolder = resolve(import.meta.dirname, '..');
 const dstFolder = resolve(projectFolder, 'release');
 
-const frontendVersion = String(JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')).version);
-notes.setVersion(frontendVersion);
+const packageJson = JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')) as { version: string };
+notes.setVersion(String(packageJson.version));
 
 // Set the header for the progress display to indicate the build process is starting.
 progress.setHeader('Building Release');

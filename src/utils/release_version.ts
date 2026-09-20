@@ -34,6 +34,13 @@ export async function getLatestGithubReleaseVersion(
 	return buffer.toString('utf8');
 }
 
+/** The fields of a GitHub release this module reads. */
+interface GithubRelease {
+	draft?: boolean;
+	prerelease?: boolean;
+	tag_name?: string;
+}
+
 async function fetchLatestGithubReleaseVersion(owner: string, repo: string, allowPrerelease: boolean): Promise<string> {
 	// Request up to 100 releases (the API returns 30 by default) so a burst of recent
 	// prereleases can't hide the latest stable release when allowPrerelease is false.
@@ -55,7 +62,7 @@ async function fetchLatestGithubReleaseVersion(owner: string, repo: string, allo
 		}
 		throw Error(`GitHub API returned ${response.status} for ${url}, maybe set environment variable "GH_TOKEN"?`);
 	}
-	const data = await response.json();
+	const data: unknown = await response.json();
 	// Validate the response data.
 	if (!Array.isArray(data)) {
 		throw Error(`Unexpected GitHub API response for ${url}, maybe set environment variable "GH_TOKEN"?`);
@@ -63,7 +70,7 @@ async function fetchLatestGithubReleaseVersion(owner: string, repo: string, allo
 
 	// Return the first matching release (the API lists them newest-first), stripping an
 	// optional leading 'v' so repositories that tag without the prefix also work.
-	for (const entry of data) {
+	for (const entry of data as GithubRelease[]) {
 		// Drafts are unpublished: with GH_TOKEN set they show up here, but their tag may not
 		// exist yet and their assets are not publicly downloadable. Never pick one.
 		if (entry.draft) continue;

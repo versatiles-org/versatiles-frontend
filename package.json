@@ -43,8 +43,6 @@
     "@types/node": "^26.6.2",
     "@types/tar-stream": "^3.1.4",
     "@types/unzipper": "^0.10.11",
-    "@typescript-eslint/eslint-plugin": "^8.70.0",
-    "@typescript-eslint/parser": "^8.70.0",
     "@versatiles/release-tool": "^2.15.0",
     "@versatiles/style": "^6.0.0",
     "@versatiles/svg-renderer": "^1.2.0",
