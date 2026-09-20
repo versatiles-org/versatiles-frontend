@@ -5,6 +5,15 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.15.2] - 2026-09-20
+
+### Code Refactoring
+
+- update map initialization to improve zoom handling and container reference ([2e4cf1b](https://github.com/versatiles-org/versatiles-frontend/commit/2e4cf1b32e1f8b0d708d0282aa62bb52b1af0435))
+- update ESLint ignores to include Playwright and test results directories ([f3a9210](https://github.com/versatiles-org/versatiles-frontend/commit/f3a9210b3ae40642d4be0b59ab7ba93734a67357))
+- adjust VersaTilesStylerControl visibility based on mobile screen size ([33861a2](https://github.com/versatiles-org/versatiles-frontend/commit/33861a219f031926a76b2fa88780d8675052674d))
+- update Playwright snapshot images for Chromium on Darwin and Linux ([2aa17e9](https://github.com/versatiles-org/versatiles-frontend/commit/2aa17e98c81d1ff8a2b04f4218dc53a55055373e))
+
 ## [3.15.1] - 2026-09-20
 
 ### Code Refactoring
