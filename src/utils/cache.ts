@@ -3,8 +3,16 @@ import { createHash } from 'crypto';
 import { resolve } from 'path';
 import { cleanupFolder, ensureFolder } from './utils';
 
-// Define the path to the cache folder relative to the module location.
-const cacheFolder = resolve(import.meta.dirname, '../../cache');
+/**
+ * The cache folder: `cache/` next to the project, unless `VERSATILES_CACHE_DIR` names another.
+ *
+ * Relocating it lets the tests drive the real filesystem instead of a mocked one - without the
+ * override they would write into the project's own cache - and lets a CI job point the cache at
+ * a volume it restores between runs. Read once, at import time.
+ */
+const cacheFolder = process.env.VERSATILES_CACHE_DIR
+	? resolve(process.env.VERSATILES_CACHE_DIR)
+	: resolve(import.meta.dirname, '../../cache');
 
 // Ensure the cache folder exists.
 mkdirSync(cacheFolder, { recursive: true });

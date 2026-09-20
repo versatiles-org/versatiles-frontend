@@ -1,228 +1,224 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterAll, vi } from 'vitest';
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync, utimesSync, writeFileSync } from 'fs';
+import { tmpdir } from 'os';
+import { join, resolve } from 'path';
 
-// Mock fs and path modules
-vi.mock('fs', () => ({
-	existsSync: vi.fn(),
-	mkdirSync: vi.fn(),
-	readdirSync: vi.fn(),
-	readFileSync: vi.fn(),
-	writeFileSync: vi.fn(),
-	renameSync: vi.fn(),
-	statSync: vi.fn(),
-}));
-vi.mock('path', () => ({
-	resolve: vi.fn((...args: string[]) => args.join('/')),
-}));
-vi.mock('./utils.js', () => ({
-	ensureFolder: vi.fn(),
-	cleanupFolder: vi.fn(),
-}));
+/**
+ * These tests run against a real directory rather than a mocked `fs`.
+ *
+ * What is worth asserting about a cache - that a hit returns exactly the bytes that were stored,
+ * that a crashed write cannot be mistaken for a valid entry, that an entry expires on age, that
+ * two keys never collide - is behaviour of the filesystem plus this module together. Against
+ * `vi.fn()` stubs none of it is observable: the assertions can only say "writeFileSync was
+ * called, then renameSync was called", which is a restatement of the implementation and would
+ * keep passing if the bytes were wrong, the rename were to the wrong path, or the read came back
+ * truncated.
+ *
+ * The folder is redirected before the import because the module resolves it once, at load time.
+ */
+const cacheDir = mkdtempSync(join(tmpdir(), 'versatiles-cache-test-'));
+process.env.VERSATILES_CACHE_DIR = cacheDir;
 
 const { cache, clearCache, measureCache } = await import('./cache.js');
-const fs = await import('fs');
-const utils = await import('./utils.js');
 
-/** A `readdirSync(..., { withFileTypes: true, recursive: true })` entry. */
-function dirent(parentPath: string, name: string, isFile = true) {
-	return { parentPath, name, isFile: () => isFile } as unknown as ReturnType<typeof fs.readdirSync>[number];
+afterAll(() => {
+	rmSync(cacheDir, { recursive: true, force: true });
+});
+
+/** Every file currently in the cache, as `action/filename`. */
+function storedFiles(): string[] {
+	return readdirSync(cacheDir, { withFileTypes: true, recursive: true })
+		.filter((entry) => entry.isFile())
+		.map((entry) => join(entry.parentPath.slice(cacheDir.length + 1), entry.name))
+		.sort();
 }
 
-describe('cache function', () => {
+/** Backdates an entry so age-based expiry can be exercised without waiting or faking timers. */
+function ageBy(relPath: string, ms: number): void {
+	const path = resolve(cacheDir, relPath);
+	const when = new Date(Date.now() - ms);
+	utimesSync(path, when, when);
+}
+
+describe('cache', () => {
 	beforeEach(() => {
-		// Clear mocks before each test
-		vi.clearAllMocks();
+		for (const entry of readdirSync(cacheDir)) rmSync(resolve(cacheDir, entry), { recursive: true, force: true });
 	});
 
-	it('should retrieve a value from cache if it exists', async () => {
-		const mockBuffer = Buffer.from('cached data');
-		vi.mocked(fs.existsSync).mockReturnValue(true);
-		vi.mocked(fs.readFileSync).mockReturnValue(mockBuffer);
+	it('calls the callback on a miss and stores the result', async () => {
+		const callback = vi.fn(async () => Buffer.from('generated'));
 
-		const result = await cache('action', 'key', async () => {
-			throw new Error('Callback should not be called when the key exists');
-		});
+		const result = await cache('action', 'key', callback);
 
-		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key_[0-9a-f]{16}$/));
-		expect(fs.readFileSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key_[0-9a-f]{16}$/));
-		expect(result).toBe(mockBuffer);
+		expect(callback).toHaveBeenCalledTimes(1);
+		expect(result).toStrictEqual(Buffer.from('generated'));
+		// Exactly one file, and it holds precisely the bytes the callback produced.
+		const files = storedFiles();
+		expect(files).toHaveLength(1);
+		expect(readFileSync(resolve(cacheDir, files[0]))).toStrictEqual(Buffer.from('generated'));
 	});
 
-	it('should call the callback, cache the result, and return it if the key does not exist', async () => {
-		const mockBuffer = Buffer.from('generated data');
-		vi.mocked(fs.existsSync).mockReturnValue(false);
+	it('returns the stored bytes on a hit without calling the callback', async () => {
+		await cache('action', 'key', async () => Buffer.from('first'));
+		const callback = vi.fn(async () => Buffer.from('second'));
 
-		const result = await cache('action', 'key', async () => mockBuffer);
+		const result = await cache('action', 'key', callback);
 
-		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key_[0-9a-f]{16}$/));
-		expect(fs.readFileSync).not.toHaveBeenCalled();
-		// Written atomically: to a temp file, then renamed to the final path.
-		expect(fs.writeFileSync).toHaveBeenCalledWith(
-			expect.stringMatching(/\/action\/key_[0-9a-f]{16}\.\d+\.tmp$/),
-			mockBuffer
+		expect(callback).not.toHaveBeenCalled();
+		// The point of the hit: the original bytes come back, not the ones the callback would
+		// have produced. A mock that only counts calls cannot tell these apart.
+		expect(result).toStrictEqual(Buffer.from('first'));
+	});
+
+	it('round-trips binary content byte for byte', async () => {
+		const binary = Buffer.from([0x00, 0xff, 0x0a, 0x0d, 0x1a, 0x80, 0x7f]);
+		await cache('action', 'binary', async () => binary);
+
+		expect(await cache('action', 'binary', async () => Buffer.alloc(0))).toStrictEqual(binary);
+	});
+
+	it('leaves no temporary file behind after a successful write', async () => {
+		await cache('action', 'key', async () => Buffer.from('data'));
+
+		expect(storedFiles().filter((name) => name.includes('.tmp'))).toStrictEqual([]);
+	});
+
+	it('writes nothing when the callback throws', async () => {
+		await expect(cache('action', 'key', () => Promise.reject(Error('upstream failed')))).rejects.toThrow(
+			'upstream failed'
 		);
-		expect(fs.renameSync).toHaveBeenCalledWith(
-			expect.stringMatching(/\/action\/key_[0-9a-f]{16}\.\d+\.tmp$/),
-			expect.stringMatching(/\/action\/key_[0-9a-f]{16}$/)
-		);
-		expect(result).toBe(mockBuffer);
+
+		// Neither a finished entry nor a temp file: a later run must see a clean miss.
+		expect(storedFiles()).toStrictEqual([]);
 	});
 
-	it('should throw an error if the callback does not return a Buffer', async () => {
-		vi.mocked(fs.existsSync).mockReturnValue(false);
-
+	it('writes nothing when the callback does not return a Buffer', async () => {
 		await expect(cache('action', 'key', async () => 'not a buffer' as unknown as Buffer)).rejects.toThrow(
 			'The callback function must return a Buffer'
 		);
 
-		expect(fs.existsSync).toHaveBeenCalledWith(expect.stringMatching(/\/action\/key_[0-9a-f]{16}$/));
-		expect(fs.readFileSync).not.toHaveBeenCalled();
-		expect(fs.writeFileSync).not.toHaveBeenCalled();
+		expect(storedFiles()).toStrictEqual([]);
 	});
 
-	it('should correctly sanitize the filename derived from the key', async () => {
-		vi.mocked(fs.existsSync).mockReturnValue(false);
-		const mockBuffer = Buffer.from('data');
-		await cache('äçtion', 'key/with special@chars', async () => mockBuffer);
+	it('never serves a half-written entry as a hit', async () => {
+		// Simulate a process killed mid-write under the old, non-atomic scheme: a .tmp file with
+		// partial content. It must not be mistaken for the entry itself.
+		await cache('action', 'key', async () => Buffer.from('complete'));
+		const [name] = storedFiles();
+		writeFileSync(resolve(cacheDir, `${name}.99999.tmp`), Buffer.from('trunc'));
 
-		expect(fs.writeFileSync).toHaveBeenCalledWith(
-			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars_[0-9a-f]{16}\.\d+\.tmp$/),
-			mockBuffer
-		);
-		expect(fs.renameSync).toHaveBeenCalledWith(
-			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars_[0-9a-f]{16}\.\d+\.tmp$/),
-			expect.stringMatching(/\/x228_x231_tion\/key_x47_with_special_x64_chars_[0-9a-f]{16}$/)
-		);
+		expect(await cache('action', 'key', async () => Buffer.from('regenerated'))).toStrictEqual(Buffer.from('complete'));
 	});
 
-	it('reuses an entry that is younger than maxAgeMs', async () => {
-		const mockBuffer = Buffer.from('fresh');
-		vi.mocked(fs.existsSync).mockReturnValue(true);
-		vi.mocked(fs.statSync).mockReturnValue({ mtimeMs: Date.now() - 1000 } as ReturnType<typeof fs.statSync>);
-		vi.mocked(fs.readFileSync).mockReturnValue(mockBuffer);
+	describe('expiry', () => {
+		it('reuses an entry younger than maxAgeMs', async () => {
+			await cache('action', 'key', async () => Buffer.from('fresh'));
+			const callback = vi.fn(async () => Buffer.from('refetched'));
 
-		const result = await cache(
-			'action',
-			'key',
-			async () => {
-				throw new Error('Callback should not be called while the entry is fresh');
-			},
-			60_000
-		);
+			const result = await cache('action', 'key', callback, 60_000);
 
-		expect(result).toBe(mockBuffer);
-	});
-
-	it('refetches an entry that is older than maxAgeMs', async () => {
-		const mockBuffer = Buffer.from('regenerated');
-		vi.mocked(fs.existsSync).mockReturnValue(true);
-		vi.mocked(fs.statSync).mockReturnValue({ mtimeMs: Date.now() - 120_000 } as ReturnType<typeof fs.statSync>);
-
-		const result = await cache('action', 'key', async () => mockBuffer, 60_000);
-
-		expect(fs.readFileSync).not.toHaveBeenCalled();
-		expect(fs.writeFileSync).toHaveBeenCalledWith(
-			expect.stringMatching(/\/action\/key_[0-9a-f]{16}\.\d+\.tmp$/),
-			mockBuffer
-		);
-		expect(result).toBe(mockBuffer);
-	});
-
-	it('never expires an entry when no maxAgeMs is given', async () => {
-		const mockBuffer = Buffer.from('immortal');
-		vi.mocked(fs.existsSync).mockReturnValue(true);
-		vi.mocked(fs.readFileSync).mockReturnValue(mockBuffer);
-
-		const result = await cache('action', 'key', async () => {
-			throw new Error('Callback should not be called for an entry without an age limit');
+			expect(callback).not.toHaveBeenCalled();
+			expect(result).toStrictEqual(Buffer.from('fresh'));
 		});
 
-		expect(fs.statSync).not.toHaveBeenCalled();
-		expect(result).toBe(mockBuffer);
+		it('refetches an entry older than maxAgeMs and replaces it', async () => {
+			await cache('action', 'key', async () => Buffer.from('stale'));
+			ageBy(storedFiles()[0], 120_000);
+
+			const result = await cache('action', 'key', async () => Buffer.from('refetched'), 60_000);
+
+			expect(result).toStrictEqual(Buffer.from('refetched'));
+			// The replacement is persisted, so the next call hits the new value rather than the old.
+			expect(await cache('action', 'key', async () => Buffer.from('third'), 60_000)).toStrictEqual(
+				Buffer.from('refetched')
+			);
+		});
+
+		it('never expires an entry when no maxAgeMs is given', async () => {
+			await cache('action', 'key', async () => Buffer.from('immortal'));
+			ageBy(storedFiles()[0], 365 * 24 * 3600_000);
+
+			expect(await cache('action', 'key', async () => Buffer.from('refetched'))).toStrictEqual(Buffer.from('immortal'));
+		});
 	});
 
-	it('bounds very long keys with a hash suffix to avoid ENAMETOOLONG', async () => {
-		vi.mocked(fs.existsSync).mockReturnValue(false);
-		const mockBuffer = Buffer.from('data');
+	describe('key handling', () => {
+		it('gives distinct keys distinct content, even when they sanitize alike', async () => {
+			// `sanitize` rewrites '/' to '_x47_', so these two keys share a sanitized name. This is
+			// the collision in its consequential form: one key serving the other's bytes.
+			await cache('action', 'a/b', async () => Buffer.from('slash'));
+			await cache('action', 'a_x47_b', async () => Buffer.from('literal'));
 
-		await cache('action', 'a'.repeat(300), async () => mockBuffer);
+			expect(await cache('action', 'a/b', async () => Buffer.alloc(0))).toStrictEqual(Buffer.from('slash'));
+			expect(await cache('action', 'a_x47_b', async () => Buffer.alloc(0))).toStrictEqual(Buffer.from('literal'));
+			expect(storedFiles()).toHaveLength(2);
+		});
 
-		const writtenPath = vi.mocked(fs.writeFileSync).mock.calls[0][0] as string;
-		const keySegment = writtenPath
-			.split('/')
-			.pop()!
-			.replace(/\.\d+\.tmp$/, '');
-		// 200 truncated chars + '_' + 16 hex chars of the sha256 hash.
-		expect(keySegment).toMatch(/^a{200}_[0-9a-f]{16}$/);
+		it('gives distinct keys distinct content, even when they truncate alike', async () => {
+			const long = 'b'.repeat(250);
+			await cache('action', `${long}one`, async () => Buffer.from('one'));
+			await cache('action', `${long}two`, async () => Buffer.from('two'));
+
+			expect(await cache('action', `${long}one`, async () => Buffer.alloc(0))).toStrictEqual(Buffer.from('one'));
+			expect(await cache('action', `${long}two`, async () => Buffer.alloc(0))).toStrictEqual(Buffer.from('two'));
+		});
+
+		it('bounds the filename of a very long key', async () => {
+			await cache('action', 'a'.repeat(300), async () => Buffer.from('data'));
+
+			const [name] = storedFiles();
+			// 200 truncated characters + '_' + 16 hex characters of the sha256 hash, well under the
+			// 255-byte limit a filesystem typically imposes.
+			expect(name).toMatch(/^action\/a{200}_[0-9a-f]{16}$/);
+		});
+
+		it('keeps the readable part of a key in the filename', async () => {
+			await cache('äçtion', 'key/with special@chars', async () => Buffer.from('data'));
+
+			expect(storedFiles()[0]).toMatch(/^x228_x231_tion\/key_x47_with_special_x64_chars_[0-9a-f]{16}$/);
+		});
+
+		it('separates entries of different actions', async () => {
+			await cache('compress', 'key', async () => Buffer.from('compressed'));
+			await cache('getBuffer', 'key', async () => Buffer.from('downloaded'));
+
+			expect(await cache('compress', 'key', async () => Buffer.alloc(0))).toStrictEqual(Buffer.from('compressed'));
+			expect(storedFiles().map((name) => name.split('/')[0])).toStrictEqual(['compress', 'getBuffer']);
+		});
 	});
 
-	/**
-	 * Reads back the final (post-rename) cache path a call wrote to.
-	 */
-	async function pathWrittenFor(key: string): Promise<string> {
-		vi.clearAllMocks();
-		vi.mocked(fs.existsSync).mockReturnValue(false);
-		await cache('action', key, async () => Buffer.from('data'));
-		return vi.mocked(fs.renameSync).mock.calls[0][1] as string;
-	}
+	describe('clearCache', () => {
+		it('reports what it removed and empties the folder', async () => {
+			await cache('compress', 'a', async () => Buffer.alloc(100));
+			await cache('compress', 'b', async () => Buffer.alloc(200));
+			await cache('getBuffer', 'c', async () => Buffer.alloc(300));
 
-	it('gives distinct keys distinct files even when they sanitize alike', async () => {
-		// `sanitize` rewrites '/' to '_x47_', so these two keys share a sanitized name. Only
-		// the hash suffix keeps them apart - without it, one would serve the other's content.
-		expect(await pathWrittenFor('a/b')).not.toBe(await pathWrittenFor('a_x47_b'));
-	});
+			expect(clearCache()).toStrictEqual({ entries: 3, bytes: 600 });
+			expect(storedFiles()).toStrictEqual([]);
+			// The folder itself survives: the module expects it to exist.
+			expect(existsSync(cacheDir)).toBe(true);
+		});
 
-	it('gives distinct keys distinct files even when they truncate alike', async () => {
-		// Both exceed the 200-char bound and share their first 200 characters.
-		expect(await pathWrittenFor('b'.repeat(250) + 'one')).not.toBe(await pathWrittenFor('b'.repeat(250) + 'two'));
-	});
+		it('reports nothing for an empty cache', () => {
+			expect(clearCache()).toStrictEqual({ entries: 0, bytes: 0 });
+		});
 
-	it('gives the same key the same file every time', async () => {
-		// The counterpart to the two tests above: the hash must be stable, or nothing ever hits.
-		expect(await pathWrittenFor('a/b')).toBe(await pathWrittenFor('a/b'));
-	});
-});
+		it('measures without deleting', async () => {
+			await cache('compress', 'a', async () => Buffer.alloc(42));
 
-describe('clearCache', () => {
-	beforeEach(() => {
-		vi.clearAllMocks();
-	});
+			expect(measureCache()).toStrictEqual({ entries: 1, bytes: 42 });
+			expect(measureCache()).toStrictEqual({ entries: 1, bytes: 42 });
+			expect(storedFiles()).toHaveLength(1);
+		});
 
-	it('reports the entries and bytes it removed, and empties the folder', () => {
-		vi.mocked(fs.existsSync).mockReturnValue(true);
-		vi.mocked(fs.readdirSync).mockReturnValue([
-			dirent('/cache/compress', 'aaa'),
-			dirent('/cache/compress', 'bbb'),
-			dirent('/cache/getBuffer', 'ccc'),
-		]);
-		vi.mocked(fs.statSync).mockReturnValue({ size: 100 } as ReturnType<typeof fs.statSync>);
+		it('counts files in nested action folders, not the folders themselves', async () => {
+			await cache('compress', 'a', async () => Buffer.alloc(10));
 
-		expect(clearCache()).toStrictEqual({ entries: 3, bytes: 300 });
-		expect(utils.cleanupFolder).toHaveBeenCalledWith(expect.stringMatching(/\/cache$/));
-	});
-
-	it('counts only files, not the action sub-folders', () => {
-		vi.mocked(fs.existsSync).mockReturnValue(true);
-		vi.mocked(fs.readdirSync).mockReturnValue([dirent('/cache', 'compress', false), dirent('/cache/compress', 'aaa')]);
-		vi.mocked(fs.statSync).mockReturnValue({ size: 7 } as ReturnType<typeof fs.statSync>);
-
-		expect(measureCache()).toStrictEqual({ entries: 1, bytes: 7 });
-		// A directory has no meaningful size here, and statting it would inflate the total.
-		expect(fs.statSync).toHaveBeenCalledTimes(1);
-	});
-
-	it('reports nothing when the cache folder does not exist', () => {
-		vi.mocked(fs.existsSync).mockReturnValue(false);
-
-		expect(clearCache()).toStrictEqual({ entries: 0, bytes: 0 });
-		expect(fs.readdirSync).not.toHaveBeenCalled();
-	});
-
-	it('measures without deleting', () => {
-		vi.mocked(fs.existsSync).mockReturnValue(true);
-		vi.mocked(fs.readdirSync).mockReturnValue([dirent('/cache/compress', 'aaa')]);
-		vi.mocked(fs.statSync).mockReturnValue({ size: 42 } as ReturnType<typeof fs.statSync>);
-
-		expect(measureCache()).toStrictEqual({ entries: 1, bytes: 42 });
-		expect(utils.cleanupFolder).not.toHaveBeenCalled();
+			const { entries, bytes } = measureCache();
+			expect(entries).toBe(1);
+			expect(bytes).toBe(10);
+			// Sanity: the file really is nested one level down, so a directory was walked into.
+			expect(statSync(resolve(cacheDir, 'compress')).isDirectory()).toBe(true);
+		});
 	});
 });
