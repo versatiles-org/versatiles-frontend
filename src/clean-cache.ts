@@ -18,5 +18,6 @@ const { entries, bytes } = clearCache();
 if (entries === 0) {
 	console.log('Cache is already empty.');
 } else {
-	console.log(`Removed ${group(entries)} entries (${group(Math.round(bytes / 1e6))} MB).`);
+	const label = entries === 1 ? 'entry' : 'entries';
+	console.log(`Removed ${group(entries)} ${label} (${group(Math.round(bytes / 1e6))} MB).`);
 }
