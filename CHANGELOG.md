@@ -5,6 +5,65 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.15.0] - 2026-09-20
+
+### Features
+
+- add metadata panel for tile source information in preview, close #69 ([0b5bec1](https://github.com/versatiles-org/versatiles-frontend/commit/0b5bec12dadabeef6071336d0fc20782be4d8aa4))
+- implement hardlink support for tarball entries to reduce duplication, close #84 ([4cc29eb](https://github.com/versatiles-org/versatiles-frontend/commit/4cc29eb8650ebd3cb23873797de55f817bc00d10))
+- add limitFontFamiliesCodeblocks function to filter codeblocks by maxCodepoint and update related tests ([66eea1d](https://github.com/versatiles-org/versatiles-frontend/commit/66eea1d7d425efa2222027b441fe33ac0131ff49))
+- add support for zstd-compressed tarballs and update related configurations and tests ([75bb22a](https://github.com/versatiles-org/versatiles-frontend/commit/75bb22a20be3324ecb0fb0e38d9ded549a6fa593))
+- add support for Zstandard-compressed tarballs, update related functions and tests ([df3cc98](https://github.com/versatiles-org/versatiles-frontend/commit/df3cc98771295924b0aed9cc44341f69ba5e6c3d))
+- update README and tests to clarify hardlink usage in tarball bundles ([63d3050](https://github.com/versatiles-org/versatiles-frontend/commit/63d305055ccc46ee8eb14bf7c13bfcfac188cbbe))
+- refactor emptyGlyphPbf function to remove parameters and update related tests, close #85 ([2150e12](https://github.com/versatiles-org/versatiles-frontend/commit/2150e12b54a8e6914b1ead5747d9ee2f44e8cd50))
+- update sprite tests to reflect new structure in versatiles-style v6 ([b6f6f7f](https://github.com/versatiles-org/versatiles-frontend/commit/b6f6f7f3e42355e05b388ef10ceeb8a3b8e3269e))
+- enhance zstd compression settings with long-distance matching and window log configuration, close #86 ([533cd58](https://github.com/versatiles-org/versatiles-frontend/commit/533cd58076b8f59d4aa5524613d9804cfed82deb))
+- add maplibre-gl-compare to bundles and update related tests ([ad0b42c](https://github.com/versatiles-org/versatiles-frontend/commit/ad0b42c0df24177f6eba1bf20ed1945605fc93f5))
+- enhance tag verification in release workflow to ensure package.json version matches pushed tag ([bac08c9](https://github.com/versatiles-org/versatiles-frontend/commit/bac08c94d58bbb641cf8015ea7e75cbbaca06dde))
+- add cache management commands and tests ([5ae9afb](https://github.com/versatiles-org/versatiles-frontend/commit/5ae9afb079ca95b0034c9a692d65115dca67a0e8))
+
+### Bug Fixes
+
+- improve version resolution logic to handle GitHub API rate limits and enhance warning messages ([1d9642c](https://github.com/versatiles-org/versatiles-frontend/commit/1d9642ccc25bf79f0bd2beca17c7587e2cd8a5ef))
+- update cache key generation to ensure distinct filenames for similar keys and improve sanitization logic ([08bf856](https://github.com/versatiles-org/versatiles-frontend/commit/08bf8567dad1be6b92bbb29ccdac18062d7e37a0))
+- update coverage include pattern to only target TypeScript files ([192b60a](https://github.com/versatiles-org/versatiles-frontend/commit/192b60ac4beaa94c5dc4b723dab8b8749f06c0fb))
+- update package description and repository information in package.json ([68aacf9](https://github.com/versatiles-org/versatiles-frontend/commit/68aacf98e2e300e190df1894db0bbc8d09ea25ba))
+
+### Code Refactoring
+
+- update File class to use content-based hashing and improve cache handling in compression ([d08c255](https://github.com/versatiles-org/versatiles-frontend/commit/d08c255a91f18059c8630ad600bc87d176c9f187))
+- improve error handling in server request processing and update ESLint configuration for better type awareness ([8e95edf](https://github.com/versatiles-org/versatiles-frontend/commit/8e95edf0113b999ec36b477ef6b0ecc5aa96b567))
+- enhance cache cleanup logging for better clarity ([0b8b4e5](https://github.com/versatiles-org/versatiles-frontend/commit/0b8b4e51319cb37b4c912c2f9e51d337b01d3d69))
+- replace hard assertions with soft assertions in bundle contents tests ([b054948](https://github.com/versatiles-org/versatiles-frontend/commit/b0549485a3902a6862abd9b3ed61add26da76616))
+- update cache folder path definition to support environment variable ([e5f5370](https://github.com/versatiles-org/versatiles-frontend/commit/e5f5370ef253fd7bfc2295de2eb0e4ec772f0290))
+- improve test cleanup and organization in frontend and server tests ([3e91e4a](https://github.com/versatiles-org/versatiles-frontend/commit/3e91e4a35561571ccdbe0418a1686a47e52904d9))
+- remove hasRelease check and improve error handling for missing release files ([23066d9](https://github.com/versatiles-org/versatiles-frontend/commit/23066d94bb98318df17d293acf92395453927429))
+- improve progress display handling by replacing screen clearing with relative redraws ([32bfc3c](https://github.com/versatiles-org/versatiles-frontend/commit/32bfc3c3210c63883b9ee42dfbbddff933af72e8))
+- implement progress failure handling and update build error reporting ([4e0276b](https://github.com/versatiles-org/versatiles-frontend/commit/4e0276b5099c06073c1f73d49011b5aeb037faa8))
+- enhance content type handling for file responses in server ([ca8ff15](https://github.com/versatiles-org/versatiles-frontend/commit/ca8ff15473eaf0b1515a8d40641eac497c2c68c8))
+- improve port allocation tests to enhance reliability and clarity ([b56d61b](https://github.com/versatiles-org/versatiles-frontend/commit/b56d61bad44edd6e3c0f3b23ab4dbc77e413d9c5))
+- update VersaTilesStylerControl to start collapsed for better UX ([5c7f317](https://github.com/versatiles-org/versatiles-frontend/commit/5c7f3173635e4ec9ba54f9521068a3a9848f0f0c))
+
+### Documentation
+
+- Add dependency graph SVG and update README ([c55137f](https://github.com/versatiles-org/versatiles-frontend/commit/c55137f4fb485a890fc7b4bef618f82945317234))
+- add 'frontend-blank' option to available frontends in README ([3d619ba](https://github.com/versatiles-org/versatiles-frontend/commit/3d619ba5368a12b0def20a0190e1e4fb5f33ace4))
+
+### Tests
+
+- add README validation tests to ensure frontend configurations are accurately documented ([803cdbd](https://github.com/versatiles-org/versatiles-frontend/commit/803cdbd2215368289fafa7d4b47704edae8a9027))
+- replace random wait with deterministic tick function in async tests ([8a05d16](https://github.com/versatiles-org/versatiles-frontend/commit/8a05d16eefe13efc9b4977f8878c5c7f09acc744))
+- add tests for esbuild bundling step in NpmFileDB.build ([54860e1](https://github.com/versatiles-org/versatiles-frontend/commit/54860e1a1ab43508eb172938f0cf2ce82cde86a2))
+
+### Chores
+
+- add security update groups for GitHub Actions and npm in dependabot configuration ([de49ae9](https://github.com/versatiles-org/versatiles-frontend/commit/de49ae9cb6c127798746335563c2b82a1f5fc5b9))
+- update dependencies in package.json ([55b912e](https://github.com/versatiles-org/versatiles-frontend/commit/55b912e3878e5712c71f4bddfe2cd244a8ab5269))
+- update qs package to version 6.16.0 ([83330cf](https://github.com/versatiles-org/versatiles-frontend/commit/83330cfa160ed3090f8c17b8c9e2928a286b4cd3))
+- update dependencies in package.json ([00c10c0](https://github.com/versatiles-org/versatiles-frontend/commit/00c10c0b3dc487b119e9f1c8254009e2a1e9e5fa))
+- update dependencies to latest versions ([b80c8a6](https://github.com/versatiles-org/versatiles-frontend/commit/b80c8a6c1c0e055bd413f1da67bc6ea7b02784a9))
+- update screenshot snapshots for Chromium on Darwin and Linux ([540330e](https://github.com/versatiles-org/versatiles-frontend/commit/540330ee6b09ac0ce528ca052584fa4fbd9a612e))
+
 ## [3.14.0] - 2026-08-15
 
 ### Features
