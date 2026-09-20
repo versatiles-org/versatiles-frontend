@@ -52,8 +52,14 @@ describe('listenWithFallback', () => {
 		const result = await listenWithFallback(express(), blocker.port, '127.0.0.1', (port) => busy.push(port));
 		track(result.server);
 
-		expect(busy).toStrictEqual([blocker.port]);
-		expect(result.port).not.toBe(blocker.port);
+		// Only the blocked port is known to be taken. The ones after it belong to the machine, and
+		// anything - a parallel test worker included - may hold one, so asserting that the walk
+		// stopped after exactly one step made this test fail on roughly a quarter of runs. Assert
+		// the shape of the walk instead: it starts at the preferred port, steps one at a time, and
+		// binds the first port it did not report as busy.
+		expect(busy[0]).toBe(blocker.port);
+		expect(busy).toStrictEqual(Array.from({ length: busy.length }, (_, index) => blocker.port + index));
+		expect(result.port).toBe(blocker.port + busy.length);
 	});
 
 	it('falls back to an arbitrary free port when every candidate is busy', async () => {

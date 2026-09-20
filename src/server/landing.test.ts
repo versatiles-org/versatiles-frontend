@@ -67,7 +67,11 @@ describe('LandingPage', () => {
 		const busy: number[] = [];
 		const port = await createPage().start(taken, '127.0.0.1', (p) => busy.push(p));
 
-		expect(busy).toStrictEqual([taken]);
-		expect(port).not.toBe(taken);
+		// Only `taken` is known to be occupied; the ports after it may be held by anything else on
+		// the machine, so requiring the walk to stop after one step made this flaky. Assert that it
+		// starts at the preferred port, steps one at a time, and binds the first one it skipped.
+		expect(busy[0]).toBe(taken);
+		expect(busy).toStrictEqual(Array.from({ length: busy.length }, (_, index) => taken + index));
+		expect(port).toBe(taken + busy.length);
 	});
 });
