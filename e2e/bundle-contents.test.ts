@@ -147,35 +147,19 @@ describe('Bundle contents', () => {
 		const path = bundles.withPrefix('assets/sprites/');
 		expect(path.file('index.json')).toBeTruthy();
 
-		expect(path.count(/^basics\/sprites\.(json|png)$/)).toBe(2);
-		expect(path.count(/^basics\/sprites@2x\.(json|png)$/)).toBe(2);
-		expect(path.count(/^basics\/sprites.*\.(json|png)$/)).toStrictEqual({
-			frontend: 4,
-			'frontend-blank': 4,
-			'frontend-dev': 4,
-			'frontend-min': 4,
-		});
-		expectMinSizes(path.sizes(/^basics\/sprites/), {
-			frontend: 1e6,
-			'frontend-dev': 1e6,
-			'frontend-min': 250e3,
-			'frontend-tiny': 250e3,
-		});
+		// Since versatiles-style v6 the sprites are three flat sheets - base, extras and icons -
+		// listed in index.json and shipped at 1x and 2x. The @3x/@4x sheets of earlier releases
+		// are gone, so frontend-tiny's *@3x/*@4x ignore rules no longer drop anything here and
+		// every bundle carries the same set.
+		for (const sheet of ['base', 'extras', 'icons']) {
+			expect(path.count(new RegExp(`^${sheet}\\.(json|png)$`)), sheet).toBe(2);
+			expect(path.count(new RegExp(`^${sheet}@2x\\.(json|png)$`)), `${sheet}@2x`).toBe(2);
+		}
 
-		expect(path.count(/^markers\/sprites\.(json|png)$/)).toBe(2);
-		expect(path.count(/^markers\/sprites@2x\.(json|png)$/)).toBe(2);
-		expect(path.count(/^markers\/sprites.*\.(json|png)$/)).toStrictEqual({
-			frontend: 4,
-			'frontend-blank': 4,
-			'frontend-dev': 4,
-			'frontend-min': 4,
-		});
-		expectMinSizes(path.sizes(/^markers\/sprites/), {
-			frontend: 300e3,
-			'frontend-dev': 300e3,
-			'frontend-min': 80e3,
-			'frontend-tiny': 80e3,
-		});
+		// sizes() collapses to a single number only while every bundle holds the same sheets.
+		expect(path.sizes(/^base(@2x)?\.(json|png)$/)).toBeGreaterThan(300e3);
+		expect(path.sizes(/^extras(@2x)?\.(json|png)$/)).toBeGreaterThan(170e3);
+		expect(path.sizes(/^icons(@2x)?\.(json|png)$/)).toBeGreaterThan(300e3);
 
 		expect(path.rest()).toStrictEqual({});
 	});
