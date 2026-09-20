@@ -37,14 +37,25 @@ describe('Bundle contents', () => {
 		expect.soft(path.file('font_families.json')).toBeTruthy();
 		expect.soft(path.file('index.json')).toBeTruthy();
 
-		// 4 faces (regular, bold and their italics since versatiles-fonts v3) × 256 ranges
-		expect.soft(path.count(/^noto_sans_\w+\/\d+-\d+\.pbf$/)).toStrictEqual(1024);
+		// 4 faces (regular, bold and their italics since versatiles-fonts v3) × 256 ranges.
+		// Counted as two disjoint sets, because `count` claims each file once: the upright faces
+		// are everywhere, the italics everywhere except frontend-tiny, whose style never asks for
+		// them. A bundle with none at all drops out of the result, so frontend-tiny's absence
+		// below is the assertion that it ships no italics.
+		expect.soft(path.count(/^noto_sans_(regular|bold)\/\d+-\d+\.pbf$/)).toStrictEqual(512);
+		expect.soft(path.count(/^noto_sans_(regular|bold)_italic\/\d+-\d+\.pbf$/)).toStrictEqual({
+			frontend: 512,
+			'frontend-blank': 512,
+			'frontend-dev': 512,
+			'frontend-min': 512,
+		});
 		expectMinSizes(path.sizes(/^noto_sans_\w+\/\d+-\d+\.pbf$/), {
 			frontend: 77e6,
 			'frontend-blank': 77e6,
 			'frontend-dev': 77e6,
 			'frontend-min': 77e6,
-			'frontend-tiny': 800e3,
+			// Roughly 0.83 MB: the upright faces' Latin ranges, the rest being empty glyph tiles.
+			'frontend-tiny': 700e3,
 		});
 
 		expect.soft(path.count(/^[a-z0-9_]+\/\d+-\d+\.pbf$/)).toStrictEqual({

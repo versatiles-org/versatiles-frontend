@@ -18,6 +18,45 @@ export function emptyGlyphPbf(): Buffer {
 }
 
 /**
+ * Removes every italic face from a `font_families.json`.
+ *
+ * Pair it with an ignore rule dropping the italic glyph directories: this file is the catalogue
+ * of faces a client may ask for, so an italic face left in it after its glyph ranges are gone
+ * points the client at tiles that are no longer served.
+ *
+ * Keyed on the face's own `style` field rather than its name, which is what the format actually
+ * declares. A family left with no faces at all is dropped rather than kept empty.
+ *
+ * @param json - The content of `font_families.json`.
+ */
+export function removeItalicFaces(json: Buffer): Buffer {
+	const families = JSON.parse(json.toString('utf8')) as { faces?: { style?: unknown }[] }[];
+
+	const kept = families
+		.map((family) => ({ ...family, faces: (family.faces ?? []).filter((face) => face.style !== 'italic') }))
+		.filter((family) => family.faces.length > 0);
+
+	return Buffer.from(JSON.stringify(kept, null, 2) + '\n');
+}
+
+/**
+ * Removes italic fonts from a glyphs `index.json`, the list of font ids a client may request.
+ *
+ * Detected by the `_italic` suffix that versatiles-fonts gives them: the index carries bare ids,
+ * so the `style` field {@link removeItalicFaces} keys on is not available here.
+ *
+ * @param json - The content of `index.json`.
+ */
+export function removeItalicFontIds(json: Buffer): Buffer {
+	const ids = JSON.parse(json.toString('utf8')) as string[];
+	const kept = ids.filter((id) => !id.endsWith('_italic'));
+
+	// Unlike font_families.json this file ships without a trailing newline; match it, so the only
+	// difference from the upstream file is the entries that were removed.
+	return Buffer.from(JSON.stringify(kept, null, 2));
+}
+
+/**
  * Rewrites a `font_families.json` so that the `codeblocks` of every face only list blocks below
  * `maxCodepoint`. Use it when glyph ranges above that codepoint are removed or emptied, so clients
  * do not pick a face for a script whose glyphs are no longer there.

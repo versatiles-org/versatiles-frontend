@@ -1,7 +1,12 @@
 import { githubSource, npmSource, staticSource, type SourceConfig } from '../src/files/source_config';
 import type { FrontendConfig } from '../src/frontend/frontend';
 import { File } from '../src/files/file';
-import { emptyGlyphPbf, limitFontFamiliesCodeblocks } from '../src/files/glyphs';
+import {
+	emptyGlyphPbf,
+	limitFontFamiliesCodeblocks,
+	removeItalicFaces,
+	removeItalicFontIds,
+} from '../src/files/glyphs';
 
 export const sourceConfigs = {
 	'external-fonts': githubSource('versatiles-org/versatiles-fonts', {
@@ -202,14 +207,27 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-maplibre',
 			'external-maplibre-versatiles-styler',
 		],
-		ignore: ['*.js.map', '*@3x.json', '*@3x.png', '*@4x.json', '*@4x.png'],
+		ignore: [
+			'*.js.map',
+			'*@3x.json',
+			'*@3x.png',
+			'*@4x.json',
+			'*@4x.png',
+			// The styles here only ask for noto_sans_regular and noto_sans_bold, so the italic
+			// faces are half the glyph payload for nothing. index.json and font_families.json are
+			// rewritten below to match, so nothing advertises a face that is no longer served.
+			'assets/glyphs/*_italic/',
+		],
 		// Keep only Latin glyphs (codepoints < 1024). Higher ranges are not deleted but
 		// replaced with valid, empty glyph tiles, so clients get an HTTP 200 (no glyphs)
 		// instead of a 404 when they request an out-of-range codepoint.
 		// font_families.json is updated to match, so its codeblocks do not claim the removed glyphs.
 		transform: (file: File): File | null => {
 			if (file.name === 'assets/glyphs/font_families.json') {
-				return new File(file.name, limitFontFamiliesCodeblocks(file.bufferRaw, 1024));
+				return new File(file.name, limitFontFamiliesCodeblocks(removeItalicFaces(file.bufferRaw), 1024));
+			}
+			if (file.name === 'assets/glyphs/index.json') {
+				return new File(file.name, removeItalicFontIds(file.bufferRaw));
 			}
 			const match = file.name.match(/^assets\/glyphs\/[^/]+\/(\d+)-\d+\.pbf$/);
 			if (!match) return file;

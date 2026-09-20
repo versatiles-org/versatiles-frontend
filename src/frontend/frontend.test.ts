@@ -227,31 +227,73 @@ describe('Frontend class', () => {
 			const tiny = (await loadFrontendConfigs()).find((c) => c.name === 'frontend-tiny');
 			if (!tiny?.transform) throw Error('frontend-tiny has no transform');
 
-			// As loaded from a deduplicated fonts release: the italic ranges are links to the upright ones.
+			// As loaded from a deduplicated fonts release: bold shares its buffers with regular where
+			// the ranges are identical. The italic faces would too, but frontend-tiny ignores them.
 			const low = Buffer.from('glyphs 0-255');
 			const high = Buffer.from('glyphs 19968-20223');
 			const dbs = new FileDBs({ all: {} });
 			const db = dbs.get('all');
 			db.setFileFromBuffer('assets/glyphs/noto_sans_regular/0-255.pbf', low);
-			db.setFileFromBuffer('assets/glyphs/noto_sans_regular_italic/0-255.pbf', low);
+			db.setFileFromBuffer('assets/glyphs/noto_sans_bold/0-255.pbf', low);
 			db.setFileFromBuffer('assets/glyphs/noto_sans_regular/19968-20223.pbf', high);
-			db.setFileFromBuffer('assets/glyphs/noto_sans_regular_italic/19968-20223.pbf', high);
+			db.setFileFromBuffer('assets/glyphs/noto_sans_bold/19968-20223.pbf', high);
 
 			const frontend = new Frontend(dbs, { ...tiny, fileDBs: ['all'] });
 			const files = Object.fromEntries([...frontend.iterate()].map((f) => [f.name, f.bufferRaw]));
 			expect(files['assets/glyphs/noto_sans_regular/19968-20223.pbf']).toEqual(emptyGlyphPbf());
-			expect(files['assets/glyphs/noto_sans_regular_italic/19968-20223.pbf']).toEqual(emptyGlyphPbf());
+			expect(files['assets/glyphs/noto_sans_bold/19968-20223.pbf']).toEqual(emptyGlyphPbf());
 
 			await frontend.saveAsTarGz('/tmp/');
 			expect(await listEntries(writtenTarball())).toStrictEqual({
 				'assets/glyphs/noto_sans_regular/0-255.pbf': 'file',
-				'assets/glyphs/noto_sans_regular_italic/0-255.pbf': 'link -> assets/glyphs/noto_sans_regular/0-255.pbf',
+				'assets/glyphs/noto_sans_bold/0-255.pbf': 'link -> assets/glyphs/noto_sans_regular/0-255.pbf',
 				// The empty replacement tiles are identical for every font, so all but the first
 				// become links. Two bytes still cost a full 512-byte tar block, so linking pays off.
 				'assets/glyphs/noto_sans_regular/19968-20223.pbf': 'file',
-				'assets/glyphs/noto_sans_regular_italic/19968-20223.pbf':
-					'link -> assets/glyphs/noto_sans_regular/19968-20223.pbf',
+				'assets/glyphs/noto_sans_bold/19968-20223.pbf': 'link -> assets/glyphs/noto_sans_regular/19968-20223.pbf',
 			});
+		});
+
+		it('drops the italic faces from frontend-tiny', async () => {
+			const tiny = (await loadFrontendConfigs()).find((c) => c.name === 'frontend-tiny');
+			if (!tiny) throw Error('frontend-tiny not found');
+
+			const dbs = new FileDBs({ all: {} });
+			const db = dbs.get('all');
+			db.setFileFromBuffer('assets/glyphs/noto_sans_regular/0-255.pbf', Buffer.from('upright'));
+			db.setFileFromBuffer('assets/glyphs/noto_sans_regular_italic/0-255.pbf', Buffer.from('italic'));
+			db.setFileFromBuffer('assets/glyphs/noto_sans_bold_italic/0-255.pbf', Buffer.from('italic'));
+			db.setFileFromBuffer('assets/glyphs/index.json', Buffer.from(JSON.stringify(['a', 'a_italic'], null, 2)));
+			db.setFileFromBuffer(
+				'assets/glyphs/font_families.json',
+				Buffer.from(
+					JSON.stringify(
+						[
+							{
+								name: 'Noto Sans',
+								faces: [
+									{ id: 'a', style: 'normal' },
+									{ id: 'a_italic', style: 'italic' },
+								],
+							},
+						],
+						null,
+						2
+					) + '\n'
+				)
+			);
+
+			const files = Object.fromEntries(
+				[...new Frontend(dbs, { ...tiny, fileDBs: ['all'] }).iterate()].map((f) => [f.name, f.bufferRaw])
+			);
+
+			// No italic glyph ranges survive...
+			expect(Object.keys(files).filter((name) => name.includes('_italic'))).toStrictEqual([]);
+			expect(files['assets/glyphs/noto_sans_regular/0-255.pbf']).toEqual(Buffer.from('upright'));
+			// ...and neither metadata file still advertises one, which would point clients at
+			// ranges that are no longer served.
+			expect(files['assets/glyphs/index.json'].toString('utf8')).not.toContain('italic');
+			expect(files['assets/glyphs/font_families.json'].toString('utf8')).not.toContain('italic');
 		});
 	});
 
