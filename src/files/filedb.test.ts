@@ -86,6 +86,25 @@ describe('FileDB.compress', () => {
 		expect(calls[calls.length - 1]).toStrictEqual([25, 25]);
 	});
 
+	it('compresses identical content only once, even across separate buffers', async () => {
+		// The common case in a real build: the same empty glyph range read separately out of an
+		// archive under many names, so the buffers are equal but not the same object.
+		const db = createDB({ 'other.txt': 5 });
+		db.setFileFromBuffer('fira/10240-10495.pbf', Buffer.alloc(10, 2));
+		db.setFileFromBuffer('noto/58880-59135.pbf', Buffer.alloc(10, 2));
+
+		const calls: [number, number][] = [];
+		await db.compress((sizePos, sizeSum) => calls.push([sizePos, sizeSum]));
+
+		const files = Object.fromEntries([...db.iterate()].map((f) => [f.name, f as File & { compressCalls: number }]));
+		expect(files['fira/10240-10495.pbf'].compressCalls + files['noto/58880-59135.pbf'].compressCalls).toBe(1);
+		expect(files['noto/58880-59135.pbf'].bufferBr).toBe(files['fira/10240-10495.pbf'].bufferBr);
+		// Distinct content is still compressed on its own.
+		expect(files['other.txt'].compressCalls).toBe(1);
+		// Progress still accounts for every file, not just the ones actually compressed.
+		expect(calls[calls.length - 1]).toStrictEqual([25, 25]);
+	});
+
 	it('reports a total of zero when there is nothing to compress', async () => {
 		const db = createDB({});
 		const calls: [number, number][] = [];

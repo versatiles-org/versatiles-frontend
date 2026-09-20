@@ -8,8 +8,6 @@ import { cache } from '../utils/cache';
 export class File {
 	public readonly name: string; // Name of the file.
 
-	public readonly hash: string; // Unique hash based on name and content.
-
 	public readonly contentHash: string; // Hash based on content only.
 
 	public readonly bufferRaw: Buffer; // Raw buffer content of the file.
@@ -25,12 +23,16 @@ export class File {
 	public constructor(name: string, bufferRaw: Buffer) {
 		this.name = name;
 		this.contentHash = createHash('sha256').update(bufferRaw).digest('hex');
-		this.hash = name + ';' + this.contentHash;
 		this.bufferRaw = bufferRaw;
 	}
 
 	/**
 	 * Compresses the raw buffer using Brotli algorithm and caches the result.
+	 *
+	 * Keyed on the content alone, never on the name: brotli output is a pure function of its
+	 * input, and identical content under different names is the rule here rather than the
+	 * exception - the fonts bundle repeats one empty glyph range under tens of thousands of
+	 * names. Including the name would compress each of them separately.
 	 *
 	 * @returns The compressed buffer, so callers get a defined value without re-checking
 	 *          the optional {@link bufferBr} field.
@@ -39,7 +41,7 @@ export class File {
 		if (this.bufferBr) return this.bufferBr; // Skip if already compressed.
 		this.bufferBr = await cache(
 			'compress',
-			this.hash,
+			this.contentHash,
 			async () =>
 				new Promise((res, rej) =>
 					brotliCompress(

@@ -1,4 +1,4 @@
-import { vi, describe, it, expect } from 'vitest';
+import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { createHash } from 'crypto';
 import type { InputType, BrotliOptions, CompressCallback } from 'zlib';
 
@@ -24,13 +24,18 @@ const { File } = await import('./file');
 describe('File', () => {
 	const mockName = 'test.txt';
 	const mockBufferRaw = Buffer.from('raw-data');
-	const expectedHash = mockName + ';' + createHash('sha256').update(mockBufferRaw).digest('hex');
+	const expectedHash = createHash('sha256').update(mockBufferRaw).digest('hex');
+
+	// Call records are asserted below, and without this they would leak between tests.
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
 
 	it('should initialize with the correct properties', () => {
 		const file = new File(mockName, mockBufferRaw);
 
 		expect(file.name).toBe(mockName);
-		expect(file.hash).toBe(expectedHash);
+		expect(file.contentHash).toBe(expectedHash);
 		expect(file.bufferRaw).toBe(mockBufferRaw);
 		expect(file.bufferBr).toBeUndefined();
 	});
@@ -39,14 +44,21 @@ describe('File', () => {
 		const a = new File(mockName, Buffer.from('raw-data'));
 		const b = new File(mockName, Buffer.from('raw-data'));
 
-		expect(a.hash).toBe(b.hash);
+		expect(a.contentHash).toBe(b.contentHash);
 	});
 
 	it('should produce different hashes for different content', () => {
 		const a = new File(mockName, Buffer.from('one'));
 		const b = new File(mockName, Buffer.from('two'));
 
-		expect(a.hash).not.toBe(b.hash);
+		expect(a.contentHash).not.toBe(b.contentHash);
+	});
+
+	it('should hash content only, so the same bytes hash alike under different names', () => {
+		const a = new File('fira_sans_black/10240-10495.pbf', Buffer.from('raw-data'));
+		const b = new File('noto_sans_italic/58880-59135.pbf', Buffer.from('raw-data'));
+
+		expect(a.contentHash).toBe(b.contentHash);
 	});
 
 	it('should not compress if bufferBr already exists', async () => {
@@ -64,7 +76,7 @@ describe('File', () => {
 
 		await file.compress();
 
-		expect(cache).toHaveBeenCalledWith('compress', file.hash, expect.any(Function));
+		expect(cache).toHaveBeenCalledWith('compress', file.contentHash, expect.any(Function));
 		expect(brotliCompress).toHaveBeenCalledWith(
 			mockBufferRaw,
 			{
@@ -76,6 +88,19 @@ describe('File', () => {
 			expect.any(Function)
 		);
 		expect(file.bufferBr).toEqual(Buffer.from('compressed-data'));
+	});
+
+	it('should key the cache on content alone, so duplicates under other names hit it', async () => {
+		// The build repeats one empty glyph range under tens of thousands of names. Including
+		// the name in the key would compress and store every one of them separately.
+		const a = new File('fira_sans_black/10240-10495.pbf', Buffer.from('raw-data'));
+		const b = new File('noto_sans_italic/58880-59135.pbf', Buffer.from('raw-data'));
+
+		await a.compress();
+		await b.compress();
+
+		const keys = vi.mocked(cache).mock.calls.map(([, key]) => key);
+		expect(keys).toStrictEqual([a.contentHash, a.contentHash]);
 	});
 
 	it('should handle Brotli compression errors gracefully', async () => {

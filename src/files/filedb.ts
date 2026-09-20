@@ -19,12 +19,15 @@ export abstract class FileDB {
 	public async compress(cbProgress: (sizePos: number, sizeSum: number) => void): Promise<void> {
 		const files = Array.from(this.iterate().filter((file) => file.bufferBr == null));
 
-		// Files resolved from tar links share one buffer: compress it once and share the result.
-		const groups = new Map<Buffer, File[]>();
+		// Compress each distinct content once. Grouping by content hash rather than by buffer
+		// identity matters: identity only catches files resolved from the same tar link, while
+		// duplicate content under unrelated names is the common case here - a fonts bundle
+		// repeats one empty glyph range under tens of thousands of names.
+		const groups = new Map<string, File[]>();
 		for (const file of files) {
-			const group = groups.get(file.bufferRaw);
+			const group = groups.get(file.contentHash);
 			if (group) group.push(file);
-			else groups.set(file.bufferRaw, [file]);
+			else groups.set(file.contentHash, [file]);
 		}
 
 		// Calculate total size for progress calculation if callback provided.
@@ -32,10 +35,11 @@ export abstract class FileDB {
 		cbProgress(0, sizeSum);
 
 		let sizePos = 0;
-		await forEachAsync(groups.values(), async ([first, ...others]) => {
-			const bufferBr = await first.compress();
-			for (const file of others) file.bufferBr = bufferBr;
-			sizePos += first.bufferRaw.length * (others.length + 1);
+		await forEachAsync(groups.values(), async (group) => {
+			const bufferBr = await group[0].compress();
+			// The rest of the group is byte-identical, so it shares the result verbatim.
+			for (const file of group) file.bufferBr = bufferBr;
+			sizePos += group[0].bufferRaw.length * group.length;
 			cbProgress(sizePos, sizeSum);
 		});
 		cbProgress(sizeSum, sizeSum);
