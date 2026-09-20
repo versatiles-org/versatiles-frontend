@@ -7,8 +7,6 @@ import { expect } from 'vitest';
 
 export const releaseDir = resolve(import.meta.dirname, '../release');
 
-export const hasRelease = existsSync(releaseDir) && existsSync(resolve(releaseDir, 'frontend.tar.gz'));
-
 export interface FileEntry {
 	name: string;
 	size: number;
@@ -21,6 +19,16 @@ export interface FileEntry {
  */
 export async function listTarFiles(filename: string): Promise<FileEntry[]> {
 	const filePath = resolve(releaseDir, filename);
+
+	// These tests read the built bundles at module scope, so a missing build otherwise fails
+	// collection with a bare ENOENT naming a path inside release/ - which says nothing about the
+	// build simply not having run. Deliberately an error rather than a skip: these tests are the
+	// only check on what the bundles contain, and a skip would let a run report success without
+	// having verified anything.
+	if (!existsSync(filePath)) {
+		throw Error(`Missing "${filename}" in ${releaseDir}. Run "npm run build" first to create the release bundles.`);
+	}
+
 	const files: FileEntry[] = [];
 	const sizes = new Map<string, number>();
 	await pipeline(
