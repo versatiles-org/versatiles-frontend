@@ -1,4 +1,4 @@
-import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { vi, describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { FrontendConfig } from './frontend';
 import { tmpdir } from 'os';
 import { resolve } from 'path';
@@ -15,13 +15,20 @@ vi.mock('../utils/cache', () => ({
 
 // Mock fs module
 const createWriteStream = vi.fn();
+// Declared through vi.hoisted because the vi.mock factory below is hoisted above this file's
+// own declarations, and it needs somewhere to record the directory it creates.
+const { tarballs } = vi.hoisted(() => ({ tarballs: { dir: '', count: 0 } }));
+
 vi.mock('fs', async (originalImport) => {
 	const originalFs = await originalImport<typeof import('fs')>();
 
+	// Every tarball goes into one directory that afterAll removes. Previously each write landed
+	// under a random name directly in tmpdir(), and nothing ever deleted them, so a full test run
+	// left a scatter of megabyte-sized files behind.
+	tarballs.dir = originalFs.mkdtempSync(resolve(tmpdir(), 'versatiles-tarball-test-'));
 	createWriteStream.mockImplementation(() => {
-		const filename = resolve(tmpdir(), Math.random().toString(36) + '.tmp');
-		const stream = originalFs.createWriteStream(filename);
-		return stream;
+		const filename = resolve(tarballs.dir, `tarball-${tarballs.count++}.tmp`);
+		return originalFs.createWriteStream(filename);
 	});
 
 	return {
@@ -73,6 +80,11 @@ vi.mock('../files/filedbs', async (importOriginal) => {
 });
 
 import { progress, PromiseFunction } from '../async_progress';
+
+afterAll(async () => {
+	const { rmSync } = await vi.importActual<typeof import('fs')>('fs');
+	if (tarballs.dir) rmSync(tarballs.dir, { recursive: true, force: true });
+});
 
 const { loadSourceConfigs } = await import('../files/filedbs');
 const { Frontend } = await import('./frontend');

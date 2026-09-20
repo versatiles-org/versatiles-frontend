@@ -15,15 +15,38 @@ function createMockFrontend(files: Record<string, string>): Frontend {
 	} as Frontend;
 }
 
+/**
+ * Binds a server to a free port on loopback and resolves with its base URL.
+ *
+ * Loopback specifically: `listen(0)` with no host binds every interface, which makes macOS raise
+ * a firewall prompt on every run. Waiting for 'listening' rather than reading `address()` right
+ * after the call, and registering an 'error' handler, means a failed bind rejects here instead
+ * of surfacing later as an unhandled 'error' event that takes the worker down with it.
+ */
+function listenOnLoopback(httpServer: http.Server): Promise<string> {
+	return new Promise((resolve, reject) => {
+		httpServer.once('error', reject);
+		httpServer.listen(0, '127.0.0.1', () => {
+			httpServer.removeListener('error', reject);
+			resolve(`http://127.0.0.1:${(httpServer.address() as AddressInfo).port}`);
+		});
+	});
+}
+
+/** Closes a server and waits for it, so the next test never races a lingering socket. */
+async function closeServer(httpServer: http.Server): Promise<void> {
+	httpServer.closeAllConnections();
+	await new Promise<void>((resolve) => httpServer.close(() => resolve()));
+}
+
 // Helper to start the server on a random port and return base URL + cleanup function
-function startTestServer(server: Server): { baseUrl: string; httpServer: http.Server } {
+async function startTestServer(server: Server): Promise<{ baseUrl: string; httpServer: http.Server }> {
 	// Access private app for testing
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const app = (server as any).app;
 	const httpServer = http.createServer(app);
-	httpServer.listen(0);
-	const port = (httpServer.address() as AddressInfo).port;
-	return { baseUrl: `http://localhost:${port}`, httpServer };
+	const baseUrl = await listenOnLoopback(httpServer);
+	return { baseUrl, httpServer };
 }
 
 // Helper to make a GET request
@@ -37,21 +60,21 @@ describe('Server', () => {
 	let httpServer: http.Server;
 	let baseUrl: string;
 
-	afterEach(() => {
+	afterEach(async () => {
 		vi.restoreAllMocks();
-		if (httpServer) httpServer.close();
+		if (httpServer) await closeServer(httpServer);
 	});
 
-	function setup(files: Record<string, string>, config?: ConstructorParameters<typeof Server>[1]) {
+	async function setup(files: Record<string, string>, config?: ConstructorParameters<typeof Server>[1]) {
 		const frontend = createMockFrontend(files);
 		const server = new Server(frontend, config);
-		const result = startTestServer(server);
+		const result = await startTestServer(server);
 		httpServer = result.httpServer;
 		baseUrl = result.baseUrl;
 	}
 
 	it('serves a file with correct MIME type', async () => {
-		setup({ 'index.html': '<h1>Hello</h1>' });
+		await setup({ 'index.html': '<h1>Hello</h1>' });
 		const res = await get(baseUrl, '/index.html');
 
 		expect(res.status).toBe(200);
@@ -60,7 +83,7 @@ describe('Server', () => {
 	});
 
 	it('serves index.html for directory paths', async () => {
-		setup({ 'index.html': '<h1>Root</h1>' });
+		await setup({ 'index.html': '<h1>Root</h1>' });
 		const res = await get(baseUrl, '/');
 
 		expect(res.status).toBe(200);
@@ -68,7 +91,7 @@ describe('Server', () => {
 	});
 
 	it('strips leading slashes for file lookup', async () => {
-		setup({ 'style.css': 'body {}' });
+		await setup({ 'style.css': 'body {}' });
 		const res = await get(baseUrl, '/style.css');
 
 		expect(res.status).toBe(200);
@@ -77,7 +100,7 @@ describe('Server', () => {
 	});
 
 	it('returns 404 for missing files', async () => {
-		setup({});
+		await setup({});
 		const res = await get(baseUrl, '/missing.txt');
 
 		expect(res.status).toBe(404);
@@ -85,7 +108,7 @@ describe('Server', () => {
 	});
 
 	it('escapes HTML in 404 response', async () => {
-		setup({});
+		await setup({});
 		// fetch URL-encodes special characters, so req.path receives the encoded form.
 		// Verify the 404 body does not contain unescaped angle brackets from the path.
 		const res = await get(baseUrl, '/some%3Cscript%3Epath');
@@ -101,18 +124,17 @@ describe('Server', () => {
 			res.writeHead(200, { 'content-type': 'application/json' });
 			res.end('{"ok":true}');
 		});
-		backend.listen(0);
-		const backendPort = (backend.address() as AddressInfo).port;
+		const backendUrl = await listenOnLoopback(backend);
 
 		try {
-			setup({}, { proxy: [{ from: '/api/', to: `http://localhost:${backendPort}/api/` }] });
+			await setup({}, { proxy: [{ from: '/api/', to: `${backendUrl}/api/` }] });
 			const res = await get(baseUrl, '/api/data');
 
 			expect(res.status).toBe(200);
 			expect(res.body).toBe('{"ok":true}');
 			expect(res.headers.get('content-type')).toContain('application/json');
 		} finally {
-			backend.close();
+			await closeServer(backend);
 		}
 	});
 
@@ -121,17 +143,16 @@ describe('Server', () => {
 			res.writeHead(503, { 'content-type': 'text/plain' });
 			res.end('upstream down');
 		});
-		backend.listen(0);
-		const backendPort = (backend.address() as AddressInfo).port;
+		const backendUrl = await listenOnLoopback(backend);
 
 		try {
-			setup({}, { proxy: [{ from: '/api/', to: `http://localhost:${backendPort}/api/` }] });
+			await setup({}, { proxy: [{ from: '/api/', to: `${backendUrl}/api/` }] });
 			const res = await get(baseUrl, '/api/data');
 
 			expect(res.status).toBe(503);
 			expect(res.body).toBe('upstream down');
 		} finally {
-			backend.close();
+			await closeServer(backend);
 		}
 	});
 
@@ -140,23 +161,22 @@ describe('Server', () => {
 			res.writeHead(200, { 'content-type': 'application/x-protobuf' });
 			res.end();
 		});
-		backend.listen(0);
-		const backendPort = (backend.address() as AddressInfo).port;
+		const backendUrl = await listenOnLoopback(backend);
 
 		try {
-			setup({}, { proxy: [{ from: '/api/', to: `http://localhost:${backendPort}/api/` }] });
+			await setup({}, { proxy: [{ from: '/api/', to: `${backendUrl}/api/` }] });
 			const res = await get(baseUrl, '/api/empty');
 
 			expect(res.status).toBe(200);
 			expect(res.body).toBe('');
 		} finally {
-			backend.close();
+			await closeServer(backend);
 		}
 	});
 
 	it('returns 502 when proxy fetch fails', async () => {
 		// Use a port that nothing is listening on
-		setup({}, { proxy: [{ from: '/api/', to: 'http://localhost:1/' }] });
+		await setup({}, { proxy: [{ from: '/api/', to: 'http://localhost:1/' }] });
 		const res = await get(baseUrl, '/api/data');
 
 		expect(res.status).toBe(502);
@@ -164,14 +184,14 @@ describe('Server', () => {
 	});
 
 	it('returns 404 when no proxy rule matches', async () => {
-		setup({}, { proxy: [{ from: '/api/', to: 'http://localhost:1/' }] });
+		await setup({}, { proxy: [{ from: '/api/', to: 'http://localhost:1/' }] });
 		const res = await get(baseUrl, '/other/path');
 
 		expect(res.status).toBe(404);
 	});
 
 	it('serves a file whose name contains a space', async () => {
-		setup({ 'assets/my file.txt': 'space' });
+		await setup({ 'assets/my file.txt': 'space' });
 		const res = await get(baseUrl, '/assets/my%20file.txt');
 
 		expect(res.status).toBe(200);
@@ -179,7 +199,7 @@ describe('Server', () => {
 	});
 
 	it('serves a file whose name contains non-ASCII characters', async () => {
-		setup({ 'assets/münchen.txt': 'unicode' });
+		await setup({ 'assets/münchen.txt': 'unicode' });
 		const res = await get(baseUrl, '/assets/m%C3%BCnchen.txt');
 
 		expect(res.status).toBe(200);
@@ -187,7 +207,7 @@ describe('Server', () => {
 	});
 
 	it('rejects a malformed percent escape with 400', async () => {
-		setup({});
+		await setup({});
 		const res = await get(baseUrl, '/assets/%ZZ.txt');
 
 		expect(res.status).toBe(400);
@@ -201,11 +221,10 @@ describe('Server', () => {
 			res.writeHead(200, { 'content-type': 'text/plain' });
 			res.end('ok');
 		});
-		backend.listen(0);
-		const backendPort = (backend.address() as AddressInfo).port;
+		const backendUrl = await listenOnLoopback(backend);
 
 		try {
-			setup({}, { proxy: [{ from: '/api/', to: `http://localhost:${backendPort}/api/` }] });
+			await setup({}, { proxy: [{ from: '/api/', to: `${backendUrl}/api/` }] });
 			// %23 is the telling case: decoded to "#", everything after it becomes a URL
 			// fragment and never reaches the upstream. A space would survive, because fetch
 			// re-encodes it - so it would not notice the mistake.
@@ -214,12 +233,12 @@ describe('Server', () => {
 			expect(res.status).toBe(200);
 			expect(received).toBe('/api/a%23b');
 		} finally {
-			backend.close();
+			await closeServer(backend);
 		}
 	});
 
 	it('uses octet-stream for unknown file types', async () => {
-		setup({ 'data.xyz': 'binary' });
+		await setup({ 'data.xyz': 'binary' });
 		const res = await get(baseUrl, '/data.xyz');
 
 		expect(res.status).toBe(200);

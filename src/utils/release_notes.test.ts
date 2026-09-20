@@ -1,20 +1,22 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest';
-import { readFileSync, unlinkSync, existsSync } from 'fs';
+import { describe, it, expect, beforeEach, afterAll } from 'vitest';
+import { mkdtempSync, readFileSync, rmSync } from 'fs';
+import { tmpdir } from 'os';
+import { join } from 'path';
 import { ReleaseNotes } from './release_notes';
 
 describe('ReleaseNotes', () => {
 	let releaseNotes: ReleaseNotes;
-	const testFilename = './test-release-notes.md';
+	// A directory of its own, not the working directory: tests should not drop files into the
+	// repository, where a stray one survives a failed run and can be committed by accident.
+	const testDir = mkdtempSync(join(tmpdir(), 'versatiles-notes-test-'));
+	const testFilename = join(testDir, 'release-notes.md');
 
 	beforeEach(() => {
 		releaseNotes = new ReleaseNotes();
 	});
 
-	afterEach(() => {
-		// Clean up test file if it exists
-		if (existsSync(testFilename)) {
-			unlinkSync(testFilename);
-		}
+	afterAll(() => {
+		rmSync(testDir, { recursive: true, force: true });
 	});
 
 	it('should add a label', () => {
