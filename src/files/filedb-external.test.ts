@@ -264,6 +264,28 @@ describe('getAssets', () => {
 
 			expect(warn).not.toHaveBeenCalled();
 		});
+
+		it('still builds when the update check fails', async () => {
+			// The point of a pin: a rate-limited or unreachable GitHub API must not fail the build.
+			const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
+			vi.mocked(getLatestGithubReleaseVersion).mockRejectedValueOnce(Error('GitHub API rate limit exceeded'));
+
+			await ExternalFileDB.build(pinnedConfig('1.0.0'));
+
+			expect(curlCalls).toStrictEqual([
+				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.0.0/fonts.tar.gz',
+			]);
+			expect(warn).toHaveBeenCalledWith(
+				'Warning: could not check for versatiles-fonts updates (pinned to 1.0.0): GitHub API rate limit exceeded'
+			);
+		});
+
+		it('fails when the version is not pinned and the lookup fails', async () => {
+			// Without a pin there is no version to fall back to, so the error must propagate.
+			vi.mocked(getLatestGithubReleaseVersion).mockRejectedValueOnce(Error('GitHub API rate limit exceeded'));
+
+			await expect(ExternalFileDB.build(fontsAllConfig)).rejects.toThrow('GitHub API rate limit exceeded');
+		});
 	});
 
 	describe('filter callbacks', () => {

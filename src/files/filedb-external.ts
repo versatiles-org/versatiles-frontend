@@ -27,14 +27,20 @@ export class ExternalFileDB extends FileDB {
 
 	private async resolveVersion(config: ExternalSourceConfig): Promise<string> {
 		const [owner, repo] = config.version.github.split('/');
-		if (config.version.pin) {
-			const latest = await getLatestGithubReleaseVersion(owner, repo, config.version.prerelease);
-			if (latest !== config.version.pin) {
-				console.warn(`Warning: ${repo} ${latest} available (pinned to ${config.version.pin})`);
-			}
-			return config.version.pin;
+		const { pin, prerelease } = config.version;
+		if (!pin) return getLatestGithubReleaseVersion(owner, repo, prerelease);
+
+		// A pin is what makes a build independent of the GitHub API, so the "newer release
+		// available" notice must never be able to fail it: the unauthenticated API allows only
+		// 60 requests per hour, and it can be down entirely. The pinned version is already known.
+		try {
+			const latest = await getLatestGithubReleaseVersion(owner, repo, prerelease);
+			if (latest !== pin) console.warn(`Warning: ${repo} ${latest} available (pinned to ${pin})`);
+		} catch (error) {
+			const reason = error instanceof Error ? error.message : String(error);
+			console.warn(`Warning: could not check for ${repo} updates (pinned to ${pin}): ${reason}`);
 		}
-		return getLatestGithubReleaseVersion(owner, repo, config.version.prerelease);
+		return pin;
 	}
 
 	private async fetchAsset(url: string, asset: AssetConfig): Promise<void> {
