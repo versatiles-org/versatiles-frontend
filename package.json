@@ -1,6 +1,6 @@
 {
   "name": "versatiles-frontend",
-  "version": "3.15.0",
+  "version": "3.15.1",
   "private": true,
   "description": "Pre-packaged web assets for serving interactive maps with versatiles-rs or node-versatiles-server.",
   "repository": {

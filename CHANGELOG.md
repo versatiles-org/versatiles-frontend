@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.15.1] - 2026-09-20
+
+### Code Refactoring
+
+- remove italic faces from font families and update related tests ([73ed2bc](https://github.com/versatiles-org/versatiles-frontend/commit/73ed2bc3b44d28236ae67820c466bb167fc2b43f))
+
 ## [3.15.0] - 2026-09-20
 
 ### Features
