@@ -3,7 +3,18 @@ import ts from 'typescript-eslint';
 
 export default ts.config(
 	{
-		ignores: ['cache/**/*.*', 'coverage/**/*.*', 'dist/**/*.*', 'frontends/**/*.js', 'release/**/*.*'],
+		// Mirrors .gitignore: build output and Playwright's report/trace artifacts are not
+		// ours to lint, and a leftover trace resource is minified third-party JS that fails
+		// every rule at once.
+		ignores: [
+			'cache/**/*.*',
+			'coverage/**/*.*',
+			'dist/**/*.*',
+			'frontends/**/*.js',
+			'playwright-report/**/*.*',
+			'release/**/*.*',
+			'test-results/**/*.*',
+		],
 	},
 	js.configs.recommended,
 	{
