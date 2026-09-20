@@ -82,6 +82,54 @@ describe('Server', () => {
 		expect(res.headers.get('content-type')).toContain('text/html');
 	});
 
+	describe('content types', () => {
+		it('declares utf-8 on textual responses', async () => {
+			// Express adds the charset for types that take one. Asserted rather than assumed: a
+			// textual response without it leaves the browser to guess, falling back to a
+			// locale-dependent default, and a stylesheet has no <meta charset> to save it.
+			await setup({
+				'page.html': '<h1>Grüße</h1>',
+				'style.css': '.a::after { content: "→"; }',
+				'app.js': 'const s = "λ";',
+				'robots.txt': 'User-agent: *',
+			});
+
+			for (const [path, type] of [
+				['/page.html', 'text/html; charset=utf-8'],
+				['/style.css', 'text/css; charset=utf-8'],
+				['/app.js', 'text/javascript; charset=utf-8'],
+				['/robots.txt', 'text/plain; charset=utf-8'],
+			]) {
+				expect((await get(baseUrl, path)).headers.get('content-type'), path).toBe(type);
+			}
+		});
+
+		it('round-trips non-ASCII content intact', async () => {
+			await setup({ 'page.html': '<h1>Grüße · λ · 日本語</h1>' });
+
+			expect((await get(baseUrl, '/page.html')).body).toBe('<h1>Grüße · λ · 日本語</h1>');
+		});
+
+		it('leaves binary responses without a charset', async () => {
+			await setup({ 'logo.png': 'binary' });
+
+			expect((await get(baseUrl, '/logo.png')).headers.get('content-type')).toBe('image/png');
+		});
+
+		it('serves TypeScript declarations as text, not as an MPEG transport stream', async () => {
+			// mrmime reads the `.ts` in `.d.ts` as a video container; the bundles ship these files.
+			await setup({ 'lib.d.ts': 'export declare const a: number;' });
+
+			expect((await get(baseUrl, '/lib.d.ts')).headers.get('content-type')).toBe('text/plain; charset=utf-8');
+		});
+
+		it('falls back to octet-stream for an unknown extension', async () => {
+			await setup({ 'glyphs/0-255.pbf': 'binary' });
+
+			expect((await get(baseUrl, '/glyphs/0-255.pbf')).headers.get('content-type')).toBe('application/octet-stream');
+		});
+	});
+
 	it('serves index.html for directory paths', async () => {
 		await setup({ 'index.html': '<h1>Root</h1>' });
 		const res = await get(baseUrl, '/');

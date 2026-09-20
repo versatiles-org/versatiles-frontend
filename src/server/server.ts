@@ -32,6 +32,21 @@ function decodePath(path: string): string | false {
 	}
 }
 
+/**
+ * The content type to serve a file with.
+ *
+ * Only the mapping is decided here. Express appends `charset=utf-8` itself when it sets a
+ * Content-Type that takes one, so the bare type returned below reaches the client as, for
+ * example, `text/css; charset=utf-8`.
+ */
+function contentTypeFor(path: string): string {
+	// To mrmime the `.ts` in `.d.ts` is an MPEG transport stream, so a TypeScript declaration -
+	// which the bundles ship for several libraries - would otherwise be served as `video/mp2t`.
+	if (path.endsWith('.d.ts')) return 'text/plain';
+
+	return lookup(path) ?? 'application/octet-stream';
+}
+
 export class Server {
 	private readonly app: Express;
 
@@ -85,10 +100,7 @@ export class Server {
 				path = path.replace(/^\/+/, ''); // Remove leading slashes for file system lookup.
 				const buffer = frontend.getFile(path);
 				if (buffer == null) return false;
-				res
-					.header('content-type', lookup(path) ?? 'application/octet-stream')
-					.status(200)
-					.end(buffer);
+				res.header('content-type', contentTypeFor(path)).status(200).end(buffer);
 				return true;
 			}
 
