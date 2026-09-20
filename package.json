@@ -5,6 +5,7 @@
   "description": "",
   "scripts": {
     "build": "tsx --env-file-if-exists=.env src/build.ts",
+    "cache:clean": "tsx src/clean-cache.ts",
     "check": "npm run format:check && npm run typecheck && npm run lint && npm run test && npm run build && npm run test:e2e && npm run test:e2e:browser",
     "dev": "tsx --env-file-if-exists=.env src/dev.ts",
     "doc-graph": "vrt deps-graph | vrt doc-insert README.md '### Dependency Graph'",

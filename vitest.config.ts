@@ -9,7 +9,8 @@ export default defineConfig({
 		environment: 'node',
 		exclude: ['e2e/**', 'node_modules/**'],
 		coverage: {
-			exclude: ['src/dev.ts'],
+			// Thin CLI entry points: argument parsing and console output around tested modules.
+			exclude: ['src/dev.ts', 'src/clean-cache.ts'],
 			include: ['src/**'],
 		},
 	},

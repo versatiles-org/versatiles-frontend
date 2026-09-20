@@ -1,13 +1,51 @@
-import { existsSync, mkdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { resolve } from 'path';
-import { ensureFolder } from './utils';
+import { cleanupFolder, ensureFolder } from './utils';
 
 // Define the path to the cache folder relative to the module location.
 const cacheFolder = resolve(import.meta.dirname, '../../cache');
 
 // Ensure the cache folder exists.
 mkdirSync(cacheFolder, { recursive: true });
+
+/**
+ * What a cache folder holds, or what emptying it removed.
+ */
+export interface CacheStats {
+	entries: number;
+	bytes: number;
+}
+
+/**
+ * Measures the cache folder without changing it.
+ */
+export function measureCache(): CacheStats {
+	if (!existsSync(cacheFolder)) return { entries: 0, bytes: 0 };
+
+	let entries = 0;
+	let bytes = 0;
+	for (const entry of readdirSync(cacheFolder, { withFileTypes: true, recursive: true })) {
+		if (!entry.isFile()) continue;
+		entries++;
+		bytes += statSync(resolve(entry.parentPath, entry.name)).size;
+	}
+	return { entries, bytes };
+}
+
+/**
+ * Empties the cache and reports what was removed.
+ *
+ * Entries are never evicted while building: an upstream release simply orphans the ones that
+ * belonged to the previous version, and they stay. Nothing here is precious - every entry is
+ * either a download that can be fetched again or a compression result that can be recomputed -
+ * so emptying the cache only ever costs time, never data.
+ */
+export function clearCache(): CacheStats {
+	const removed = measureCache();
+	cleanupFolder(cacheFolder);
+	return removed;
+}
 
 /**
  * Attempts to retrieve a cached value for a given key. If the value is not found in the cache,

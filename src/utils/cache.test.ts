@@ -4,6 +4,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 vi.mock('fs', () => ({
 	existsSync: vi.fn(),
 	mkdirSync: vi.fn(),
+	readdirSync: vi.fn(),
 	readFileSync: vi.fn(),
 	writeFileSync: vi.fn(),
 	renameSync: vi.fn(),
@@ -14,10 +15,17 @@ vi.mock('path', () => ({
 }));
 vi.mock('./utils.js', () => ({
 	ensureFolder: vi.fn(),
+	cleanupFolder: vi.fn(),
 }));
 
-const { cache } = await import('./cache.js');
+const { cache, clearCache, measureCache } = await import('./cache.js');
 const fs = await import('fs');
+const utils = await import('./utils.js');
+
+/** A `readdirSync(..., { withFileTypes: true, recursive: true })` entry. */
+function dirent(parentPath: string, name: string, isFile = true) {
+	return { parentPath, name, isFile: () => isFile } as unknown as ReturnType<typeof fs.readdirSync>[number];
+}
 
 describe('cache function', () => {
 	beforeEach(() => {
@@ -171,5 +179,50 @@ describe('cache function', () => {
 	it('gives the same key the same file every time', async () => {
 		// The counterpart to the two tests above: the hash must be stable, or nothing ever hits.
 		expect(await pathWrittenFor('a/b')).toBe(await pathWrittenFor('a/b'));
+	});
+});
+
+describe('clearCache', () => {
+	beforeEach(() => {
+		vi.clearAllMocks();
+	});
+
+	it('reports the entries and bytes it removed, and empties the folder', () => {
+		vi.mocked(fs.existsSync).mockReturnValue(true);
+		vi.mocked(fs.readdirSync).mockReturnValue([
+			dirent('/cache/compress', 'aaa'),
+			dirent('/cache/compress', 'bbb'),
+			dirent('/cache/getBuffer', 'ccc'),
+		]);
+		vi.mocked(fs.statSync).mockReturnValue({ size: 100 } as ReturnType<typeof fs.statSync>);
+
+		expect(clearCache()).toStrictEqual({ entries: 3, bytes: 300 });
+		expect(utils.cleanupFolder).toHaveBeenCalledWith(expect.stringMatching(/\/cache$/));
+	});
+
+	it('counts only files, not the action sub-folders', () => {
+		vi.mocked(fs.existsSync).mockReturnValue(true);
+		vi.mocked(fs.readdirSync).mockReturnValue([dirent('/cache', 'compress', false), dirent('/cache/compress', 'aaa')]);
+		vi.mocked(fs.statSync).mockReturnValue({ size: 7 } as ReturnType<typeof fs.statSync>);
+
+		expect(measureCache()).toStrictEqual({ entries: 1, bytes: 7 });
+		// A directory has no meaningful size here, and statting it would inflate the total.
+		expect(fs.statSync).toHaveBeenCalledTimes(1);
+	});
+
+	it('reports nothing when the cache folder does not exist', () => {
+		vi.mocked(fs.existsSync).mockReturnValue(false);
+
+		expect(clearCache()).toStrictEqual({ entries: 0, bytes: 0 });
+		expect(fs.readdirSync).not.toHaveBeenCalled();
+	});
+
+	it('measures without deleting', () => {
+		vi.mocked(fs.existsSync).mockReturnValue(true);
+		vi.mocked(fs.readdirSync).mockReturnValue([dirent('/cache/compress', 'aaa')]);
+		vi.mocked(fs.statSync).mockReturnValue({ size: 42 } as ReturnType<typeof fs.statSync>);
+
+		expect(measureCache()).toStrictEqual({ entries: 1, bytes: 42 });
+		expect(utils.cleanupFolder).not.toHaveBeenCalled();
 	});
 });

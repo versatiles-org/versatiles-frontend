@@ -78,7 +78,7 @@ npm run dev -- -l 8081 frontend-dev
 
 ## Project Structure
 
-- **cache/**: Caches requests, compresses files.
+- **cache/**: Caches requests, compresses files. It is never evicted automatically, so every upstream release leaves the previous version's entries behind. Empty it with `npm run cache:clean` when it has grown too large — the next build refetches and recompresses whatever it needs.
 - **frontends/**: Contains static files (HTML, CSS, JS).
 - **release/**: Packaged frontend files.
 - **src/**: TypeScript code for frontend generation and local serving.
