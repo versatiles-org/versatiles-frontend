@@ -24,10 +24,16 @@
 			// The library tags above are deferred, so they have not run yet while this inline
 			// script is parsed. DOMContentLoaded fires once they have all executed.
 			document.addEventListener('DOMContentLoaded', () => {
+				// Not `bounds`: it overrides `zoom` in the constructor, and full-world bounds put the
+				// box corners on the far side of the sphere, which no zoom can fit. MapLibre's globe
+				// has a pixel radius of 512 * 2**zoom / (2*PI), so a fixed zoom means a fixed-size
+				// planet whatever the window is -- zoom 0 is a ~150px marble. Inverted and rounded,
+				// this holds the globe at 81-92% of the shorter viewport side, phone to desktop.
+				const container = document.getElementById('map');
 				const map = new maplibregl.Map({
-					container: 'map',
-					bounds: [-180, -85, 180, 85],
-					zoom: 5,
+					container,
+					center: [18, 25],
+					zoom: Math.log2(Math.min(container.clientWidth, container.clientHeight)) - 7.4,
 				});
 
 				map.addControl(new maplibregl.NavigationControl(), 'top-right');
