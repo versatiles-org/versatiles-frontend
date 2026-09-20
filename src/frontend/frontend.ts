@@ -9,7 +9,14 @@ import { File } from '../files/file';
 import { FileDBs } from '../files/filedbs';
 
 // Compression level of the .tar.zst bundles: close to the maximum (22), but much faster.
+// Level 22 only shrinks `frontend` by a further 4.5% and takes about eight times as long.
 const ZSTD_LEVEL = 19;
+
+// Long-distance matching lets zstd reference data far outside the window level 19 uses by
+// default (8 MiB), which matters because the bundles are hundreds of MiB of similar glyph PBFs.
+// 128 MiB (2^27) is the largest window decoders accept without extra flags, so `zstd -d`,
+// versatiles-rs and Node's own createZstdDecompress all read the result as-is.
+const ZSTD_WINDOW_LOG = 27;
 
 /**
  * Starts writing the tarball before any entry is added. Without a consumer attached the pack
@@ -148,6 +155,8 @@ export class Frontend {
 		const compressor = createZstdCompress({
 			params: {
 				[constants.ZSTD_c_compressionLevel]: ZSTD_LEVEL,
+				[constants.ZSTD_c_enableLongDistanceMatching]: 1,
+				[constants.ZSTD_c_windowLog]: ZSTD_WINDOW_LOG,
 				[constants.ZSTD_c_checksumFlag]: 1,
 				// No ZSTD_c_nbWorkers: in Node 24.16 a multithreaded zstd stream fed by tar-stream
 				// fails with ERR_STREAM_PUSH_AFTER_EOF. The frontends are compressed in parallel anyway.
