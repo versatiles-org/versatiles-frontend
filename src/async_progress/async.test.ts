@@ -1,4 +1,5 @@
 import { vi, describe, it, expect, Mock } from 'vitest';
+import os from 'os';
 import type { ProgressLabel, ProgressLabel as ProgressLabelType, Progress as ProgressType } from './progress';
 
 // Mock progress module
@@ -57,9 +58,17 @@ import progress from './progress';
 
 const PromiseFunctions = (await import('./async')).default;
 
+/**
+ * Yields for a fixed number of microtask turns - deterministic, unlike a timer of random length,
+ * whose duration decides whether two runs are seen to overlap at all.
+ */
+async function tick(turns = 10): Promise<void> {
+	for (let i = 0; i < turns; i++) await Promise.resolve();
+}
+
 function getAsyncMock(): Mock<() => Promise<void>> {
 	return vi.fn(async (): Promise<void> => {
-		await new Promise((res) => setTimeout(res, Math.random() * 50));
+		await tick();
 	});
 }
 
@@ -82,10 +91,23 @@ describe('PromiseFunction', () => {
 
 	describe('parallel', () => {
 		it('runs multiple PromiseFunctions in parallel', async () => {
+			// Every ordering assertion below is also satisfied by a sequential implementation, so
+			// the test has to observe the two runs actually overlapping as well. Without this, a
+			// `parallel` that quietly degraded to `sequential` would still pass.
+			let running = 0;
+			let peak = 0;
+			const overlapping = (): Mock<() => Promise<void>> =>
+				vi.fn(async (): Promise<void> => {
+					running++;
+					peak = Math.max(peak, running);
+					await tick();
+					running--;
+				});
+
 			const mockInit1 = getAsyncMock();
-			const mockRun1 = getAsyncMock();
+			const mockRun1 = overlapping();
 			const mockInit2 = getAsyncMock();
-			const mockRun2 = getAsyncMock();
+			const mockRun2 = overlapping();
 
 			await PromiseFunctions.run(
 				PromiseFunctions.parallel(
@@ -104,6 +126,10 @@ describe('PromiseFunction', () => {
 			expect(mockInit1).toHaveBeenCalledBefore(mockInit2);
 			expect(mockInit1).toHaveBeenCalledBefore(mockRun1);
 			expect(mockInit2).toHaveBeenCalledBefore(mockRun2);
+
+			// `parallel` caps concurrency at the CPU count, so on a single-core machine two runs
+			// genuinely cannot overlap - expect what that machine is capable of.
+			expect(peak).toBe(Math.min(2, os.cpus().length));
 		});
 	});
 

@@ -26,21 +26,15 @@ describe('forEachAsync', () => {
 	});
 
 	it('should respect the maxParallel limit', async () => {
-		const list = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-		const maxParallel = 2;
-		let concurrentTasks = 0;
-		let maxConcurrentTasks = 0;
+		// Both bounds matter. `toBeLessThanOrEqual` on its own is also satisfied by an
+		// implementation that runs everything strictly one at a time, which would defeat the
+		// whole point of the function, so the peak has to be reached exactly.
+		expect(await observePeakConcurrency(10, 2)).toBe(2);
+		expect(await observePeakConcurrency(10, 5)).toBe(5);
+	});
 
-		const callback = vi.fn(async () => {
-			concurrentTasks++;
-			maxConcurrentTasks = Math.max(maxConcurrentTasks, concurrentTasks);
-			await randomWait(30);
-			concurrentTasks--;
-		});
-
-		await forEachAsync(list, callback, maxParallel);
-
-		expect(maxConcurrentTasks).toBeLessThanOrEqual(maxParallel);
+	it('should never run more callbacks than there are items', async () => {
+		expect(await observePeakConcurrency(2, 8)).toBe(2);
 	});
 
 	it('should reject if any callback call rejects', async () => {
@@ -54,7 +48,7 @@ describe('forEachAsync', () => {
 
 	it('should resolve successfully when all callbacks are resolved', async () => {
 		const list = [1, 2, 3];
-		const callback = vi.fn(async () => await randomWait(10));
+		const callback = vi.fn(async () => await tick());
 
 		await expect(forEachAsync(list, callback)).resolves.toBeUndefined();
 	});
@@ -64,14 +58,14 @@ describe('forEachAsync', () => {
 
 		await forEachAsync(list, async (item, index) => {
 			list[index] = item + 2;
-			await randomWait(10);
+			await tick();
 		});
 
 		await forEachAsync(
 			list,
 			async (item, index) => {
 				list[index] = item + 2;
-				await randomWait(10);
+				await tick();
 			},
 			3
 		);
@@ -137,22 +131,10 @@ describe('forEachAsync', () => {
 	});
 
 	it('should use CPU count as default maxParallel when not specified', async () => {
-		const list = Array.from({ length: 20 }, (_, i) => i);
-		let maxConcurrentTasks = 0;
-		let concurrentTasks = 0;
-
-		const callback = vi.fn(async () => {
-			concurrentTasks++;
-			maxConcurrentTasks = Math.max(maxConcurrentTasks, concurrentTasks);
-			await randomWait(10);
-			concurrentTasks--;
-		});
-
-		await forEachAsync(list, callback);
-
-		// maxConcurrentTasks should be limited by CPU count (not unlimited)
-		expect(maxConcurrentTasks).toBeGreaterThan(0);
-		expect(maxConcurrentTasks).toBeLessThanOrEqual(os.cpus().length);
+		// Enough items that the cap is actually reachable, so this pins the default to the CPU
+		// count rather than merely to "something between 1 and the CPU count".
+		const cpus = os.cpus().length;
+		expect(await observePeakConcurrency(cpus * 2)).toBe(cpus);
 	});
 
 	it('should handle async iterator that is already an iterator', async () => {
@@ -174,6 +156,36 @@ describe('forEachAsync', () => {
 	});
 });
 
-function randomWait(maxTime: number): Promise<void> {
-	return new Promise((res) => setTimeout(res, Math.random() * maxTime));
+/**
+ * Yields for a fixed number of microtask turns.
+ *
+ * Deliberately not a timer of random length: the concurrency observed below depends on how long
+ * a callback stays in flight, so a random delay makes the measurement - and any assertion built
+ * on it - differ from run to run. A fixed number of turns is long enough for the scheduler to
+ * fill its remaining slots and is identical on every machine.
+ */
+async function tick(turns = 10): Promise<void> {
+	for (let i = 0; i < turns; i++) await Promise.resolve();
+}
+
+/**
+ * Runs `forEachAsync` over `count` items and reports the highest number of callbacks that were
+ * ever in flight at the same time.
+ */
+async function observePeakConcurrency(count: number, maxParallel?: number): Promise<number> {
+	let running = 0;
+	let peak = 0;
+
+	await forEachAsync(
+		Array.from({ length: count }, (_, i) => i),
+		async () => {
+			running++;
+			peak = Math.max(peak, running);
+			await tick();
+			running--;
+		},
+		maxParallel
+	);
+
+	return peak;
 }
