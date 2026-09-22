@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.15.3] - 2026-09-22
+
+### Code Refactoring
+
+- update package dependencies for maplibre-svg-export and release-tool ([6937463](https://github.com/versatiles-org/versatiles-frontend/commit/69374635f87c77bb2cb35ebdf93e2eb878f2ec26))
+
+### Chores
+
+- update dependencies for release-tool, dotenv, and typescript-eslint ([1fcd110](https://github.com/versatiles-org/versatiles-frontend/commit/1fcd110f8012ff87c2b065166bab9cfd704f98f8))
+
 ## [3.15.2] - 2026-09-20
 
 ### Code Refactoring
