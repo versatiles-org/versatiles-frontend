@@ -110,12 +110,11 @@ export const sourceConfigs = {
 		source: { name: 'MapLibre VersaTiles Styler', url: 'https://github.com/versatiles-org/maplibre-versatiles-styler' },
 	}),
 
-	'external-versatiles-svg-renderer': npmSource('@versatiles/svg-renderer', {
-		include: /dist\/maplibre-svg-export\.umd\.js(\.map)?$/,
+	'external-versatiles-svg-renderer': npmSource('@versatiles/maplibre-svg-export', {
+		include: /dist\/maplibre-svg-export\.umd\.min\.js$/,
 		flatten: true,
 		rename: {
-			'maplibre-svg-export.umd.js': 'versatiles-svg-renderer.js',
-			'maplibre-svg-export.umd.js.map': 'versatiles-svg-renderer.js.map',
+			'maplibre-svg-export.umd.min.js': 'versatiles-svg-renderer.js',
 		},
 		dest: 'assets/lib/versatiles-svg-renderer/',
 		source: { name: 'VersaTiles SVG Renderer', url: 'https://github.com/versatiles-org/versatiles-svg-renderer' },
