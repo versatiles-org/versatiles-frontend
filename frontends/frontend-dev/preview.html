@@ -104,8 +104,6 @@
 				const id = new URLSearchParams(window.location.search).get('id');
 				if (!id) throw new Error('id is not defined');
 
-				maplibregl.setRTLTextPlugin('/assets/lib/mapbox-gl-rtl-text/mapbox-gl-rtl-text.js', true);
-
 				(async () => {
 					const tileJSONUrl = `/tiles/${id}/tiles.json`;
 					const response = await fetch(tileJSONUrl);

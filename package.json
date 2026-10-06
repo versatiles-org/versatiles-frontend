@@ -37,7 +37,6 @@
   "license": "MIT",
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@mapbox/mapbox-gl-rtl-text": "^1.0.0",
     "@maplibre/maplibre-gl-compare": "^0.5.0",
     "@maplibre/maplibre-gl-geocoder": "^1.9.4",
     "@maplibre/maplibre-gl-inspect": "^1.9.0",

@@ -120,13 +120,6 @@ export const sourceConfigs = {
 		source: { name: 'VersaTiles SVG Renderer', url: 'https://github.com/versatiles-org/versatiles-svg-renderer' },
 	}),
 
-	'external-mapbox-rtl-text': npmSource('@mapbox/mapbox-gl-rtl-text', {
-		include: /dist\/.*\.(js|css|map)$/,
-		flatten: true,
-		dest: 'assets/lib/mapbox-gl-rtl-text/',
-		source: { name: 'Mapbox GL RTL Text', url: 'https://github.com/mapbox/mapbox-gl-rtl-text' },
-	}),
-
 	all: staticSource('all'),
 	frontend: staticSource('frontend'),
 	'frontend-dev': staticSource('frontend-dev'),
@@ -149,7 +142,6 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-maplibre-gl-geocoder',
 			'external-maplibre-versatiles-styler',
 			'external-versatiles-svg-renderer',
-			'external-mapbox-rtl-text',
 		],
 	},
 	{
@@ -167,7 +159,6 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-maplibre-gl-geocoder',
 			'external-maplibre-versatiles-styler',
 			'external-versatiles-svg-renderer',
-			'external-mapbox-rtl-text',
 		],
 	},
 	{
@@ -185,7 +176,6 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 			'external-maplibre-gl-geocoder',
 			'external-maplibre-versatiles-styler',
 			'external-versatiles-svg-renderer',
-			'external-mapbox-rtl-text',
 		],
 	},
 	{

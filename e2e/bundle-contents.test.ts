@@ -131,12 +131,6 @@ describe('Bundle contents', () => {
 			expect.soft(path.rest()).toStrictEqual({});
 		});
 
-		it('contains mapbox-gl-rtl-text', () => {
-			const path = bundles.withPrefix('assets/lib/mapbox-gl-rtl-text/');
-			expect.soft(path.file('mapbox-gl-rtl-text.js')).toBeTruthy();
-			expect.soft(path.rest()).toStrictEqual({});
-		});
-
 		it('contains versatiles-style', () => {
 			const path = bundles.withPrefix('assets/lib/versatiles-style/');
 			expect.soft(path.file('versatiles-style.d.ts')).toBeTruthy();
