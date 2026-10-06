@@ -125,7 +125,7 @@ export const sourceConfigs = {
 	// links, so the version is pinned and raised on purpose. Its own configuration file is left
 	// out in favour of ours in frontends/map-editor/.
 	'external-map-editor': githubSource('versatiles-org/versatiles-map-editor', {
-		pin: '3.1.0',
+		pin: '3.1.1',
 		assets: [
 			{
 				url: 'https://github.com/versatiles-org/versatiles-map-editor/releases/download/v${version}/versatiles-map-editor-${version}.zip',
