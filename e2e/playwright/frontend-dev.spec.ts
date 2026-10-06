@@ -148,6 +148,13 @@ test.describe('overview page', () => {
 		await expect(links.first()).toHaveAttribute('href', 'preview.html?id=osm');
 		await expect(links.nth(1)).toHaveAttribute('href', 'preview.html?id=hillshade');
 	});
+
+	test('links to the map editor', async ({ page, serverUrl }) => {
+		await page.goto(serverUrl);
+		await page.getByRole('link', { name: 'Map Editor' }).click();
+		await expect(page).toHaveURL(`${serverUrl}/editor/`);
+		await expect(page).toHaveTitle('VersaTiles Map Editor');
+	});
 });
 
 // --- Preview page tests ---

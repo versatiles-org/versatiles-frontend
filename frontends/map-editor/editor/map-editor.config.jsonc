@@ -1,0 +1,8 @@
+// Configuration of the VersaTiles Map Editor inside a VersaTiles frontend.
+// It replaces the file of the editor's release, which lists all fields:
+// https://github.com/versatiles-org/versatiles-map-editor/blob/main/docs/SELF_HOSTING.md
+{
+	// The server that serves this frontend: its tiles, sprites and glyphs. Relative, so the
+	// frontend works on any host.
+	"tileServer": "/",
+}

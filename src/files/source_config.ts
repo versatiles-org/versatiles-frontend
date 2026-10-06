@@ -7,6 +7,11 @@ export interface AssetConfig {
 	url: string;
 	format: 'tar.gz' | 'tar.zst' | 'zip';
 	dest: string;
+	/**
+	 * Leading folder of the archive to drop, e.g. `versatiles-map-editor/`. Entries outside
+	 * of it are skipped, and `include` and `rename` see the names without it.
+	 */
+	stripPrefix?: string;
 	include?: RegExp;
 	flatten?: boolean;
 	rename?: Record<string, string>;

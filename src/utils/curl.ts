@@ -185,7 +185,7 @@ export class Curl {
 		const pending: Promise<void>[] = [];
 		const zip = unzipper.Parse();
 		zip.on('entry', (entry: Entry) => {
-			const path = cbFilter(entry.path);
+			const path = entry.type === 'Directory' ? false : cbFilter(entry.path);
 			if (path === false) {
 				entry.autodrain();
 				return;

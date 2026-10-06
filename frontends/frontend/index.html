@@ -86,6 +86,29 @@
 				map.addControl(new VersaTilesStylerControl({ open: !isMobile }), 'top-left');
 				map.addControl(new VersaTilesSVG.SVGExportControl(), 'top-right');
 
+				// Link to the map editor, which is a site of its own in /editor/.
+				map.addControl(
+					{
+						onAdd() {
+							this.container = document.createElement('div');
+							this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
+							const button = document.createElement('button');
+							button.type = 'button';
+							button.title = 'Open map editor';
+							button.setAttribute('aria-label', button.title);
+							button.innerHTML =
+								'<svg viewBox="0 0 24 24" width="29" height="29" style="display: block; padding: 6px; box-sizing: border-box" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-5L16 4l4 4L9 19z M14 6l4 4" /></svg>';
+							button.addEventListener('click', () => (window.location.href = '/editor/'));
+							this.container.append(button);
+							return this.container;
+						},
+						onRemove() {
+							this.container.remove();
+						},
+					},
+					'top-right'
+				);
+
 				// collapse attribution control
 				document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');
 			});

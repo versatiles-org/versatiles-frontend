@@ -278,3 +278,31 @@ test('no 404 errors for assets', async ({ page, serverUrl }) => {
 	await page.waitForLoadState('networkidle');
 	expect(notFound).toStrictEqual([]);
 });
+
+test('map editor control opens the editor', async ({ page, serverUrl }) => {
+	await page.goto(serverUrl);
+	await waitForMapReady(page);
+	await page.getByRole('button', { name: 'Open map editor' }).click();
+	await expect(page).toHaveURL(`${serverUrl}/editor/`);
+	await expect(page).toHaveTitle('VersaTiles Map Editor');
+});
+
+test('map editor uses the tiles, sprites and glyphs of this server', async ({ page, serverUrl }) => {
+	const errors: string[] = [];
+	const requests: string[] = [];
+	page.on('pageerror', (err) => errors.push(err.message));
+	page.on('request', (req) => requests.push(req.url()));
+
+	await page.goto(`${serverUrl}/editor/`);
+	await waitForMapReady(page);
+	await page.waitForLoadState('networkidle');
+
+	const local = (path: string) => requests.some((url) => url.startsWith(serverUrl + path));
+	expect(local('/editor/map-editor.config.jsonc')).toBe(true);
+	expect(local('/tiles/osm/')).toBe(true);
+	expect(local('/assets/sprites/')).toBe(true);
+	expect(local('/assets/glyphs/')).toBe(true);
+	// Without our configuration, the editor would use the public tile server.
+	expect(requests.filter((url) => url.includes('tiles.versatiles.org'))).toStrictEqual([]);
+	expect(errors).toStrictEqual([]);
+});
