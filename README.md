@@ -48,8 +48,8 @@ In all containers, files with the same content as an earlier file are stored as 
 ## Use a frontend with `versatiles-rs`
 
 ```bash
-curl -L "https://github.com/versatiles-org/versatiles-frontend/releases/latest/download/frontend-dev.br.tar.gz" -o ./frontend.br.tar.gz
-versatiles serve -s ./frontend.br.tar.gz "osm.versatiles"
+curl -L "https://github.com/versatiles-org/versatiles-frontend/releases/latest/download/frontend-dev.br.tar.gz" -o ./frontend-dev.br.tar.gz
+versatiles serve -s ./frontend-dev.br.tar.gz "osm.versatiles"
 ```
 
 ## Developer Guide
@@ -59,17 +59,18 @@ versatiles serve -s ./frontend.br.tar.gz "osm.versatiles"
 Start the development server:
 
 ```bash
-npm run dev frontend
-# or:
-# npm run dev frontend-min
-# npm run dev frontend-dev
+npm run dev
+# or only some frontends:
+# npm run dev frontend
+# npm run dev frontend frontend-dev
 ```
 
 Features:
 
-- Serves at <http://localhost:8080/>.
+- Serves every frontend on a port of its own, picked by the operating system. An overview page at <http://localhost:8080/> links to them; `-p` sets its port, and the next free one is used if it is taken.
+- Listens on `127.0.0.1` only; `--host` changes that.
 - Proxies tile requests to tiles.versatiles.org.
-- Watches for file changes and auto-rebuilds.
+- Watches the static sources in `static/` and serves changed files right away, without a restart.
 - You can also use a local tile server from a different local port by running:
 
 ```sh
@@ -81,8 +82,11 @@ npm run dev -- -l 8081 frontend-dev
 ## Project Structure
 
 - **cache/**: Caches requests, compresses files. It is never evicted automatically, so every upstream release leaves the previous version's entries behind. Empty it with `npm run cache:clean` when it has grown too large — the next build refetches and recompresses whatever it needs.
+- **docs/**: Images for this README, such as the dependency graph below.
+- **e2e/**: Tests of the built bundles in `release/`: their contents, and in `playwright/` the frontends in a browser.
+- **release/**: The packaged frontends and their release notes, `notes.md`.
+- **scripts/**: Helper scripts, e.g. to update the Playwright screenshots on Linux.
 - **static/**: The static sources: files (HTML, CSS, JS, images) of our own, one folder per source.
-- **release/**: Packaged frontend files.
 - **src/**: TypeScript code for frontend generation and local serving. `build.ts`, `dev.ts` and `clean-cache.ts` are the entry points; each folder only uses the ones listed after it:
   - **config/**: defines the sources (static folders, GitHub releases, npm packages) and which of them each frontend contains.
   - **pipeline/**: the steps of the build (loading the sources, compressing, generating the bundles) and the release notes.

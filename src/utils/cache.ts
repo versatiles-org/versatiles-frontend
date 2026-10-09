@@ -59,6 +59,7 @@ export function clearCache(): CacheStats {
  * Attempts to retrieve a cached value for a given key. If the value is not found in the cache,
  * it will call the provided callback to generate the value, cache it, then return the value.
  *
+ * @param action - The kind of entry, e.g. 'compress'. Entries of each kind get a folder of their own.
  * @param key - The cache key to retrieve or store the value under.
  * @param cbBuffer - A callback function that returns a Promise resolving to the Buffer to be cached
  *                   if the key is not already present in the cache.

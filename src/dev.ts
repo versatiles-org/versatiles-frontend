@@ -37,11 +37,11 @@ if (unknown.length > 0) {
 	process.exit(1);
 }
 
-// Initializes the file system for managing files.
+// The file databases of all sources, shared by every frontend.
 const fileDBs = new FileDBs();
 progress.setHeader('Preparing Server');
 
-// Loads and prepares assets for the frontend using the custom FileSystem.
+// Loads every source into the file databases.
 // Every source is loaded regardless of which frontends are served, so serving all of them
 // costs little more than serving one: each Frontend is just a filter over the shared files.
 await PromiseFunction.run(loadSources(fileDBs, sourceConfigs, resolve(projectFolder, 'static')));
