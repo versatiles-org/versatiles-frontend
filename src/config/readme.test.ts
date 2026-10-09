@@ -1,11 +1,11 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'fs';
 import { resolve } from 'path';
-import { frontendConfigs } from '../config';
+import { frontendConfigs } from '.';
 
 /**
  * The README lists every frontend by hand, so it silently drifts whenever one is added or
- * renamed in `src/config/index.ts` - `frontend-blank` went undocumented for exactly that
+ * renamed in `index.ts` - `frontend-blank` went undocumented for exactly that
  * reason. These tests make the config the single source of truth.
  */
 const readme = readFileSync(resolve(import.meta.dirname, '../../README.md'), 'utf8');
