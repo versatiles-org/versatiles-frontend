@@ -1,4 +1,5 @@
 import { test, expect, SCREENSHOT_LOCATION } from './fixtures.js';
+import { testIntegration } from './integration.js';
 import type { Page } from '@playwright/test';
 
 test.use({ bundleName: 'frontend' });
@@ -287,22 +288,10 @@ test('map editor control opens the editor', async ({ page, serverUrl }) => {
 	await expect(page).toHaveTitle('VersaTiles Map Editor');
 });
 
-test('map editor uses the tiles, sprites and glyphs of this server', async ({ page, serverUrl }) => {
-	const errors: string[] = [];
-	const requests: string[] = [];
-	page.on('pageerror', (err) => errors.push(err.message));
-	page.on('request', (req) => requests.push(req.url()));
-
-	await page.goto(`${serverUrl}/editor/`);
-	await waitForMapReady(page);
-	await page.waitForLoadState('networkidle');
-
-	const local = (path: string) => requests.some((url) => url.startsWith(serverUrl + path));
-	expect(local('/editor/map-editor.config.jsonc')).toBe(true);
-	expect(local('/tiles/osm/')).toBe(true);
-	expect(local('/assets/sprites/')).toBe(true);
-	expect(local('/assets/glyphs/')).toBe(true);
-	// Without our configuration, the editor would use the public tile server.
-	expect(requests.filter((url) => url.includes('tiles.versatiles.org'))).toStrictEqual([]);
-	expect(errors).toStrictEqual([]);
+testIntegration({
+	mapPage: '/',
+	styler: true,
+	tools: true,
+	editor: true,
+	libraries: ['compare', 'geocoder', 'inspect', 'style', 'styler', 'svg', 'versatiles-geocoder'],
 });

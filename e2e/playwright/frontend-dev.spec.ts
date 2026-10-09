@@ -1,4 +1,5 @@
 import { test, expect, SCREENSHOT_LOCATION } from './fixtures.js';
+import { testIntegration } from './integration.js';
 import type { Page } from '@playwright/test';
 
 test.use({
@@ -250,4 +251,12 @@ test.describe('preview page without id', () => {
 		expect(errors.length).toBeGreaterThan(0);
 		expect(errors.some((e) => e.includes('id is not defined'))).toBe(true);
 	});
+});
+
+testIntegration({
+	mapPage: '/preview.html?id=osm',
+	styler: false,
+	tools: true,
+	editor: true,
+	libraries: ['compare', 'geocoder', 'inspect', 'style', 'styler', 'svg', 'versatiles-geocoder'],
 });

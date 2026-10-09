@@ -1,4 +1,5 @@
 import { test, expect, SCREENSHOT_LOCATION } from './fixtures.js';
+import { testIntegration } from './integration.js';
 import type { Page } from '@playwright/test';
 
 test.use({ bundleName: 'frontend-tiny' });
@@ -116,4 +117,12 @@ test('no 404 errors for assets', async ({ page, serverUrl }) => {
 	await page.goto(serverUrl);
 	await page.waitForLoadState('networkidle');
 	expect(notFound).toStrictEqual([]);
+});
+
+testIntegration({
+	mapPage: '/',
+	styler: true,
+	tools: false,
+	editor: false,
+	libraries: ['style', 'styler', 'versatiles-geocoder'],
 });
