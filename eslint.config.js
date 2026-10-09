@@ -22,7 +22,7 @@ export default ts.config(
 		// picks the nearest one, so e2e/playwright is checked against its own. Without type
 		// information the rules that matter most here - no-floating-promises, await-thenable,
 		// no-misused-promises - cannot run at all, and this codebase is almost entirely async.
-		files: ['src/**/*.ts', 'frontends/**/*.ts', 'e2e/**/*.ts'],
+		files: ['src/**/*.ts', 'e2e/**/*.ts'],
 		extends: [ts.configs.recommendedTypeChecked],
 		languageOptions: {
 			ecmaVersion: 'latest',

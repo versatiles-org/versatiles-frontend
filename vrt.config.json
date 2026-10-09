@@ -1,5 +1,6 @@
 {
 	"deps-graph": {
+		"barrel": ["src/*"],
 		"svg": "assets/dependency-graph.svg"
 	}
 }

@@ -54,7 +54,7 @@ export class FileDBs {
 }
 
 export async function loadSourceConfigs(): Promise<Record<string, SourceConfig>> {
-	return (await import('../../frontends/config')).sourceConfigs;
+	return (await import('../config')).sourceConfigs;
 }
 
 export function loadFileDBs(fileDBs: FileDBs): PromiseFunction {
