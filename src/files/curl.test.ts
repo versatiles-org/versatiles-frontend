@@ -2,16 +2,16 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { join } from 'path';
 import { gunzipSync, gzipSync, zstdCompressSync } from 'zlib';
 import tarStream from 'tar-stream';
-import { File } from '../file';
+import { File } from './file';
 
 // Mock cache module
-vi.mock('./cache', () => ({
+vi.mock('../utils/cache', () => ({
 	cache: vi.fn(async (_action: string, _key: string, cbBuffer: () => Promise<Buffer>) => cbBuffer()),
 }));
 
 // Mock FileDB
-vi.mock('../files/filedb', async (importOriginal) => {
-	const original = await importOriginal<typeof import('../files/filedb')>();
+vi.mock('./filedb', async (importOriginal) => {
+	const original = await importOriginal<typeof import('./filedb')>();
 	const BaseFileDB = original.FileDB;
 
 	class FileDB extends BaseFileDB {
@@ -35,8 +35,8 @@ vi.mock('../files/filedb', async (importOriginal) => {
 	};
 });
 
-const { cache } = await import('./cache');
-const { FileDB } = await import('../files/filedb');
+const { cache } = await import('../utils/cache');
+const { FileDB } = await import('./filedb');
 const { Curl } = await import('./curl');
 
 // Mock fetch helper

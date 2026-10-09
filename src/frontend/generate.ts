@@ -2,21 +2,24 @@ import { FileDBs } from '../files/filedbs';
 import type { FrontendConfig } from './frontend';
 import { Frontend } from './frontend';
 import { PromiseFunction, progress, type ProgressLabel } from '../async_progress';
-import { frontendConfigs } from '../config';
 import { generateOverview } from './overview';
 import notes from '../utils/release_notes';
 
 /**
  * Generates frontend bundles for deployment based on configurations.
- * This function reads frontend configurations, sets the version for release notes,
- * and initiates the bundling process for each frontend configuration in parallel.
+ * This function initiates the bundling process for each frontend configuration in parallel,
+ * and adds the frontends to the release notes.
  *
- * @param fileSystem - The file system interface used for file operations.
- * @param projectFolder - The root directory of the project containing the frontend configurations.
+ * @param fileDBs - The file databases the frontends take their files from.
+ * @param frontendConfigs - The frontends to generate.
  * @param dstFolder - The destination folder where the generated frontend bundles will be saved.
  * @returns A PromiseFunction instance that encapsulates the asynchronous operations of generating all frontends.
  */
-export function generateFrontends(fileDBs: FileDBs, dstFolder: string): PromiseFunction {
+export function generateFrontends(
+	fileDBs: FileDBs,
+	frontendConfigs: FrontendConfig[],
+	dstFolder: string
+): PromiseFunction {
 	let s: ProgressLabel;
 	let parallel = PromiseFunction.parallel();
 	const frontends: Frontend[] = [];

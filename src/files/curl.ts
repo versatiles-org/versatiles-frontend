@@ -5,9 +5,9 @@ import { finished } from 'stream/promises';
 import * as tar from 'tar';
 import unzipper from 'unzipper';
 import type { Entry } from 'unzipper';
-import type { FileDB } from '../files/filedb';
-import { cache } from './cache';
-import { fetchRetry } from './fetch';
+import type { FileDB } from './filedb';
+import { cache } from '../utils/cache';
+import { fetchRetry } from '../utils/fetch';
 
 /**
  * A hardlink or symlink entry of a tarball.

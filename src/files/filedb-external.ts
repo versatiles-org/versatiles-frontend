@@ -1,10 +1,10 @@
-import { Curl } from '../utils/curl';
+import { Curl } from './curl';
 import { basename } from 'path';
 import notes from '../utils/release_notes';
 import { FileDB } from './filedb';
 import { safeJoinDest } from './safe-path';
 import { getLatestGithubReleaseVersion } from '../utils/release_version';
-import type { ExternalSourceConfig, AssetConfig } from '../source_config';
+import type { ExternalSourceConfig, AssetConfig } from './source_config';
 
 export class ExternalFileDB extends FileDB {
 	public static async build(config: ExternalSourceConfig): Promise<ExternalFileDB> {

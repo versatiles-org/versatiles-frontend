@@ -1,10 +1,10 @@
 import { describe, expect, it, vi } from 'vitest';
 import { FileDB } from './filedb';
-import { File } from '../file';
+import { File } from './file';
 
 // Brotli compression is exercised by file.test.ts; here it only needs to be observable.
-vi.mock('../file', async (importOriginal) => {
-	const original = (await importOriginal()) as typeof import('../file');
+vi.mock('./file', async (importOriginal) => {
+	const original = (await importOriginal()) as typeof import('./file');
 	class MockFile extends original.File {
 		public compressCalls = 0;
 		public override async compress(): Promise<Buffer> {

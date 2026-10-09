@@ -6,6 +6,7 @@ import notes from './utils/release_notes';
 import { PromiseFunction, progress } from './async_progress';
 import { generateFrontends } from './frontend/generate';
 import { FileDBs, loadFileDBs } from './files/filedbs';
+import { frontendConfigs, sourceConfigs } from './config';
 
 //progress.disableAnsi();
 
@@ -26,7 +27,11 @@ try {
 	// Run the main build tasks sequentially: fetch assets, compress files, and generate frontends.
 	const fileDBs = new FileDBs();
 	await PromiseFunction.run(
-		PromiseFunction.sequential(loadFileDBs(fileDBs), fileDBs.precompress(), generateFrontends(fileDBs, dstFolder))
+		PromiseFunction.sequential(
+			loadFileDBs(fileDBs, sourceConfigs),
+			fileDBs.precompress(),
+			generateFrontends(fileDBs, frontendConfigs, dstFolder)
+		)
 	);
 
 	// Save release notes in the destination folder.

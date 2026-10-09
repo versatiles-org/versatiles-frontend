@@ -5,7 +5,7 @@ import type { Transform } from 'stream';
 import { pipeline } from 'stream/promises';
 import ignore from 'ignore';
 import tar from 'tar-stream';
-import { File } from '../file';
+import { File } from '../files/file';
 import { FileDBs } from '../files/filedbs';
 
 // Compression level of the .tar.zst bundles: close to the maximum (22), but much faster.

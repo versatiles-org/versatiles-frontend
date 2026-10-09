@@ -1,7 +1,4 @@
-export interface SourceInfo {
-	name: string;
-	url: string;
-}
+import type { SourceInfo } from '../utils/release_notes';
 
 export interface AssetConfig {
 	url: string;

@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { fileURLToPath } from 'url';
 import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../async_progress/progress';
-import type { NpmSourceConfig } from '../source_config';
+import type { NpmSourceConfig } from './source_config';
 
 // Mock progress module
 vi.mock('../async_progress/progress', async (originalImport) => {

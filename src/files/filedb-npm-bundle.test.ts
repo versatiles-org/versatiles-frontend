@@ -3,7 +3,7 @@ import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
 import { createContext, runInContext } from 'vm';
-import type { NpmSourceConfig } from '../source_config';
+import type { NpmSourceConfig } from './source_config';
 
 /**
  * Tests for the esbuild bundling step in `NpmFileDB.build`.

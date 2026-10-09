@@ -1,12 +1,12 @@
 import { vi, describe, it, expect, beforeEach, afterAll } from 'vitest';
-import { FrontendConfig } from './frontend';
+import type { FrontendConfig } from './frontend';
 import { tmpdir } from 'os';
 import { resolve } from 'path';
 import { execFileSync } from 'child_process';
 import { gunzipSync, zstdDecompressSync } from 'zlib';
 import tar from 'tar-stream';
 import { FileDB } from '../files/filedb';
-import { emptyGlyphPbf } from '../glyphs';
+import { emptyGlyphPbf } from '../config/glyphs';
 
 // Mock cache module
 vi.mock('../utils/cache', () => ({
@@ -341,7 +341,7 @@ describe('Frontend class', () => {
 	});
 
 	it('should apply transform callback to replace and drop files', async () => {
-		const { File } = await import('../file');
+		const { File } = await import('../files/file');
 		const dbs = new FileDBs({ all: {} });
 		const allDB = dbs.get('all');
 		allDB.setFileFromBuffer('keep.txt', Buffer.from('keep'));
@@ -414,7 +414,7 @@ describe('Frontend class', () => {
 	});
 
 	it('generates frontends', async () => {
-		await PromiseFunction.run(generateFrontends(mockFileDBs, '/tmp/'));
+		await PromiseFunction.run(generateFrontends(mockFileDBs, frontendConfigs, '/tmp/'));
 
 		expect(createWriteStream).toHaveBeenCalledTimes(15);
 

@@ -1,6 +1,6 @@
 import { progress, PromiseFunction } from './async_progress';
 import { Frontend } from './frontend/frontend';
-import { frontendConfigs } from './config';
+import { frontendConfigs, sourceConfigs } from './config';
 import { Server } from './server/server';
 import { LandingPage, type LandingEntry } from './server/landing';
 import arg from 'arg';
@@ -41,7 +41,7 @@ progress.setHeader('Preparing Server');
 // Loads and prepares assets for the frontend using the custom FileSystem.
 // Every source is loaded regardless of which frontends are served, so serving all of them
 // costs little more than serving one: each Frontend is just a filter over the shared files.
-await PromiseFunction.run(loadFileDBs(fileDBs));
+await PromiseFunction.run(loadFileDBs(fileDBs, sourceConfigs));
 
 // Indicates completion of the asset preparation stage.
 progress.finish();

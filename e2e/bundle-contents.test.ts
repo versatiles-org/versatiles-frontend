@@ -78,7 +78,7 @@ describe('Bundle contents', () => {
 			const path = bundles.withPrefix('assets/lib/maplibre-gl/');
 			const notTiny = { frontend: true, 'frontend-dev': true, 'frontend-min': true };
 			expect.soft(path.file('maplibre-gl.css')).toBeTruthy();
-			// Bundled from the ESM-only upstream package into a classic script (see src/config.ts).
+			// Bundled from the ESM-only upstream package into a classic script (see src/config/index.ts).
 			expect.soft(path.file('maplibre-gl.js')).toBeTruthy();
 			expect.soft(path.file('maplibre-gl.js.map')).toStrictEqual(notTiny);
 			// The worker is loaded as a module and imports the shared chunk itself.

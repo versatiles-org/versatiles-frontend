@@ -4,7 +4,7 @@ import { StaticFileDB } from './filedb-static';
 import { ExternalFileDB } from './filedb-external';
 import { NpmFileDB } from './filedb-npm';
 import { resolve } from 'path';
-import { sourceConfigs } from '../config';
+import type { SourceConfig } from './source_config';
 
 const frontendFolder = resolve(import.meta.dirname, '../../frontends');
 
@@ -51,7 +51,7 @@ export class FileDBs {
 	}
 }
 
-export function loadFileDBs(fileDBs: FileDBs): PromiseFunction {
+export function loadFileDBs(fileDBs: FileDBs, sourceConfigs: Record<string, SourceConfig>): PromiseFunction {
 	let s: ProgressLabel;
 	let parallel = PromiseFunction.parallel();
 
