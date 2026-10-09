@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { mapEntryName, safeJoinDest } from './entry_path';
+import { mapEntryName, safeJoinDest } from './entry-path';
 
 describe('safeJoinDest', () => {
 	it('joins a normal entry under the destination', () => {

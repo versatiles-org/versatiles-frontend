@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, afterAll } from 'vitest';
-import type { StaticSourceConfig } from './source_config';
+import type { StaticSourceConfig } from './source-config';
 
 vi.mock('fs', () => {
 	const mockFileSystem = new Map<string, string | false>([

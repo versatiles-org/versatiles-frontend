@@ -4,7 +4,7 @@ import type {
 	NpmSourceConfig,
 	SourceInfo,
 	StaticSourceConfig,
-} from '../files/source_config';
+} from '../files/source-config';
 
 /*
  * Shorthands for the file sources in the configuration.

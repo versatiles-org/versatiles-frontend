@@ -1,9 +1,9 @@
 import type { FileDBs } from '../files/filedbs';
 import { Frontend, type FrontendConfig } from '../frontend/frontend';
 import { saveAsBrTarGz, saveAsTarGz, saveAsTarZst } from '../frontend/tarball';
-import { PromiseFunction, progress, type ProgressLabel } from '../async_progress';
+import { PromiseFunction, progress, type ProgressLabel } from '../async-progress';
 import { generateOverview } from './overview';
-import type { ReleaseNotes } from './release_notes';
+import type { ReleaseNotes } from './release-notes';
 
 /**
  * Generates frontend bundles for deployment based on configurations.

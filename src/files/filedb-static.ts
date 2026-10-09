@@ -1,7 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync, watch } from 'fs';
 import { FileDB } from './filedb';
 import { basename, relative, resolve } from 'path';
-import type { StaticSourceConfig } from './source_config';
+import type { StaticSourceConfig } from './source-config';
 
 export class StaticFileDB extends FileDB {
 	private path: string;

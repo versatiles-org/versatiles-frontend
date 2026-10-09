@@ -1,6 +1,6 @@
 import { forEachAsync } from '../utils';
 import { File } from './file';
-import type { SourceInfo } from './source_config';
+import type { SourceInfo } from './source-config';
 
 /**
  * A custom file system interface for storing and managing File instances.

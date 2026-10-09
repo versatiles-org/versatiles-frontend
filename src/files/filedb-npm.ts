@@ -3,8 +3,8 @@ import { basename, dirname, join } from 'path';
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 import { FileDB } from './filedb';
-import { mapEntryName, safeJoinDest } from './entry_path';
-import type { NpmBundleConfig, NpmSourceConfig } from './source_config';
+import { mapEntryName, safeJoinDest } from './entry-path';
+import type { NpmBundleConfig, NpmSourceConfig } from './source-config';
 
 export class NpmFileDB extends FileDB {
 	public static async build(config: NpmSourceConfig): Promise<NpmFileDB> {

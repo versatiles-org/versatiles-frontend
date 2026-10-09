@@ -1,8 +1,8 @@
 import { Archive } from './archive';
 import { FileDB } from './filedb';
-import { mapEntryName } from './entry_path';
-import { getLatestGithubReleaseVersion } from './release_version';
-import type { ExternalSourceConfig, AssetConfig } from './source_config';
+import { mapEntryName } from './entry-path';
+import { getLatestGithubReleaseVersion } from './release-version';
+import type { ExternalSourceConfig, AssetConfig } from './source-config';
 
 export class ExternalFileDB extends FileDB {
 	public static async build(config: ExternalSourceConfig): Promise<ExternalFileDB> {

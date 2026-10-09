@@ -15,11 +15,11 @@ vi.mock('../frontend/tarball', () => ({
 	saveAsTarZst: vi.fn(async () => {}),
 }));
 
-const { progress, PromiseFunction } = await import('../async_progress');
+const { progress, PromiseFunction } = await import('../async-progress');
 const { Frontend } = await import('../frontend/frontend');
 const tarball = await import('../frontend/tarball');
 const { generateFrontends } = await import('./generate');
-const { ReleaseNotes } = await import('./release_notes');
+const { ReleaseNotes } = await import('./release-notes');
 
 progress.disable();
 

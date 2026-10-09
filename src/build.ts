@@ -2,7 +2,7 @@ import { resolve } from 'path';
 import { readFileSync } from 'fs';
 
 import { cleanupFolder } from './utils';
-import { PromiseFunction, progress } from './async_progress';
+import { PromiseFunction, progress } from './async-progress';
 import { generateFrontends, loadSources, precompress, ReleaseNotes } from './pipeline';
 import { FileDBs } from './files/filedbs';
 import { frontendConfigs, sourceConfigs } from './config';

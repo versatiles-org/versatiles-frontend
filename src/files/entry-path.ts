@@ -1,5 +1,5 @@
 import { basename, isAbsolute, join, relative } from 'path';
-import type { EntryMapping } from './source_config';
+import type { EntryMapping } from './source-config';
 
 /**
  * Joins an (untrusted) archive/package entry name under a destination directory,

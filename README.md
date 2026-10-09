@@ -89,7 +89,7 @@ npm run dev -- -l 8081 frontend-dev
   - **server/**: the development server.
   - **frontend/**: a frontend, bundled from the files of its sources.
   - **files/**: loads the sources into in-memory file databases.
-  - **async_progress/**, **utils/**: progress display and general helpers.
+  - **async-progress/**, **utils/**: progress display and general helpers.
 
 ### Dependency Graph
 

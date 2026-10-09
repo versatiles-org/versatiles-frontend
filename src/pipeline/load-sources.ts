@@ -1,6 +1,6 @@
-import { PromiseFunction } from '../async_progress';
+import { PromiseFunction } from '../async-progress';
 import { createFileDB, FileDBs } from '../files/filedbs';
-import type { SourceConfig } from '../files/source_config';
+import type { SourceConfig } from '../files/source-config';
 
 /**
  * Loads every file source into the file databases, in parallel, with a progress label each.

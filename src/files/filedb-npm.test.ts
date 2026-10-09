@@ -1,11 +1,11 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { fileURLToPath } from 'url';
-import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../async_progress/progress';
-import type { NpmSourceConfig } from './source_config';
+import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../async-progress/progress';
+import type { NpmSourceConfig } from './source-config';
 
 // Mock progress module
-vi.mock('../async_progress/progress', async (originalImport) => {
-	const originalModule = (await originalImport()) as typeof import('../async_progress/progress');
+vi.mock('../async-progress/progress', async (originalImport) => {
+	const originalModule = (await originalImport()) as typeof import('../async-progress/progress');
 	originalModule.default.disable();
 
 	function mockProgressLabel(progressLabel: ProgressLabelType) {

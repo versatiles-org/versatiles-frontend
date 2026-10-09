@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
-import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../async_progress/progress';
+import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../async-progress/progress';
 import type { MapName, OnFile } from './archive';
-import type { ExternalSourceConfig } from './source_config';
+import type { ExternalSourceConfig } from './source-config';
 
 // Mock the archive module. vi.hoisted makes archiveCalls and mapNames available to the hoisted mock.
 const { archiveCalls, mapNames } = vi.hoisted(() => {
@@ -40,8 +40,8 @@ vi.mock('./archive', () => {
 });
 
 // Mock progress module
-vi.mock('../async_progress/progress', async (originalImport) => {
-	const originalModule = (await originalImport()) as typeof import('../async_progress/progress');
+vi.mock('../async-progress/progress', async (originalImport) => {
+	const originalModule = (await originalImport()) as typeof import('../async-progress/progress');
 	originalModule.default.disable();
 
 	function mockProgressLabel(progressLabel: ProgressLabelType) {
@@ -91,15 +91,15 @@ vi.mock('../async_progress/progress', async (originalImport) => {
 	};
 });
 
-// Mock release_version module
-vi.mock('./release_version', () => ({
+// Mock release-version module
+vi.mock('./release-version', () => ({
 	getLatestGithubReleaseVersion: vi.fn<(owner: string, repo: string, allowPrerelease?: boolean) => Promise<string>>(
 		async () => '1.2.3'
 	),
 }));
 
 import { ExternalFileDB } from './filedb-external';
-import { getLatestGithubReleaseVersion } from './release_version';
+import { getLatestGithubReleaseVersion } from './release-version';
 
 // Source configs for tests
 const fontsAllConfig: ExternalSourceConfig = {

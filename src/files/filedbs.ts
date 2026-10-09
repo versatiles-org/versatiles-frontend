@@ -2,7 +2,7 @@ import { FileDB } from './filedb';
 import { StaticFileDB } from './filedb-static';
 import { ExternalFileDB } from './filedb-external';
 import { NpmFileDB } from './filedb-npm';
-import type { SourceConfig } from './source_config';
+import type { SourceConfig } from './source-config';
 
 /**
  * The file databases of all sources, by the name of the source.

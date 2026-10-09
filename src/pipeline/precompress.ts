@@ -1,4 +1,4 @@
-import { PromiseFunction, progress, type ProgressLabel } from '../async_progress';
+import { PromiseFunction, progress, type ProgressLabel } from '../async-progress';
 import type { FileDBs } from '../files/filedbs';
 
 /**

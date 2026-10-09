@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, afterAll } from 'vitest';
 import { mkdtempSync, readFileSync, rmSync } from 'fs';
 import { tmpdir } from 'os';
 import { join } from 'path';
-import { ReleaseNotes } from './release_notes';
+import { ReleaseNotes } from './release-notes';
 
 describe('ReleaseNotes', () => {
 	let releaseNotes: ReleaseNotes;

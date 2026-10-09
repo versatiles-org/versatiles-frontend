@@ -1,4 +1,4 @@
-import { progress, PromiseFunction } from './async_progress';
+import { progress, PromiseFunction } from './async-progress';
 import { frontendConfigs, sourceConfigs } from './config';
 import { serveFrontends } from './server/serve';
 import arg from 'arg';
