@@ -11,8 +11,8 @@ export class StaticFileDB extends FileDB {
 		this.path = path;
 	}
 
-	public static async build(config: StaticSourceConfig, frontendFolder: string): Promise<StaticFileDB> {
-		const db = new StaticFileDB(resolve(frontendFolder, config.path));
+	public static async build(config: StaticSourceConfig, staticFolder: string): Promise<StaticFileDB> {
+		const db = new StaticFileDB(resolve(staticFolder, config.path));
 		addPath(db.path);
 		return db;
 

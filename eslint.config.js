@@ -10,7 +10,7 @@ export default ts.config(
 			'cache/**/*.*',
 			'coverage/**/*.*',
 			'dist/**/*.*',
-			'frontends/**/*.js',
+			'static/**/*.js',
 			'playwright-report/**/*.*',
 			'release/**/*.*',
 			'test-results/**/*.*',

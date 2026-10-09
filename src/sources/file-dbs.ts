@@ -29,12 +29,12 @@ export class FileDBs {
 /**
  * Loads the files of a source into a new file database of the matching kind.
  *
- * @param frontendFolder - The folder of the static sources, which their paths are relative to.
+ * @param staticFolder - The folder of the static sources, which their paths are relative to.
  */
-export async function createFileDB(config: SourceConfig, frontendFolder: string): Promise<FileDB> {
+export async function createFileDB(config: SourceConfig, staticFolder: string): Promise<FileDB> {
 	switch (config.type) {
 		case 'static':
-			return StaticFileDB.build(config, frontendFolder);
+			return StaticFileDB.build(config, staticFolder);
 		case 'github':
 			return GithubFileDB.build(config);
 		case 'npm':

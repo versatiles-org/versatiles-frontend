@@ -99,7 +99,7 @@ vi.mock('./sources/static', async (importOriginal) => {
 			super('');
 		}
 
-		public static async build(_config: unknown, _frontendFolder: string): Promise<MockStaticFileDB> {
+		public static async build(_config: unknown, _staticFolder: string): Promise<MockStaticFileDB> {
 			return new MockStaticFileDB();
 		}
 

@@ -116,7 +116,7 @@ export const sourceConfigs = {
 	}),
 
 	// A prebuilt static site, served from /editor/ with its read-only viewer at /editor/view/.
-	// Its own configuration file is left out in favour of ours in frontends/map-editor-config/.
+	// Its own configuration file is left out in favour of ours in static/map-editor-config/.
 	'map-editor': npmSource('@versatiles/map-editor', {
 		stripPrefix: 'dist/',
 		include: /^(?!map-editor\.config\.jsonc$)/,

@@ -139,7 +139,7 @@ describe('Bundle contents', () => {
 			expect.soft(path.rest()).toStrictEqual({});
 		});
 
-		// Not a third-party package: our own location search, served from frontends/all/ and
+		// Not a third-party package: our own location search, served from static/all/ and
 		// used by every frontend that has a page. frontend-blank ships no HTML, so it has none.
 		it('contains versatiles-geocoder in every frontend with a page', () => {
 			const path = bundles.withPrefix('assets/lib/versatiles-geocoder/');

@@ -9,7 +9,7 @@ import { loadSources } from './pipeline';
 // Disables ANSI color codes in progress output for simplicity in development environments.
 //progress.disableAnsi();
 
-// The root of the project, which holds the static sources in frontends/.
+// The root of the project, which holds the static sources in static/.
 const projectFolder = resolve(import.meta.dirname, '..');
 
 // parse arguments
@@ -44,7 +44,7 @@ progress.setHeader('Preparing Server');
 // Loads and prepares assets for the frontend using the custom FileSystem.
 // Every source is loaded regardless of which frontends are served, so serving all of them
 // costs little more than serving one: each Frontend is just a filter over the shared files.
-await PromiseFunction.run(loadSources(fileDBs, sourceConfigs, resolve(projectFolder, 'frontends')));
+await PromiseFunction.run(loadSources(fileDBs, sourceConfigs, resolve(projectFolder, 'static')));
 
 // Indicates completion of the asset preparation stage.
 progress.finish();

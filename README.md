@@ -16,7 +16,7 @@ VersaTiles Frontend provides pre-packaged web assets to serve interactive maps, 
 - **frontend-blank**: Blank frontend with only fonts and sprites.
 - **frontend-tiny**: Minimal frontend with sprites, MapLibre, VersaTiles style and Noto Sans fonts supporting only Latin characters.
 
-`frontend`, `frontend-dev` and `frontend-min` also contain the [VersaTiles Map Editor](https://github.com/versatiles-org/versatiles-map-editor) at `/editor/`, with the viewer of shared maps at `/editor/view/`. It uses the tiles, sprites and fonts of the server it runs on (`/tiles/osm`, and `/tiles/satellite` for the satellite background), see `frontends/map-editor-config/editor/map-editor.config.jsonc`.
+`frontend`, `frontend-dev` and `frontend-min` also contain the [VersaTiles Map Editor](https://github.com/versatiles-org/versatiles-map-editor) at `/editor/`, with the viewer of shared maps at `/editor/view/`. It uses the tiles, sprites and fonts of the server it runs on (`/tiles/osm`, and `/tiles/satellite` for the satellite background), see `static/map-editor-config/editor/map-editor.config.jsonc`.
 
 See the [latest release notes](https://github.com/versatiles-org/versatiles-frontend/releases/latest) for details on included components and asset sizes.
 
@@ -81,7 +81,7 @@ npm run dev -- -l 8081 frontend-dev
 ## Project Structure
 
 - **cache/**: Caches requests, compresses files. It is never evicted automatically, so every upstream release leaves the previous version's entries behind. Empty it with `npm run cache:clean` when it has grown too large — the next build refetches and recompresses whatever it needs.
-- **frontends/**: Contains static files (HTML, CSS, JS), one folder per static source.
+- **static/**: The static sources: files (HTML, CSS, JS, images) of our own, one folder per source.
 - **release/**: Packaged frontend files.
 - **src/**: TypeScript code for frontend generation and local serving. `build.ts`, `dev.ts` and `clean-cache.ts` are the entry points; each folder only uses the ones listed after it:
   - **config/**: defines the sources (static folders, GitHub releases, npm packages) and which of them each frontend contains.
