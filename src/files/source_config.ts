@@ -1,5 +1,9 @@
 import type { SourceInfo } from '../utils/release_notes';
 
+/*
+ * The configurations of the file sources: what the file databases load, and from where.
+ */
+
 export interface AssetConfig {
 	url: string;
 	format: 'tar.gz' | 'tar.zst' | 'zip';
@@ -62,48 +66,3 @@ export interface StaticSourceConfig {
 }
 
 export type SourceConfig = ExternalSourceConfig | NpmSourceConfig | StaticSourceConfig;
-
-interface GithubSourceOptions {
-	prerelease?: boolean;
-	pin?: string;
-	assets: AssetConfig[];
-	source?: SourceInfo;
-}
-
-export function githubSource(repo: string, options: GithubSourceOptions): ExternalSourceConfig {
-	return {
-		type: 'external',
-		version: { github: repo, prerelease: options.prerelease, pin: options.pin },
-		assets: options.assets,
-		source: options.source,
-	};
-}
-
-export function npmSource(
-	pkg: string,
-	options: {
-		bundle?: NpmBundleConfig;
-		stripPrefix?: string;
-		include?: RegExp;
-		flatten?: boolean;
-		rename?: Record<string, string>;
-		dest: string;
-		source: SourceInfo;
-	}
-): NpmSourceConfig {
-	return {
-		type: 'npm',
-		pkg,
-		bundle: options.bundle,
-		stripPrefix: options.stripPrefix,
-		include: options.include,
-		flatten: options.flatten,
-		rename: options.rename,
-		dest: options.dest,
-		source: options.source,
-	};
-}
-
-export function staticSource(path: string): StaticSourceConfig {
-	return { type: 'static', path };
-}
