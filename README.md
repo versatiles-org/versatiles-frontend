@@ -79,6 +79,21 @@ versatiles serve -p 8081 osm.versatiles overlay.versatiles
 npm run dev -- -l 8081 frontend-dev
 ```
 
+### Run the Tests
+
+```bash
+npm test                  # unit tests
+npm run test:e2e          # contents of the bundles in release/ (run `npm run build` first)
+npm run test:e2e:browser  # the frontends in a browser, with Playwright (also needs a build)
+npm run check             # all of it: formatting, types, lint, the build and all tests
+```
+
+Screenshot tests keep snapshots per platform. Update the local ones with `npm run test:e2e:browser:update`, and the Linux ones that CI compares against with `npm run test:e2e:browser:update-linux` (needs Docker).
+
+### Add a Frontend or a Library
+
+Sources and frontends are defined in [`src/config/index.ts`](src/config/index.ts): add a library as a source (`npmSource`, `githubSource` or `staticSource` for a folder in `static/`) and list it in the `fileDBs` of the frontends that should contain it. A new frontend also needs an entry in "Available Frontends" above, which a test checks.
+
 ## Project Structure
 
 - **cache/**: Caches requests, compresses files. It is never evicted automatically, so every upstream release leaves the previous version's entries behind. Empty it with `npm run cache:clean` when it has grown too large — the next build refetches and recompresses whatever it needs.
