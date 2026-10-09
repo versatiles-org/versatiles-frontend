@@ -5,8 +5,13 @@ import { finished } from 'stream/promises';
 import * as tar from 'tar';
 import unzipper from 'unzipper';
 import type { Entry } from 'unzipper';
-import type { FileDB } from './filedb';
 import { cache, fetchRetry } from '../utils';
+
+/** Maps the name of an archive entry to the file name to store it as, or `false` to skip it. */
+export type MapName = (name: string) => string | false;
+
+/** Receives an extracted file. */
+export type OnFile = (path: string, content: Buffer) => void;
 
 /**
  * A hardlink or symlink entry of a tarball.
@@ -53,43 +58,39 @@ function resolveLink(
 }
 
 /**
- * Provides utilities for fetching resources over HTTP(s), with support for caching,
- * decompression (gunzip, zstd), and extraction (untar and unzip).
+ * An archive at a URL: downloads it (cached) and extracts its files, decompressing gzip or zstd
+ * tarballs and zip files. It hands every extracted file to a callback, and stores nothing itself.
  */
-export class Curl {
+export class Archive {
 	private readonly url: string;
 
-	private readonly fileDB: FileDB;
-
 	/**
-	 * Constructs an instance of the Curl class.
-	 *
-	 * @param fileDB - An interface to the file system for saving files.
-	 * @param url - The URL of the resource to fetch.
+	 * @param url - The URL of the archive.
 	 */
-	public constructor(fileDB: FileDB, url: string) {
+	public constructor(url: string) {
 		this.url = url;
-		this.fileDB = fileDB;
 	}
 
 	/**
 	 * Fetches a gzipped tarball from the URL, decompresses, untars it, and saves the contents.
 	 * See {@link untar} for how entries are handled.
 	 *
-	 * @param cbFilter - A callback function that determines the save path for each entry, or skips the entry.
+	 * @param mapName - Determines the file name of each entry, or skips it.
+	 * @param onFile - Receives every extracted file.
 	 */
-	public async ungzipUntar(cbFilter: (filename: string) => string | false): Promise<void> {
-		await this.untar(createGunzip(), cbFilter);
+	public async ungzipUntar(mapName: MapName, onFile: OnFile): Promise<void> {
+		await this.untar(createGunzip(), mapName, onFile);
 	}
 
 	/**
 	 * Fetches a zstd-compressed tarball from the URL, decompresses, untars it, and saves the
 	 * contents. See {@link untar} for how entries are handled.
 	 *
-	 * @param cbFilter - A callback function that determines the save path for each entry, or skips the entry.
+	 * @param mapName - Determines the file name of each entry, or skips it.
+	 * @param onFile - Receives every extracted file.
 	 */
-	public async unzstdUntar(cbFilter: (filename: string) => string | false): Promise<void> {
-		await this.untar(createZstdDecompress(), cbFilter);
+	public async unzstdUntar(mapName: MapName, onFile: OnFile): Promise<void> {
+		await this.untar(createZstdDecompress(), mapName, onFile);
 	}
 
 	/**
@@ -100,15 +101,16 @@ export class Curl {
 	 * target's buffer. Dangling links and links pointing outside the archive are skipped.
 	 *
 	 * @param streamIn - A fresh decompression stream, e.g. from `createGunzip()`.
-	 * @param cbFilter - A callback function that determines the save path for each entry, or skips the entry.
+	 * @param mapName - Determines the file name of each entry, or skips it.
+	 * @param onFile - Receives every extracted file.
 	 */
-	private async untar(streamIn: Transform, cbFilter: (filename: string) => string | false): Promise<void> {
+	private async untar(streamIn: Transform, mapName: MapName, onFile: OnFile): Promise<void> {
 		const buffer = await this.getBuffer();
 		// Track each entry's read so we can await them all; the stream's 'end'
 		// event only signals the end of parsing, not that every file was read.
 		const pending: Promise<void>[] = [];
 		// Every regular file by normalized archive path. Links are resolved against this map, so
-		// it also keeps files that cbFilter skips: they can still be the target of a link.
+		// it also keeps files that mapName skips: they can still be the target of a link.
 		const files = new Map<string, { path: string; content: Buffer }>();
 		const links = new Map<string, TarLink>();
 		await new Promise<void>((resolve, reject) => {
@@ -141,14 +143,14 @@ export class Curl {
 		await Promise.all(pending);
 
 		for (const { path, content } of files.values()) {
-			const dest = cbFilter(path);
-			if (dest !== false) this.fileDB.setFileFromBuffer(dest, content);
+			const dest = mapName(path);
+			if (dest !== false) onFile(dest, content);
 		}
 
 		// Links are resolved only now: file reads finish asynchronously, and a symlink's
 		// target may even appear later in the archive.
 		for (const link of links.values()) {
-			const dest = cbFilter(link.path);
+			const dest = mapName(link.path);
 			if (dest === false) continue;
 			const content = resolveLink(link, links, files);
 			if (content === 'unsafe') {
@@ -157,41 +159,32 @@ export class Curl {
 				console.warn(`Skipping dangling link "${link.path}" -> "${link.linkpath}"`);
 			} else {
 				// Share the target's buffer instead of copying it.
-				this.fileDB.setFileFromBuffer(dest, content);
+				onFile(dest, content);
 			}
 		}
 	}
 
 	/**
-	 * Saves the resource from the URL directly to a file.
+	 * Fetches a zip file from the URL and unzips it. Directories are skipped.
 	 *
-	 * @param filename - The name of the file where the resource will be saved.
+	 * @param mapName - Determines the file name of each entry, or skips it.
+	 * @param onFile - Receives every extracted file.
 	 */
-	public async save(filename: string): Promise<void> {
-		this.fileDB.setFileFromBuffer(filename, await this.getBuffer());
-	}
-
-	/**
-	 * Fetches a zip file from the URL, unzips it, and saves the contents using the specified filter function
-	 * to determine the final path for each file. Files for which the filter returns false are skipped.
-	 *
-	 * @param cbFilter - A callback function that determines the save path for each unzipped file, or skips the file.
-	 */
-	public async unzip(cbFilter: (filename: string) => string | false): Promise<void> {
+	public async unzip(mapName: MapName, onFile: OnFile): Promise<void> {
 		const buffer = await this.getBuffer();
 		// Track each entry's write; `finished(zip)` only resolves when the stream
 		// ends, not when the async entry.buffer() writes have completed.
 		const pending: Promise<void>[] = [];
 		const zip = unzipper.Parse();
 		zip.on('entry', (entry: Entry) => {
-			const path = entry.type === 'Directory' ? false : cbFilter(entry.path);
+			const path = entry.type === 'Directory' ? false : mapName(entry.path);
 			if (path === false) {
 				entry.autodrain();
 				return;
 			}
 			pending.push(
 				entry.buffer().then((buf) => {
-					this.fileDB.setFileFromBuffer(path, buf);
+					onFile(path, buf);
 				})
 			);
 		});

@@ -1,4 +1,4 @@
-import { Curl } from './curl';
+import { Archive } from './archive';
 import { FileDB } from './filedb';
 import { mapEntryName } from './entry_path';
 import { getLatestGithubReleaseVersion } from './release_version';
@@ -40,18 +40,19 @@ export class ExternalFileDB extends FileDB {
 	}
 
 	private async fetchAsset(url: string, asset: AssetConfig): Promise<void> {
-		const curl = new Curl(this, url);
-		const mapFilename = (filename: string): string | false => mapEntryName(asset, filename);
+		const archive = new Archive(url);
+		const mapName = (name: string): string | false => mapEntryName(asset, name);
+		const onFile = (path: string, content: Buffer): void => this.setFileFromBuffer(path, content);
 
 		switch (asset.format) {
 			case 'tar.gz':
-				await curl.ungzipUntar(mapFilename);
+				await archive.ungzipUntar(mapName, onFile);
 				break;
 			case 'tar.zst':
-				await curl.unzstdUntar(mapFilename);
+				await archive.unzstdUntar(mapName, onFile);
 				break;
 			case 'zip':
-				await curl.unzip(mapFilename);
+				await archive.unzip(mapName, onFile);
 				break;
 		}
 	}

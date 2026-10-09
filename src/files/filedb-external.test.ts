@@ -1,65 +1,42 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../async_progress/progress';
-import type { Curl as CurlType } from './curl';
+import type { MapName, OnFile } from './archive';
 import type { ExternalSourceConfig } from './source_config';
 
-// Mock curl module - use vi.hoisted to ensure curlCalls is available when the mock is executed
-const { curlCalls, filterCallbacks } = vi.hoisted(() => {
+// Mock the archive module. vi.hoisted makes archiveCalls and mapNames available to the hoisted mock.
+const { archiveCalls, mapNames } = vi.hoisted(() => {
 	return {
-		curlCalls: [] as string[],
-		filterCallbacks: {
-			ungzipUntar: null as ((filename: string) => string | false) | null,
-			unzstdUntar: null as ((filename: string) => string | false) | null,
-			unzip: null as ((filename: string) => string | false) | null,
+		archiveCalls: [] as string[],
+		mapNames: {
+			ungzipUntar: null as MapName | null,
+			unzstdUntar: null as MapName | null,
+			unzip: null as MapName | null,
 		},
 	};
 });
 
-vi.mock('./curl', () => {
-	type CurlInstance = CurlType;
+vi.mock('./archive', () => {
+	// Records the name mapper, and extracts one file, fonts.json, through it.
+	function extract(method: keyof typeof mapNames) {
+		return vi.fn(async (mapName: MapName, onFile: OnFile) => {
+			mapNames[method] = mapName;
+			const path = mapName('fonts.json');
+			if (path !== false) onFile(path, Buffer.from('mocked content'));
+		});
+	}
 
-	class Curl {
-		url: string;
-		fileDB: unknown;
-		ungzipUntar: CurlInstance['ungzipUntar'];
-		unzstdUntar: CurlInstance['unzstdUntar'];
-		save: CurlInstance['save'];
-		unzip: CurlInstance['unzip'];
-		getBuffer: CurlInstance['getBuffer'];
+	class Archive {
+		ungzipUntar = extract('ungzipUntar');
+		unzstdUntar = extract('unzstdUntar');
+		unzip = extract('unzip');
+		getBuffer = vi.fn(async () => Buffer.from('mocked buffer'));
 
-		constructor(fileDB: unknown, url: string) {
-			this.fileDB = fileDB;
-			this.url = url;
-			curlCalls.push(url);
-
-			this.ungzipUntar = vi.fn(async (filter) => {
-				// Capture the filter callback for testing
-				filterCallbacks.ungzipUntar = filter;
-			}) as CurlInstance['ungzipUntar'];
-
-			this.unzstdUntar = vi.fn(async (filter) => {
-				// Capture the filter callback for testing
-				filterCallbacks.unzstdUntar = filter;
-			}) as CurlInstance['unzstdUntar'];
-
-			this.save = vi.fn(async () => {
-				// no-op in tests
-			}) as CurlInstance['save'];
-
-			this.unzip = vi.fn(async (filter) => {
-				// Capture the filter callback for testing
-				filterCallbacks.unzip = filter;
-			}) as CurlInstance['unzip'];
-
-			this.getBuffer = vi.fn(async () => Buffer.from('mocked buffer')) as CurlInstance['getBuffer'];
+		constructor(url: string) {
+			archiveCalls.push(url);
 		}
 	}
 
-	return {
-		Curl,
-		curlCalls,
-		default: Curl,
-	};
+	return { Archive };
 });
 
 // Mock progress module
@@ -183,8 +160,8 @@ describe('getAssets', () => {
 		return calls;
 	}
 
-	function getCurlCalls() {
-		const calls = [...curlCalls];
+	function getArchiveCalls() {
+		const calls = [...archiveCalls];
 		calls.sort((a, b) => a.localeCompare(b));
 		return calls;
 	}
@@ -192,13 +169,13 @@ describe('getAssets', () => {
 	describe('successfully downloads and processes assets', () => {
 		beforeEach(() => {
 			vi.clearAllMocks();
-			curlCalls.length = 0;
+			archiveCalls.length = 0;
 		});
 
 		it('fonts', async () => {
 			await ExternalFileDB.build(fontsAllConfig);
 			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-fonts', undefined]]);
-			expect(getCurlCalls()).toStrictEqual([
+			expect(getArchiveCalls()).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.2.3/fonts.tar.gz',
 			]);
 		});
@@ -206,7 +183,7 @@ describe('getAssets', () => {
 		it('styles', async () => {
 			await ExternalFileDB.build(stylesConfig);
 			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-style', true]]);
-			expect(getCurlCalls()).toStrictEqual([
+			expect(getArchiveCalls()).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/sprites.tar.gz',
 				'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/styles.tar.gz',
 				'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/versatiles-style.tar.gz',
@@ -216,7 +193,7 @@ describe('getAssets', () => {
 		it('fonts-noto', async () => {
 			await ExternalFileDB.build(fontsNotoConfig);
 			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-fonts', undefined]]);
-			expect(getCurlCalls()).toStrictEqual([
+			expect(getArchiveCalls()).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.2.3/noto_sans.tar.gz',
 			]);
 		});
@@ -237,14 +214,14 @@ describe('getAssets', () => {
 
 		beforeEach(() => {
 			vi.clearAllMocks();
-			curlCalls.length = 0;
+			archiveCalls.length = 0;
 		});
 
 		it('downloads the pinned version instead of the latest one', async () => {
 			// The mocked backend reports 1.2.3 as the latest release.
 			await ExternalFileDB.build(pinnedConfig('1.0.0'));
 
-			expect(curlCalls).toStrictEqual([
+			expect(archiveCalls).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.0.0/fonts.tar.gz',
 			]);
 		});
@@ -272,7 +249,7 @@ describe('getAssets', () => {
 
 			await ExternalFileDB.build(pinnedConfig('1.0.0'));
 
-			expect(curlCalls).toStrictEqual([
+			expect(archiveCalls).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.0.0/fonts.tar.gz',
 			]);
 			expect(warn).toHaveBeenCalledWith(
@@ -288,13 +265,13 @@ describe('getAssets', () => {
 		});
 	});
 
-	describe('filter callbacks', () => {
+	describe('name mapping', () => {
 		beforeEach(() => {
 			vi.clearAllMocks();
-			curlCalls.length = 0;
-			filterCallbacks.ungzipUntar = null;
-			filterCallbacks.unzstdUntar = null;
-			filterCallbacks.unzip = null;
+			archiveCalls.length = 0;
+			mapNames.ungzipUntar = null;
+			mapNames.unzstdUntar = null;
+			mapNames.unzip = null;
 		});
 
 		it('extracts tar.zst assets with unzstdUntar', async () => {
@@ -302,16 +279,21 @@ describe('getAssets', () => {
 				...fontsAllConfig,
 				assets: [{ ...fontsAllConfig.assets[0], format: 'tar.zst' }],
 			});
-			expect(filterCallbacks.ungzipUntar).toBeNull();
-			expect(filterCallbacks.unzstdUntar?.('fonts.json')).toBe('assets/glyphs/index.json');
+			expect(mapNames.ungzipUntar).toBeNull();
+			expect(mapNames.unzstdUntar?.('fonts.json')).toBe('assets/glyphs/index.json');
+		});
+
+		it('stores the extracted files in the database', async () => {
+			const db = await ExternalFileDB.build(fontsAllConfig);
+			expect(db.getFile('assets/glyphs/index.json')?.toString()).toBe('mocked content');
 		});
 
 		it('fonts filter renames fonts.json to index.json', async () => {
 			await ExternalFileDB.build(fontsAllConfig);
-			expect(filterCallbacks.ungzipUntar).toBeTruthy();
-			if (filterCallbacks.ungzipUntar) {
-				expect(filterCallbacks.ungzipUntar('fonts.json')).toBe('assets/glyphs/index.json');
-				expect(filterCallbacks.ungzipUntar('other.json')).toBe('assets/glyphs/other.json');
+			expect(mapNames.ungzipUntar).toBeTruthy();
+			if (mapNames.ungzipUntar) {
+				expect(mapNames.ungzipUntar('fonts.json')).toBe('assets/glyphs/index.json');
+				expect(mapNames.ungzipUntar('other.json')).toBe('assets/glyphs/other.json');
 			}
 		});
 	});
