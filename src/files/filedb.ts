@@ -1,5 +1,5 @@
 import { forEachAsync } from '../utils/parallel';
-import { File } from './file';
+import { File } from '../file';
 
 /**
  * A custom file system interface for storing and managing File instances.

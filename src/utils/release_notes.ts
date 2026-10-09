@@ -1,5 +1,5 @@
 import { writeFileSync } from 'fs';
-import type { SourceInfo } from '../files/source_config';
+import type { SourceInfo } from '../source_config';
 
 /**
  * Represents a single label or component within the release notes, with an optional version.

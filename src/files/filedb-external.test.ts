@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../async_progress/progress';
 import type { Curl as CurlType } from '../utils/curl';
-import type { ExternalSourceConfig } from './source_config';
+import type { ExternalSourceConfig } from '../source_config';
 
 // Mock curl module - use vi.hoisted to ensure curlCalls is available when the mock is executed
 const { curlCalls, filterCallbacks } = vi.hoisted(() => {

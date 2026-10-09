@@ -2,7 +2,7 @@ import { vi, describe, it, expect, beforeEach } from 'vitest';
 import { join } from 'path';
 import { gunzipSync, gzipSync, zstdCompressSync } from 'zlib';
 import tarStream from 'tar-stream';
-import { File } from '../files/file';
+import { File } from '../file';
 
 // Mock cache module
 vi.mock('./cache', () => ({

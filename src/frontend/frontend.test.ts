@@ -6,7 +6,7 @@ import { execFileSync } from 'child_process';
 import { gunzipSync, zstdDecompressSync } from 'zlib';
 import tar from 'tar-stream';
 import { FileDB } from '../files/filedb';
-import { emptyGlyphPbf } from '../files/glyphs';
+import { emptyGlyphPbf } from '../glyphs';
 
 // Mock cache module
 vi.mock('../utils/cache', () => ({
@@ -341,7 +341,7 @@ describe('Frontend class', () => {
 	});
 
 	it('should apply transform callback to replace and drop files', async () => {
-		const { File } = await import('../files/file');
+		const { File } = await import('../file');
 		const dbs = new FileDBs({ all: {} });
 		const allDB = dbs.get('all');
 		allDB.setFileFromBuffer('keep.txt', Buffer.from('keep'));

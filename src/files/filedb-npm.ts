@@ -5,7 +5,7 @@ import { fileURLToPath } from 'url';
 import notes from '../utils/release_notes';
 import { FileDB } from './filedb';
 import { safeJoinDest } from './safe-path';
-import type { NpmBundleConfig, NpmSourceConfig } from './source_config';
+import type { NpmBundleConfig, NpmSourceConfig } from '../source_config';
 
 export class NpmFileDB extends FileDB {
 	public static async build(config: NpmSourceConfig): Promise<NpmFileDB> {
