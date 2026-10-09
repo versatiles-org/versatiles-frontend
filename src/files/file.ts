@@ -1,6 +1,6 @@
 import { createHash } from 'crypto';
 import { brotliCompress, constants } from 'zlib';
-import { cache } from '../utils/cache';
+import { cache } from '../utils';
 
 /**
  * Represents a file with utilities for compression.

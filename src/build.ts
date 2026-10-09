@@ -1,8 +1,8 @@
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
 
-import { cleanupFolder } from './utils/utils';
-import notes from './utils/release_notes';
+import { cleanupFolder } from './utils';
+import { notes } from './utils';
 import { PromiseFunction, progress } from './async_progress';
 import { generateFrontends } from './frontend/generate';
 import { FileDBs, loadFileDBs } from './files/filedbs';

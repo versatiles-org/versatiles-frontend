@@ -18,7 +18,7 @@ vi.mock('../utils/cache', () => ({
 }));
 
 const { brotliCompress, constants } = await import('zlib');
-const { cache } = await import('../utils/cache');
+const { cache } = await import('../utils');
 const { File } = await import('./file');
 
 describe('File', () => {

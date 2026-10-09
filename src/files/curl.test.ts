@@ -35,7 +35,7 @@ vi.mock('./filedb', async (importOriginal) => {
 	};
 });
 
-const { cache } = await import('../utils/cache');
+const { cache } = await import('../utils');
 const { FileDB } = await import('./filedb');
 const { Curl } = await import('./curl');
 

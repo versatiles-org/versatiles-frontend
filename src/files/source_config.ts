@@ -1,4 +1,4 @@
-import type { SourceInfo } from '../utils/release_notes';
+import type { SourceInfo } from '../utils';
 
 /*
  * The configurations of the file sources: what the file databases load, and from where.

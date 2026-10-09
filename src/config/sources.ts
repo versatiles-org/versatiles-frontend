@@ -1,4 +1,4 @@
-import type { SourceInfo } from '../utils/release_notes';
+import type { SourceInfo } from '../utils';
 import type { AssetConfig, ExternalSourceConfig, NpmSourceConfig, StaticSourceConfig } from '../files/source_config';
 
 /*

@@ -2,7 +2,7 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
 import { basename, dirname, join } from 'path';
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
-import notes from '../utils/release_notes';
+import { notes } from '../utils';
 import { FileDB } from './filedb';
 import { safeJoinDest } from './safe-path';
 import type { NpmBundleConfig, NpmSourceConfig } from './source_config';

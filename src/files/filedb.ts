@@ -1,4 +1,4 @@
-import { forEachAsync } from '../utils/parallel';
+import { forEachAsync } from '../utils';
 import { File } from './file';
 
 /**

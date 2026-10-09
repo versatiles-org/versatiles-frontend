@@ -1,9 +1,9 @@
 import { Curl } from './curl';
 import { basename } from 'path';
-import notes from '../utils/release_notes';
+import { notes } from '../utils';
 import { FileDB } from './filedb';
 import { safeJoinDest } from './safe-path';
-import { getLatestGithubReleaseVersion } from '../utils/release_version';
+import { getLatestGithubReleaseVersion } from '../utils';
 import type { ExternalSourceConfig, AssetConfig } from './source_config';
 
 export class ExternalFileDB extends FileDB {

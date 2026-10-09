@@ -1,6 +1,6 @@
 import type { ProgressLabel } from './progress';
 import progress from './progress';
-import { forEachAsync } from '../utils/parallel';
+import { forEachAsync } from '../utils';
 
 type AsyncFunction = () => Promise<void>;
 

@@ -6,8 +6,8 @@ import * as tar from 'tar';
 import unzipper from 'unzipper';
 import type { Entry } from 'unzipper';
 import type { FileDB } from './filedb';
-import { cache } from '../utils/cache';
-import { fetchRetry } from '../utils/fetch';
+import { cache } from '../utils';
+import { fetchRetry } from '../utils';
 
 /**
  * A hardlink or symlink entry of a tarball.

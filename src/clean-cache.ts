@@ -1,4 +1,4 @@
-import { clearCache } from './utils/cache';
+import { clearCache } from './utils';
 
 /**
  * Empties the download/compression cache.

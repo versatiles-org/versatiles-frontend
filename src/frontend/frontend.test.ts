@@ -14,10 +14,12 @@ vi.mock('../utils/cache', () => ({
 }));
 
 // Mock fs module
-const createWriteStream = vi.fn();
 // Declared through vi.hoisted because the vi.mock factory below is hoisted above this file's
 // own declarations, and it needs somewhere to record the directory it creates.
-const { tarballs } = vi.hoisted(() => ({ tarballs: { dir: '', count: 0 } }));
+const { tarballs, createWriteStream } = vi.hoisted(() => ({
+	tarballs: { dir: '', count: 0 },
+	createWriteStream: vi.fn(),
+}));
 
 vi.mock('fs', async (originalImport) => {
 	const originalFs = await originalImport<typeof import('fs')>();

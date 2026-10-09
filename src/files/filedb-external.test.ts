@@ -122,7 +122,7 @@ vi.mock('../utils/release_version', () => ({
 }));
 
 import { ExternalFileDB } from './filedb-external';
-import { getLatestGithubReleaseVersion } from '../utils/release_version';
+import { getLatestGithubReleaseVersion } from '../utils';
 
 // Source configs for tests
 const fontsAllConfig: ExternalSourceConfig = {

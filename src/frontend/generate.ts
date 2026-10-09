@@ -3,7 +3,7 @@ import type { FrontendConfig } from './frontend';
 import { Frontend } from './frontend';
 import { PromiseFunction, progress, type ProgressLabel } from '../async_progress';
 import { generateOverview } from './overview';
-import notes from '../utils/release_notes';
+import { notes } from '../utils';
 
 /**
  * Generates frontend bundles for deployment based on configurations.

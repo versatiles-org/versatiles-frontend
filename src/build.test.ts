@@ -65,20 +65,23 @@ vi.mock('./utils/release_version', () => ({
 	),
 }));
 
-// Mock release_notes module
-const releaseNotesMock = {
+// Mock release_notes module. Declared through vi.hoisted: the utils barrel loads every utils
+// module as soon as any of them is imported, so the hoisted factory below can run first.
+const releaseNotesMock = vi.hoisted(() => ({
 	add: vi.fn(),
 	append: vi.fn(),
 	setVersion: vi.fn(),
 	save: vi.fn(),
 	labelList: [],
 	labelMap: new Map(),
-};
+}));
 vi.mock('./utils/release_notes', () => ({ default: releaseNotesMock }));
 
 // Mock utils module
-const cleanupFolder = vi.fn().mockReturnValue(undefined);
-const ensureFolder = vi.fn().mockReturnValue(undefined);
+const { cleanupFolder, ensureFolder } = vi.hoisted(() => ({
+	cleanupFolder: vi.fn().mockReturnValue(undefined),
+	ensureFolder: vi.fn().mockReturnValue(undefined),
+}));
 vi.mock('./utils/utils', () => ({
 	cleanupFolder,
 	ensureFolder,

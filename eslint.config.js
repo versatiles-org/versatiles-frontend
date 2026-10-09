@@ -59,6 +59,26 @@ export default ts.config(
 		},
 	},
 	{
+		// The utilities have a barrel, src/utils/index.ts. Modules outside the folder import from
+		// it; only the modules in it import each other directly. (vi.mock still names the module
+		// it replaces, which this rule does not cover.)
+		files: ['src/**/*.ts'],
+		ignores: ['src/utils/**'],
+		rules: {
+			'no-restricted-imports': [
+				'error',
+				{
+					patterns: [
+						{
+							regex: '^(\\.\\.?/)+utils/',
+							message: 'Import from the utils barrel (src/utils/index.ts) instead.',
+						},
+					],
+				},
+			],
+		},
+	},
+	{
 		// Test doubles are `any` by construction - vi.fn() stubs, partial fixture objects, and
 		// `expect(mod.method)` assertions. These rules fire on the mocking, not on the code under
 		// test, so they are waived here rather than papered over with casts.
