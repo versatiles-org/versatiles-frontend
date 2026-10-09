@@ -1,5 +1,5 @@
 import { PromiseFunction, progress, type ProgressLabel } from '../async-progress';
-import type { FileDBs } from '../sources/file-dbs';
+import type { FileDBs } from '../sources';
 
 /**
  * Compresses the files of all file databases with brotli, showing the overall percentage.

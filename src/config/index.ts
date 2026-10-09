@@ -1,4 +1,4 @@
-import type { SourceConfig } from '../sources/source-config';
+import type { SourceConfig } from '../sources';
 import { githubSource, npmSource, staticSource } from './sources';
 import type { FrontendConfig } from '../frontend/frontend';
 import { emptyGlyphPbf, limitFontFamiliesCodeblocks, removeItalicFaces, removeItalicFontIds } from './glyph-transforms';

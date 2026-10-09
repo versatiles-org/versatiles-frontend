@@ -3,7 +3,7 @@ import { frontendConfigs, sourceConfigs } from './config';
 import { serveFrontends } from './server/serve';
 import arg from 'arg';
 import { resolve } from 'path';
-import { FileDBs } from './sources/file-dbs';
+import { FileDBs } from './sources';
 import { loadSources } from './pipeline';
 
 // Disables ANSI color codes in progress output for simplicity in development environments.

@@ -59,9 +59,9 @@ export default ts.config(
 		},
 	},
 	{
-		// src/utils/ and src/pipeline/ have a barrel (index.ts). Modules outside such a folder
-		// import from the barrel; only the modules in it import each other directly, with "./".
-		// (vi.mock still names the module it replaces, which this rule does not cover.)
+		// src/utils/, src/pipeline/ and src/sources/ have a barrel (index.ts). Modules outside such
+		// a folder import from the barrel; only the modules in it import each other directly, with
+		// "./". (vi.mock still names the module it replaces, which this rule does not cover.)
 		files: ['src/**/*.ts'],
 		rules: {
 			'no-restricted-imports': [
@@ -69,7 +69,7 @@ export default ts.config(
 				{
 					patterns: [
 						{
-							regex: '^(\\.\\.?/)+(utils|pipeline)/',
+							regex: '^(\\.\\.?/)+(utils|pipeline|sources)/',
 							message: 'Import from the barrel of the folder (its index.ts) instead.',
 						},
 					],

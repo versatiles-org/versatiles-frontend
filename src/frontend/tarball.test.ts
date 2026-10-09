@@ -5,7 +5,7 @@ import { resolve } from 'path';
 import { execFileSync } from 'child_process';
 import { gunzipSync, zstdDecompressSync } from 'zlib';
 import tar from 'tar-stream';
-import { FileDB } from '../sources/file-db';
+import { FileDB } from '../sources';
 import { emptyGlyphPbf } from '../config/glyph-transforms';
 
 // Mock cache module
@@ -43,8 +43,9 @@ vi.mock('fs', async (originalImport) => {
 	};
 });
 
-// Mock filedbs module
-const FileDBs = vi.fn();
+// Mock filedbs module. Declared through vi.hoisted: the sources barrel imported above loads
+// file-dbs, and with it the hoisted factory below, before the rest of this file runs.
+const FileDBs = vi.hoisted(() => vi.fn());
 vi.mock('../sources/file-dbs', async (importOriginal) => {
 	const original = await importOriginal<typeof import('../sources/file-dbs')>();
 	const BaseFileDBs = original.FileDBs;
@@ -80,9 +81,6 @@ afterAll(async () => {
 	if (tarballs.dir) rmSync(tarballs.dir, { recursive: true, force: true });
 });
 
-// Nothing else imports the module at runtime (frontend.ts only uses its types), so this import
-// is what runs the mock factory above, which gives FileDBs its implementation.
-await import('../sources/file-dbs');
 const { sourceConfigs: fileDBConfig, frontendConfigs } = await import('../config');
 const { Frontend } = await import('./frontend');
 const { saveAsBrTarGz, saveAsTarGz, saveAsTarZst } = await import('./tarball');

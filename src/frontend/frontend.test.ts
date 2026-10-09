@@ -1,9 +1,10 @@
 import { vi, describe, it, expect } from 'vitest';
 import type { FrontendConfig } from './frontend';
-import { FileDB } from '../sources/file-db';
+import { FileDB } from '../sources';
 
-// Mock filedbs module
-const FileDBs = vi.fn();
+// Mock filedbs module. Declared through vi.hoisted: the sources barrel imported above loads
+// file-dbs, and with it the hoisted factory below, before the rest of this file runs.
+const FileDBs = vi.hoisted(() => vi.fn());
 vi.mock('../sources/file-dbs', async (importOriginal) => {
 	const original = await importOriginal<typeof import('../sources/file-dbs')>();
 	const BaseFileDBs = original.FileDBs;
@@ -34,9 +35,6 @@ vi.mock('../sources/file-dbs', async (importOriginal) => {
 	};
 });
 
-// Nothing else imports the module at runtime (frontend.ts only uses its types), so this import
-// is what runs the mock factory above, which gives FileDBs its implementation.
-await import('../sources/file-dbs');
 const { frontendConfigs } = await import('../config');
 const { Frontend } = await import('./frontend');
 

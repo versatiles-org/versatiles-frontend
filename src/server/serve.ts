@@ -1,4 +1,4 @@
-import type { FileDBs } from '../sources/file-dbs';
+import type { FileDBs } from '../sources';
 import { Frontend, type FrontendConfig } from '../frontend/frontend';
 import { LandingPage, type LandingEntry } from './landing-page';
 import { FrontendServer, type ProxyRule } from './frontend-server';

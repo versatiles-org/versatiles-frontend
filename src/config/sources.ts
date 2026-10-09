@@ -1,10 +1,4 @@
-import type {
-	AssetConfig,
-	GithubSourceConfig,
-	NpmSourceConfig,
-	SourceInfo,
-	StaticSourceConfig,
-} from '../sources/source-config';
+import type { AssetConfig, GithubSourceConfig, NpmSourceConfig, SourceInfo, StaticSourceConfig } from '../sources';
 
 /*
  * Shorthands for the file sources in the configuration.
