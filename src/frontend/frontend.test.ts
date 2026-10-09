@@ -1,47 +1,6 @@
-import { vi, describe, it, expect, beforeEach, afterAll } from 'vitest';
+import { vi, describe, it, expect } from 'vitest';
 import type { FrontendConfig } from './frontend';
-import { tmpdir } from 'os';
-import { resolve } from 'path';
-import { execFileSync } from 'child_process';
-import { gunzipSync, zstdDecompressSync } from 'zlib';
-import tar from 'tar-stream';
 import { FileDB } from '../files/filedb';
-import { emptyGlyphPbf } from '../config/glyphs';
-
-// Mock cache module
-vi.mock('../utils/cache', () => ({
-	cache: vi.fn(async (_action: string, _key: string, cbBuffer: () => Promise<Buffer>) => cbBuffer()),
-}));
-
-// Mock fs module
-// Declared through vi.hoisted because the vi.mock factory below is hoisted above this file's
-// own declarations, and it needs somewhere to record the directory it creates.
-const { tarballs, createWriteStream } = vi.hoisted(() => ({
-	tarballs: { dir: '', count: 0 },
-	createWriteStream: vi.fn(),
-}));
-
-vi.mock('fs', async (originalImport) => {
-	const originalFs = await originalImport<typeof import('fs')>();
-
-	// Every tarball goes into one directory that afterAll removes. Previously each write landed
-	// under a random name directly in tmpdir(), and nothing ever deleted them, so a full test run
-	// left a scatter of megabyte-sized files behind.
-	tarballs.dir = originalFs.mkdtempSync(resolve(tmpdir(), 'versatiles-tarball-test-'));
-	createWriteStream.mockImplementation(() => {
-		const filename = resolve(tarballs.dir, `tarball-${tarballs.count++}.tmp`);
-		return originalFs.createWriteStream(filename);
-	});
-
-	return {
-		createReadStream: vi.fn(),
-		createWriteStream,
-		writeFileSync: vi.fn(),
-		mkdirSync: vi.fn(),
-		existsSync: vi.fn(),
-		rmSync: vi.fn(),
-	};
-});
 
 // Mock filedbs module
 const FileDBs = vi.fn();
@@ -75,217 +34,53 @@ vi.mock('../files/filedbs', async (importOriginal) => {
 	};
 });
 
-afterAll(async () => {
-	const { rmSync } = await vi.importActual<typeof import('fs')>('fs');
-	if (tarballs.dir) rmSync(tarballs.dir, { recursive: true, force: true });
-});
-
 // Nothing else imports the module at runtime (frontend.ts only uses its types), so this import
 // is what runs the mock factory above, which gives FileDBs its implementation.
 await import('../files/filedbs');
-const { sourceConfigs: fileDBConfig, frontendConfigs } = await import('../config');
+const { frontendConfigs } = await import('../config');
 const { Frontend } = await import('./frontend');
 
 describe('Frontend class', () => {
-	let mockFileDBs: InstanceType<typeof FileDBs>;
-	const testConfig = {
-		name: 'frontend',
-		description: 'Test frontend.',
-		fileDBs: ['all'],
-		ignore: ['ignore-me.txt'],
-	} as const satisfies FrontendConfig;
+	it('drops the italic faces from frontend-tiny', async () => {
+		const tiny = frontendConfigs.find((c) => c.name === 'frontend-tiny');
+		if (!tiny) throw Error('frontend-tiny not found');
 
-	beforeEach(() => {
-		vi.clearAllMocks(); // Clear mocks before each test
-		mockFileDBs = new FileDBs(
-			Object.fromEntries(
-				Object.entries(fileDBConfig).map(([name, _config]) => {
-					return [name, { [name + '.html']: 'html content of ' + name }];
-				})
+		const dbs = new FileDBs({ all: {} });
+		const db = dbs.get('all');
+		db.setFileFromBuffer('assets/glyphs/noto_sans_regular/0-255.pbf', Buffer.from('upright'));
+		db.setFileFromBuffer('assets/glyphs/noto_sans_regular_italic/0-255.pbf', Buffer.from('italic'));
+		db.setFileFromBuffer('assets/glyphs/noto_sans_bold_italic/0-255.pbf', Buffer.from('italic'));
+		db.setFileFromBuffer('assets/glyphs/index.json', Buffer.from(JSON.stringify(['a', 'a_italic'], null, 2)));
+		db.setFileFromBuffer(
+			'assets/glyphs/font_families.json',
+			Buffer.from(
+				JSON.stringify(
+					[
+						{
+							name: 'Noto Sans',
+							faces: [
+								{ id: 'a', style: 'normal' },
+								{ id: 'a_italic', style: 'italic' },
+							],
+						},
+					],
+					null,
+					2
+				) + '\n'
 			)
 		);
-	});
 
-	it('should create gzip-compressed tarball', async () => {
-		const frontend = new Frontend(mockFileDBs, testConfig);
+		const files = Object.fromEntries(
+			[...new Frontend(dbs, { ...tiny, fileDBs: ['all'] }).iterate()].map((f) => [f.name, f.bufferRaw])
+		);
 
-		await frontend.saveAsTarGz('/tmp/');
-
-		expect(createWriteStream).toHaveBeenCalledTimes(1);
-		expect(createWriteStream).toHaveBeenCalledWith('/tmp/frontend.tar.gz');
-	});
-
-	it('should create brotli tarball', async () => {
-		const frontend = new Frontend(mockFileDBs, testConfig);
-
-		await frontend.saveAsBrTarGz('/tmp/');
-
-		expect(createWriteStream).toHaveBeenCalledTimes(1);
-		expect(createWriteStream).toHaveBeenCalledWith('/tmp/frontend.br.tar.gz');
-	});
-
-	it('should create zstd tarball', async () => {
-		const frontend = new Frontend(mockFileDBs, testConfig);
-
-		await frontend.saveAsTarZst('/tmp/');
-
-		expect(createWriteStream).toHaveBeenCalledTimes(1);
-		expect(createWriteStream).toHaveBeenCalledWith('/tmp/frontend.tar.zst');
-	});
-
-	describe('hardlinks', () => {
-		const content = Buffer.from('duplicated content');
-
-		function createFrontend(): InstanceType<typeof Frontend> {
-			const dbs = new FileDBs({ all: {}, extra: {} });
-			dbs.get('all').setFileFromBuffer('a/first.txt', content);
-			dbs.get('all').setFileFromBuffer('empty1.txt', Buffer.alloc(0));
-			dbs.get('all').setFileFromBuffer('empty2.txt', Buffer.alloc(0));
-			// Same content from another fileDB, in a separate buffer.
-			dbs.get('extra').setFileFromBuffer('b/second.txt', Buffer.from(content));
-			dbs.get('extra').setFileFromBuffer('unique.txt', Buffer.from('unique'));
-			return new Frontend(dbs, { name: 'links', description: 'Links frontend.', fileDBs: ['all', 'extra'] });
-		}
-
-		// The path of the temporary file the mocked createWriteStream wrote the tarball to.
-		function writtenTarball(): string {
-			return vi.mocked(createWriteStream).mock.results[0].value.path;
-		}
-
-		async function listEntries(filename: string): Promise<Record<string, string>> {
-			const { readFileSync } = await vi.importActual<typeof import('fs')>('fs');
-			const compressed = readFileSync(filename);
-			// The temporary file has no meaningful extension, so detect gzip by its magic bytes.
-			const isGzip = compressed[0] === 0x1f && compressed[1] === 0x8b;
-			const entries: Record<string, string> = {};
-			const extract = tar.extract();
-			extract.end(isGzip ? gunzipSync(compressed) : zstdDecompressSync(compressed));
-			for await (const entry of extract) {
-				const { name, type, linkname } = entry.header;
-				entries[name] = type === 'link' ? `link -> ${linkname}` : type;
-				entry.resume();
-			}
-			return entries;
-		}
-
-		it('writes duplicated content as link entries into the .tar.zst bundle', async () => {
-			await createFrontend().saveAsTarZst('/tmp/');
-			expect(await listEntries(writtenTarball())).toStrictEqual({
-				'a/first.txt': 'file',
-				'empty1.txt': 'file',
-				'empty2.txt': 'file',
-				'b/second.txt': 'link -> a/first.txt',
-				'unique.txt': 'file',
-			});
-		});
-
-		it('writes duplicated content as link entries into the .tar.gz bundle', async () => {
-			await createFrontend().saveAsTarGz('/tmp/');
-			expect(await listEntries(writtenTarball())).toStrictEqual({
-				'a/first.txt': 'file',
-				'empty1.txt': 'file',
-				'empty2.txt': 'file',
-				'b/second.txt': 'link -> a/first.txt',
-				'unique.txt': 'file',
-			});
-		});
-
-		it('links .br entries to the first .br entry with the same raw content', async () => {
-			await createFrontend().saveAsBrTarGz('/tmp/');
-			expect(await listEntries(writtenTarball())).toStrictEqual({
-				'a/first.txt.br': 'file',
-				'empty1.txt.br': 'file',
-				'empty2.txt.br': 'file',
-				'b/second.txt.br': 'link -> a/first.txt.br',
-				'unique.txt.br': 'file',
-			});
-		});
-
-		it('recreates both files when extracting', async () => {
-			const fs = await vi.importActual<typeof import('fs')>('fs');
-			await createFrontend().saveAsTarGz('/tmp/');
-			const dir = fs.mkdtempSync(resolve(tmpdir(), 'hardlinks-'));
-			try {
-				execFileSync('tar', ['-xzf', writtenTarball(), '-C', dir]);
-				expect(fs.readFileSync(resolve(dir, 'a/first.txt'))).toEqual(content);
-				expect(fs.readFileSync(resolve(dir, 'b/second.txt'))).toEqual(content);
-			} finally {
-				fs.rmSync(dir, { recursive: true, force: true });
-			}
-		});
-
-		it("keeps frontend-tiny's glyph transform working for ranges that share a buffer", async () => {
-			const tiny = frontendConfigs.find((c) => c.name === 'frontend-tiny');
-			if (!tiny?.transform) throw Error('frontend-tiny has no transform');
-
-			// As loaded from a deduplicated fonts release: bold shares its buffers with regular where
-			// the ranges are identical. The italic faces would too, but frontend-tiny ignores them.
-			const low = Buffer.from('glyphs 0-255');
-			const high = Buffer.from('glyphs 19968-20223');
-			const dbs = new FileDBs({ all: {} });
-			const db = dbs.get('all');
-			db.setFileFromBuffer('assets/glyphs/noto_sans_regular/0-255.pbf', low);
-			db.setFileFromBuffer('assets/glyphs/noto_sans_bold/0-255.pbf', low);
-			db.setFileFromBuffer('assets/glyphs/noto_sans_regular/19968-20223.pbf', high);
-			db.setFileFromBuffer('assets/glyphs/noto_sans_bold/19968-20223.pbf', high);
-
-			const frontend = new Frontend(dbs, { ...tiny, fileDBs: ['all'] });
-			const files = Object.fromEntries([...frontend.iterate()].map((f) => [f.name, f.bufferRaw]));
-			expect(files['assets/glyphs/noto_sans_regular/19968-20223.pbf']).toEqual(emptyGlyphPbf());
-			expect(files['assets/glyphs/noto_sans_bold/19968-20223.pbf']).toEqual(emptyGlyphPbf());
-
-			await frontend.saveAsTarGz('/tmp/');
-			expect(await listEntries(writtenTarball())).toStrictEqual({
-				'assets/glyphs/noto_sans_regular/0-255.pbf': 'file',
-				'assets/glyphs/noto_sans_bold/0-255.pbf': 'link -> assets/glyphs/noto_sans_regular/0-255.pbf',
-				// The empty replacement tiles are identical for every font, so all but the first
-				// become links. Two bytes still cost a full 512-byte tar block, so linking pays off.
-				'assets/glyphs/noto_sans_regular/19968-20223.pbf': 'file',
-				'assets/glyphs/noto_sans_bold/19968-20223.pbf': 'link -> assets/glyphs/noto_sans_regular/19968-20223.pbf',
-			});
-		});
-
-		it('drops the italic faces from frontend-tiny', async () => {
-			const tiny = frontendConfigs.find((c) => c.name === 'frontend-tiny');
-			if (!tiny) throw Error('frontend-tiny not found');
-
-			const dbs = new FileDBs({ all: {} });
-			const db = dbs.get('all');
-			db.setFileFromBuffer('assets/glyphs/noto_sans_regular/0-255.pbf', Buffer.from('upright'));
-			db.setFileFromBuffer('assets/glyphs/noto_sans_regular_italic/0-255.pbf', Buffer.from('italic'));
-			db.setFileFromBuffer('assets/glyphs/noto_sans_bold_italic/0-255.pbf', Buffer.from('italic'));
-			db.setFileFromBuffer('assets/glyphs/index.json', Buffer.from(JSON.stringify(['a', 'a_italic'], null, 2)));
-			db.setFileFromBuffer(
-				'assets/glyphs/font_families.json',
-				Buffer.from(
-					JSON.stringify(
-						[
-							{
-								name: 'Noto Sans',
-								faces: [
-									{ id: 'a', style: 'normal' },
-									{ id: 'a_italic', style: 'italic' },
-								],
-							},
-						],
-						null,
-						2
-					) + '\n'
-				)
-			);
-
-			const files = Object.fromEntries(
-				[...new Frontend(dbs, { ...tiny, fileDBs: ['all'] }).iterate()].map((f) => [f.name, f.bufferRaw])
-			);
-
-			// No italic glyph ranges survive...
-			expect(Object.keys(files).filter((name) => name.includes('_italic'))).toStrictEqual([]);
-			expect(files['assets/glyphs/noto_sans_regular/0-255.pbf']).toEqual(Buffer.from('upright'));
-			// ...and neither metadata file still advertises one, which would point clients at
-			// ranges that are no longer served.
-			expect(files['assets/glyphs/index.json'].toString('utf8')).not.toContain('italic');
-			expect(files['assets/glyphs/font_families.json'].toString('utf8')).not.toContain('italic');
-		});
+		// No italic glyph ranges survive...
+		expect(Object.keys(files).filter((name) => name.includes('_italic'))).toStrictEqual([]);
+		expect(files['assets/glyphs/noto_sans_regular/0-255.pbf']).toEqual(Buffer.from('upright'));
+		// ...and neither metadata file still advertises one, which would point clients at
+		// ranges that are no longer served.
+		expect(files['assets/glyphs/index.json'].toString('utf8')).not.toContain('italic');
+		expect(files['assets/glyphs/font_families.json'].toString('utf8')).not.toContain('italic');
 	});
 
 	it('defines frontend configurations', () => {

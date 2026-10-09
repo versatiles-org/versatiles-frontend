@@ -1,5 +1,6 @@
 import type { FileDBs } from '../files/filedbs';
 import { Frontend, type FrontendConfig } from '../frontend/frontend';
+import { saveAsBrTarGz, saveAsTarGz, saveAsTarZst } from '../frontend/tarball';
 import { PromiseFunction, progress, type ProgressLabel } from '../async_progress';
 import { generateOverview } from './overview';
 import type { ReleaseNotes } from './release_notes';
@@ -74,15 +75,15 @@ function generateFrontend(
 			frontends.push(frontend);
 			await Promise.all([
 				(async () => {
-					await frontend.saveAsBrTarGz(dstFolder);
+					await saveAsBrTarGz(frontend, dstFolder);
 					sBr.end();
 				})(),
 				(async () => {
-					await frontend.saveAsTarGz(dstFolder);
+					await saveAsTarGz(frontend, dstFolder);
 					sGz.end();
 				})(),
 				(async () => {
-					await frontend.saveAsTarZst(dstFolder);
+					await saveAsTarZst(frontend, dstFolder);
 					sZst.end();
 				})(),
 			]);
