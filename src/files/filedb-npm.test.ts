@@ -195,6 +195,25 @@ describe('NpmFileDB', () => {
 		]);
 	});
 
+	it('strips a leading folder, and skips files outside of it', async () => {
+		setupMockPackage();
+
+		const config: NpmSourceConfig = {
+			type: 'npm',
+			pkg: '@test/pkg',
+			stripPrefix: 'dist/',
+			// `include` sees the paths without the folder
+			include: /^(?!readme\.txt$)/,
+			dest: 'editor/',
+			source: { name: 'Test Package', url: 'https://example.com' },
+		};
+
+		const db = await NpmFileDB.build(config);
+
+		const files = Array.from(db.files.keys()).sort();
+		expect(files).toStrictEqual(['editor/index.js', 'editor/index.js.map', 'editor/style.css']);
+	});
+
 	it('flattens file paths when flatten is true', async () => {
 		setupMockPackage();
 

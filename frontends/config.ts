@@ -121,20 +121,11 @@ export const sourceConfigs = {
 	}),
 
 	// A prebuilt static site, served from /editor/ with its read-only viewer at /editor/view/.
-	// Shared maps are links to that viewer, and a new major version may no longer read older
-	// links, so the version is pinned and raised on purpose. Its own configuration file is left
-	// out in favour of ours in frontends/map-editor/.
-	'external-map-editor': githubSource('versatiles-org/versatiles-map-editor', {
-		pin: '3.1.1',
-		assets: [
-			{
-				url: 'https://github.com/versatiles-org/versatiles-map-editor/releases/download/v${version}/versatiles-map-editor-${version}.zip',
-				format: 'zip',
-				stripPrefix: 'versatiles-map-editor/',
-				include: /^(?!map-editor\.config\.jsonc$)/,
-				dest: 'editor/',
-			},
-		],
+	// Its own configuration file is left out in favour of ours in frontends/map-editor/.
+	'external-map-editor': npmSource('@versatiles/map-editor', {
+		stripPrefix: 'dist/',
+		include: /^(?!map-editor\.config\.jsonc$)/,
+		dest: 'editor/',
 		source: { name: 'VersaTiles Map Editor', url: 'https://github.com/versatiles-org/versatiles-map-editor' },
 	}),
 

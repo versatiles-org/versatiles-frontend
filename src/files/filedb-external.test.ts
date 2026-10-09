@@ -306,29 +306,6 @@ describe('getAssets', () => {
 			expect(filterCallbacks.unzstdUntar?.('fonts.json')).toBe('assets/glyphs/index.json');
 		});
 
-		it('strips a leading folder, and skips entries outside of it', async () => {
-			await ExternalFileDB.build({
-				...fontsAllConfig,
-				assets: [
-					{
-						url: 'https://example.org/site.zip',
-						format: 'zip',
-						dest: 'editor/',
-						stripPrefix: 'site/',
-						include: /^(?!config\.json$)/,
-					},
-				],
-			});
-			const filter = filterCallbacks.unzip;
-			expect(filter?.('site/index.html')).toBe('editor/index.html');
-			expect(filter?.('site/view/index.html')).toBe('editor/view/index.html');
-			// `include` sees the name without the folder
-			expect(filter?.('site/config.json')).toBe(false);
-			expect(filter?.('site/view/config.json')).toBe('editor/view/config.json');
-			expect(filter?.('other/index.html')).toBe(false);
-			expect(filter?.('index.html')).toBe(false);
-		});
-
 		it('fonts filter renames fonts.json to index.json', async () => {
 			await ExternalFileDB.build(fontsAllConfig);
 			expect(filterCallbacks.ungzipUntar).toBeTruthy();

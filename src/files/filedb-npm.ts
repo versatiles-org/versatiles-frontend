@@ -31,6 +31,10 @@ export class NpmFileDB extends FileDB {
 					addPath(join(absPath, name), relPath ? `${relPath}/${name}` : name);
 				}
 			} else {
+				if (config.stripPrefix) {
+					if (!relPath.startsWith(config.stripPrefix)) return;
+					relPath = relPath.slice(config.stripPrefix.length);
+				}
 				if (config.include && !config.include.test(relPath)) return;
 				let destName = config.flatten ? basename(relPath) : relPath;
 				if (config.rename?.[destName]) destName = config.rename[destName];

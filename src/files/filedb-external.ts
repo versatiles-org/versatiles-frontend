@@ -46,10 +46,6 @@ export class ExternalFileDB extends FileDB {
 	private async fetchAsset(url: string, asset: AssetConfig): Promise<void> {
 		const curl = new Curl(this, url);
 		const mapFilename = (filename: string): string | false => {
-			if (asset.stripPrefix) {
-				if (!filename.startsWith(asset.stripPrefix)) return false;
-				filename = filename.slice(asset.stripPrefix.length);
-			}
 			if (asset.include && !asset.include.test(filename)) return false;
 			let name = asset.flatten ? basename(filename) : filename;
 			if (asset.rename?.[name]) name = asset.rename[name];

@@ -7,11 +7,6 @@ export interface AssetConfig {
 	url: string;
 	format: 'tar.gz' | 'tar.zst' | 'zip';
 	dest: string;
-	/**
-	 * Leading folder of the archive to drop, e.g. `versatiles-map-editor/`. Entries outside
-	 * of it are skipped, and `include` and `rename` see the names without it.
-	 */
-	stripPrefix?: string;
 	include?: RegExp;
 	flatten?: boolean;
 	rename?: Record<string, string>;
@@ -52,6 +47,11 @@ export interface NpmSourceConfig {
 	type: 'npm';
 	pkg: string;
 	bundle?: NpmBundleConfig;
+	/**
+	 * Leading folder of the package to drop, e.g. `dist/`. Files outside of it are skipped,
+	 * and `include` and `rename` see the paths without it.
+	 */
+	stripPrefix?: string;
 	include?: RegExp;
 	flatten?: boolean;
 	rename?: Record<string, string>;
@@ -86,6 +86,7 @@ export function npmSource(
 	pkg: string,
 	options: {
 		bundle?: NpmBundleConfig;
+		stripPrefix?: string;
 		include?: RegExp;
 		flatten?: boolean;
 		rename?: Record<string, string>;
@@ -97,6 +98,7 @@ export function npmSource(
 		type: 'npm',
 		pkg,
 		bundle: options.bundle,
+		stripPrefix: options.stripPrefix,
 		include: options.include,
 		flatten: options.flatten,
 		rename: options.rename,
