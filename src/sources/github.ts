@@ -1,12 +1,12 @@
 import { Archive } from './archive';
-import { FileDB } from './filedb';
+import { FileDB } from './file-db';
 import { mapEntryName } from './entry-path';
-import { getLatestGithubReleaseVersion } from './release-version';
-import type { ExternalSourceConfig, AssetConfig } from './source-config';
+import { getLatestGithubReleaseVersion } from './github-release';
+import type { GithubSourceConfig, AssetConfig } from './source-config';
 
-export class ExternalFileDB extends FileDB {
-	public static async build(config: ExternalSourceConfig): Promise<ExternalFileDB> {
-		const db = new ExternalFileDB();
+export class GithubFileDB extends FileDB {
+	public static async build(config: GithubSourceConfig): Promise<GithubFileDB> {
+		const db = new GithubFileDB();
 
 		const version = await db.resolveVersion(config);
 
@@ -21,7 +21,7 @@ export class ExternalFileDB extends FileDB {
 		return db;
 	}
 
-	private async resolveVersion(config: ExternalSourceConfig): Promise<string> {
+	private async resolveVersion(config: GithubSourceConfig): Promise<string> {
 		const [owner, repo] = config.version.github.split('/');
 		const { pin, prerelease } = config.version;
 		if (!pin) return getLatestGithubReleaseVersion(owner, repo, prerelease);

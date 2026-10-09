@@ -59,7 +59,7 @@ vi.mock('./utils/cache', () => ({
 }));
 
 // Mock release-version module
-vi.mock('./files/release-version', () => ({
+vi.mock('./sources/github-release', () => ({
 	getLatestGithubReleaseVersion: vi.fn<(owner: string, repo: string, allowPrerelease?: boolean) => Promise<string>>(
 		async () => '1.2.3'
 	),
@@ -90,8 +90,8 @@ vi.mock('./utils/folders', () => ({
 }));
 
 // Mock StaticFileDB
-vi.mock('./files/filedb-static', async (importOriginal) => {
-	const original = await importOriginal<typeof import('./files/filedb-static')>();
+vi.mock('./sources/static', async (importOriginal) => {
+	const original = await importOriginal<typeof import('./sources/static')>();
 	const BaseStaticFileDB = original.StaticFileDB;
 
 	class MockStaticFileDB extends BaseStaticFileDB {
@@ -118,19 +118,19 @@ vi.mock('./files/filedb-static', async (importOriginal) => {
 	};
 });
 
-// Mock ExternalFileDB
-vi.mock('./files/filedb-external', async (importOriginal) => {
-	const original = await importOriginal<typeof import('./files/filedb-external')>();
-	const BaseExternalFileDB = original.ExternalFileDB;
+// Mock GithubFileDB
+vi.mock('./sources/github', async (importOriginal) => {
+	const original = await importOriginal<typeof import('./sources/github')>();
+	const BaseGithubFileDB = original.GithubFileDB;
 
-	class ExternalFileDB extends BaseExternalFileDB {
+	class GithubFileDB extends BaseGithubFileDB {
 		constructor() {
 			super();
 		}
 
 		// Keeps the source of the config, like the real one, so the release notes can list it.
-		public static async build(config: { source?: { name: string; url: string } }): Promise<ExternalFileDB> {
-			const db = new ExternalFileDB();
+		public static async build(config: { source?: { name: string; url: string } }): Promise<GithubFileDB> {
+			const db = new GithubFileDB();
 			db.source = config.source;
 			return db;
 		}
@@ -142,13 +142,13 @@ vi.mock('./files/filedb-external', async (importOriginal) => {
 
 	return {
 		...original,
-		ExternalFileDB,
+		GithubFileDB,
 	};
 });
 
 // Mock NpmFileDB
-vi.mock('./files/filedb-npm', async (importOriginal) => {
-	const original = await importOriginal<typeof import('./files/filedb-npm')>();
+vi.mock('./sources/npm', async (importOriginal) => {
+	const original = await importOriginal<typeof import('./sources/npm')>();
 	const BaseNpmFileDB = original.NpmFileDB;
 
 	class NpmFileDB extends BaseNpmFileDB {

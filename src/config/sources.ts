@@ -1,10 +1,10 @@
 import type {
 	AssetConfig,
-	ExternalSourceConfig,
+	GithubSourceConfig,
 	NpmSourceConfig,
 	SourceInfo,
 	StaticSourceConfig,
-} from '../files/source-config';
+} from '../sources/source-config';
 
 /*
  * Shorthands for the file sources in the configuration.
@@ -17,9 +17,9 @@ interface GithubSourceOptions {
 	source?: SourceInfo;
 }
 
-export function githubSource(repo: string, options: GithubSourceOptions): ExternalSourceConfig {
+export function githubSource(repo: string, options: GithubSourceOptions): GithubSourceConfig {
 	return {
-		type: 'external',
+		type: 'github',
 		version: { github: repo, prerelease: options.prerelease, pin: options.pin },
 		assets: options.assets,
 		source: options.source,

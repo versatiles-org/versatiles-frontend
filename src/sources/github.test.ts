@@ -1,7 +1,7 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
 import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from '../async-progress/progress';
 import type { MapName, OnFile } from './archive';
-import type { ExternalSourceConfig } from './source-config';
+import type { GithubSourceConfig } from './source-config';
 
 // Mock the archive module. vi.hoisted makes archiveCalls and mapNames available to the hoisted mock.
 const { archiveCalls, mapNames } = vi.hoisted(() => {
@@ -92,18 +92,18 @@ vi.mock('../async-progress/progress', async (originalImport) => {
 });
 
 // Mock release-version module
-vi.mock('./release-version', () => ({
+vi.mock('./github-release', () => ({
 	getLatestGithubReleaseVersion: vi.fn<(owner: string, repo: string, allowPrerelease?: boolean) => Promise<string>>(
 		async () => '1.2.3'
 	),
 }));
 
-import { ExternalFileDB } from './filedb-external';
-import { getLatestGithubReleaseVersion } from './release-version';
+import { GithubFileDB } from './github';
+import { getLatestGithubReleaseVersion } from './github-release';
 
 // Source configs for tests
-const fontsAllConfig: ExternalSourceConfig = {
-	type: 'external',
+const fontsAllConfig: GithubSourceConfig = {
+	type: 'github',
 	version: { github: 'versatiles-org/versatiles-fonts' },
 	assets: [
 		{
@@ -116,8 +116,8 @@ const fontsAllConfig: ExternalSourceConfig = {
 	source: { name: 'VersaTiles Fonts', url: 'https://github.com/versatiles-org/versatiles-fonts' },
 };
 
-const fontsNotoConfig: ExternalSourceConfig = {
-	type: 'external',
+const fontsNotoConfig: GithubSourceConfig = {
+	type: 'github',
 	version: { github: 'versatiles-org/versatiles-fonts' },
 	assets: [
 		{
@@ -130,8 +130,8 @@ const fontsNotoConfig: ExternalSourceConfig = {
 	source: { name: 'VersaTiles Fonts', url: 'https://github.com/versatiles-org/versatiles-fonts' },
 };
 
-const stylesConfig: ExternalSourceConfig = {
-	type: 'external',
+const stylesConfig: GithubSourceConfig = {
+	type: 'github',
 	version: { github: 'versatiles-org/versatiles-style', prerelease: true },
 	assets: [
 		{
@@ -173,7 +173,7 @@ describe('getAssets', () => {
 		});
 
 		it('fonts', async () => {
-			await ExternalFileDB.build(fontsAllConfig);
+			await GithubFileDB.build(fontsAllConfig);
 			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-fonts', undefined]]);
 			expect(getArchiveCalls()).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.2.3/fonts.tar.gz',
@@ -181,7 +181,7 @@ describe('getAssets', () => {
 		});
 
 		it('styles', async () => {
-			await ExternalFileDB.build(stylesConfig);
+			await GithubFileDB.build(stylesConfig);
 			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-style', true]]);
 			expect(getArchiveCalls()).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-style/releases/download/v1.2.3/sprites.tar.gz',
@@ -191,7 +191,7 @@ describe('getAssets', () => {
 		});
 
 		it('fonts-noto', async () => {
-			await ExternalFileDB.build(fontsNotoConfig);
+			await GithubFileDB.build(fontsNotoConfig);
 			expect(getGHCalls()).toStrictEqual([['versatiles-org', 'versatiles-fonts', undefined]]);
 			expect(getArchiveCalls()).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.2.3/noto_sans.tar.gz',
@@ -200,8 +200,8 @@ describe('getAssets', () => {
 	});
 
 	describe('pinned versions', () => {
-		const pinnedConfig = (pin: string): ExternalSourceConfig => ({
-			type: 'external',
+		const pinnedConfig = (pin: string): GithubSourceConfig => ({
+			type: 'github',
 			version: { github: 'versatiles-org/versatiles-fonts', pin },
 			assets: [
 				{
@@ -219,7 +219,7 @@ describe('getAssets', () => {
 
 		it('downloads the pinned version instead of the latest one', async () => {
 			// The mocked backend reports 1.2.3 as the latest release.
-			await ExternalFileDB.build(pinnedConfig('1.0.0'));
+			await GithubFileDB.build(pinnedConfig('1.0.0'));
 
 			expect(archiveCalls).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.0.0/fonts.tar.gz',
@@ -229,7 +229,7 @@ describe('getAssets', () => {
 		it('warns when a newer release than the pin exists', async () => {
 			const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
-			await ExternalFileDB.build(pinnedConfig('1.0.0'));
+			await GithubFileDB.build(pinnedConfig('1.0.0'));
 
 			expect(warn).toHaveBeenCalledWith('Warning: versatiles-fonts 1.2.3 available (pinned to 1.0.0)');
 		});
@@ -237,7 +237,7 @@ describe('getAssets', () => {
 		it('stays quiet when the pin is already the latest release', async () => {
 			const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 
-			await ExternalFileDB.build(pinnedConfig('1.2.3'));
+			await GithubFileDB.build(pinnedConfig('1.2.3'));
 
 			expect(warn).not.toHaveBeenCalled();
 		});
@@ -247,7 +247,7 @@ describe('getAssets', () => {
 			const warn = vi.spyOn(console, 'warn').mockImplementation(() => undefined);
 			vi.mocked(getLatestGithubReleaseVersion).mockRejectedValueOnce(Error('GitHub API rate limit exceeded'));
 
-			await ExternalFileDB.build(pinnedConfig('1.0.0'));
+			await GithubFileDB.build(pinnedConfig('1.0.0'));
 
 			expect(archiveCalls).toStrictEqual([
 				'https://github.com/versatiles-org/versatiles-fonts/releases/download/v1.0.0/fonts.tar.gz',
@@ -261,7 +261,7 @@ describe('getAssets', () => {
 			// Without a pin there is no version to fall back to, so the error must propagate.
 			vi.mocked(getLatestGithubReleaseVersion).mockRejectedValueOnce(Error('GitHub API rate limit exceeded'));
 
-			await expect(ExternalFileDB.build(fontsAllConfig)).rejects.toThrow('GitHub API rate limit exceeded');
+			await expect(GithubFileDB.build(fontsAllConfig)).rejects.toThrow('GitHub API rate limit exceeded');
 		});
 	});
 
@@ -275,7 +275,7 @@ describe('getAssets', () => {
 		});
 
 		it('extracts tar.zst assets with unzstdUntar', async () => {
-			await ExternalFileDB.build({
+			await GithubFileDB.build({
 				...fontsAllConfig,
 				assets: [{ ...fontsAllConfig.assets[0], format: 'tar.zst' }],
 			});
@@ -284,12 +284,12 @@ describe('getAssets', () => {
 		});
 
 		it('stores the extracted files in the database', async () => {
-			const db = await ExternalFileDB.build(fontsAllConfig);
+			const db = await GithubFileDB.build(fontsAllConfig);
 			expect(db.getFile('assets/glyphs/index.json')?.toString()).toBe('mocked content');
 		});
 
 		it('fonts filter renames fonts.json to index.json', async () => {
-			await ExternalFileDB.build(fontsAllConfig);
+			await GithubFileDB.build(fontsAllConfig);
 			expect(mapNames.ungzipUntar).toBeTruthy();
 			if (mapNames.ungzipUntar) {
 				expect(mapNames.ungzipUntar('fonts.json')).toBe('assets/glyphs/index.json');

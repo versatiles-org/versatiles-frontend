@@ -42,7 +42,7 @@ vi.mock('fs', () => {
 });
 
 const fs = await import('fs');
-const { StaticFileDB } = await import('./filedb-static');
+const { StaticFileDB } = await import('./static');
 
 describe('StaticFileDB', () => {
 	afterAll(() => {

@@ -1,6 +1,6 @@
 import ignore from 'ignore';
-import { File } from '../files/file';
-import type { FileDBs } from '../files/filedbs';
+import { File } from '../sources/file';
+import type { FileDBs } from '../sources/file-dbs';
 
 /**
  * Configuration for a frontend, detailing included and ignored paths, and development settings.

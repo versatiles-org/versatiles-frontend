@@ -4,7 +4,7 @@ import { createWriteStream } from 'fs';
 import type { Transform } from 'stream';
 import { pipeline } from 'stream/promises';
 import tar from 'tar-stream';
-import type { File } from '../files/file';
+import type { File } from '../sources/file';
 import type { Frontend } from './frontend';
 
 /*

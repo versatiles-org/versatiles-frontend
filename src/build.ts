@@ -4,7 +4,7 @@ import { readFileSync } from 'fs';
 import { cleanupFolder } from './utils';
 import { PromiseFunction, progress } from './async-progress';
 import { generateFrontends, loadSources, precompress, ReleaseNotes } from './pipeline';
-import { FileDBs } from './files/filedbs';
+import { FileDBs } from './sources/file-dbs';
 import { frontendConfigs, sourceConfigs } from './config';
 
 //progress.disableAnsi();

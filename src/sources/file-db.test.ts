@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { FileDB } from './filedb';
+import { FileDB } from './file-db';
 import { File } from './file';
 
 // Brotli compression is exercised by file.test.ts; here it only needs to be observable.

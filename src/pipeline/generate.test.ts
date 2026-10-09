@@ -1,6 +1,6 @@
 import { vi, describe, it, expect } from 'vitest';
 import type { FrontendConfig } from '../frontend/frontend';
-import { FileDBs } from '../files/filedbs';
+import { FileDBs } from '../sources/file-dbs';
 
 // The bundling itself is tested with Frontend and tarball; here only the orchestration counts.
 vi.mock('../frontend/frontend', () => ({

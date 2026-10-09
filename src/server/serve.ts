@@ -1,4 +1,4 @@
-import type { FileDBs } from '../files/filedbs';
+import type { FileDBs } from '../sources/file-dbs';
 import { Frontend, type FrontendConfig } from '../frontend/frontend';
 import { LandingPage, type LandingEntry } from './landing';
 import { Server, type DevConfig } from './server';

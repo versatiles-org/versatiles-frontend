@@ -1,10 +1,10 @@
-import type { SourceConfig } from '../files/source-config';
+import type { SourceConfig } from '../sources/source-config';
 import { githubSource, npmSource, staticSource } from './sources';
 import type { FrontendConfig } from '../frontend/frontend';
 import { emptyGlyphPbf, limitFontFamiliesCodeblocks, removeItalicFaces, removeItalicFontIds } from './glyphs';
 
 export const sourceConfigs = {
-	'external-fonts': githubSource('versatiles-org/versatiles-fonts', {
+	fonts: githubSource('versatiles-org/versatiles-fonts', {
 		assets: [
 			{
 				url: 'https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/fonts.tar.zst',
@@ -15,7 +15,7 @@ export const sourceConfigs = {
 		source: { name: 'VersaTiles Fonts', url: 'https://github.com/versatiles-org/versatiles-fonts' },
 	}),
 
-	'external-fonts-noto': githubSource('versatiles-org/versatiles-fonts', {
+	'fonts-noto': githubSource('versatiles-org/versatiles-fonts', {
 		assets: [
 			{
 				url: 'https://github.com/versatiles-org/versatiles-fonts/releases/download/v${version}/noto_sans.tar.zst',
@@ -26,7 +26,7 @@ export const sourceConfigs = {
 		source: { name: 'VersaTiles Fonts', url: 'https://github.com/versatiles-org/versatiles-fonts' },
 	}),
 
-	'external-sprites': githubSource('versatiles-org/versatiles-style', {
+	sprites: githubSource('versatiles-org/versatiles-style', {
 		prerelease: true,
 		assets: [
 			{
@@ -37,7 +37,7 @@ export const sourceConfigs = {
 		],
 	}),
 
-	'external-versatiles-style': githubSource('versatiles-org/versatiles-style', {
+	'versatiles-style': githubSource('versatiles-org/versatiles-style', {
 		prerelease: true,
 		assets: [
 			{
@@ -52,7 +52,7 @@ export const sourceConfigs = {
 	// MapLibre GL JS 6 is ESM-only and ships no UMD build, so we bundle it into a classic
 	// script exposing the `maplibregl` global. That keeps the plain `<script src>` tags in the
 	// frontends working, and the UMD plugins below still find the global they expect.
-	'external-maplibre': npmSource('maplibre-gl', {
+	maplibre: npmSource('maplibre-gl', {
 		bundle: {
 			entry: 'dist/maplibre-gl.mjs',
 			globalName: 'maplibregl',
@@ -70,7 +70,7 @@ export const sourceConfigs = {
 		source: { name: 'MapLibre GL JS', url: 'https://maplibre.org/maplibre-gl-js/docs/' },
 	}),
 
-	'external-maplibre-inspect': npmSource('@maplibre/maplibre-gl-inspect', {
+	'maplibre-inspect': npmSource('@maplibre/maplibre-gl-inspect', {
 		include: /dist\/.*\.(js|css|map)$/,
 		flatten: true,
 		dest: 'assets/lib/maplibre-gl-inspect/',
@@ -79,22 +79,22 @@ export const sourceConfigs = {
 
 	// Attaches itself as `maplibregl.Compare` when it finds the global, so it needs no bundling -
 	// but it must be loaded after maplibre-gl. Our maplibre global is a plain object (see the
-	// bundle shim in filedb-npm.ts), so the plugin can write to it.
-	'external-maplibre-gl-compare': npmSource('@maplibre/maplibre-gl-compare', {
+	// bundle shim in sources/npm.ts), so the plugin can write to it.
+	'maplibre-gl-compare': npmSource('@maplibre/maplibre-gl-compare', {
 		include: /dist\/maplibre-gl-compare\.(js|css)$/,
 		flatten: true,
 		dest: 'assets/lib/maplibre-gl-compare/',
 		source: { name: 'MapLibre GL Compare', url: 'https://github.com/maplibre/maplibre-gl-compare' },
 	}),
 
-	'external-maplibre-gl-geocoder': npmSource('@maplibre/maplibre-gl-geocoder', {
+	'maplibre-gl-geocoder': npmSource('@maplibre/maplibre-gl-geocoder', {
 		include: /dist\/maplibre-gl-geocoder\.(js|css)(\.map)?$/,
 		flatten: true,
 		dest: 'assets/lib/maplibre-gl-geocoder/',
 		source: { name: 'MapLibre GL Geocoder', url: 'https://github.com/maplibre/maplibre-gl-geocoder' },
 	}),
 
-	'external-maplibre-versatiles-styler': npmSource('maplibre-versatiles-styler', {
+	'maplibre-versatiles-styler': npmSource('maplibre-versatiles-styler', {
 		include: /dist\/.*\.(umd\.cjs|d\.ts)(\.map)?$/,
 		flatten: true,
 		rename: {
@@ -105,7 +105,7 @@ export const sourceConfigs = {
 		source: { name: 'MapLibre VersaTiles Styler', url: 'https://github.com/versatiles-org/maplibre-versatiles-styler' },
 	}),
 
-	'external-versatiles-svg-renderer': npmSource('@versatiles/maplibre-svg-export', {
+	'versatiles-svg-renderer': npmSource('@versatiles/maplibre-svg-export', {
 		include: /dist\/maplibre-svg-export\.umd\.min\.js$/,
 		flatten: true,
 		rename: {
@@ -116,8 +116,8 @@ export const sourceConfigs = {
 	}),
 
 	// A prebuilt static site, served from /editor/ with its read-only viewer at /editor/view/.
-	// Its own configuration file is left out in favour of ours in frontends/map-editor/.
-	'external-map-editor': npmSource('@versatiles/map-editor', {
+	// Its own configuration file is left out in favour of ours in frontends/map-editor-config/.
+	'map-editor': npmSource('@versatiles/map-editor', {
 		stripPrefix: 'dist/',
 		include: /^(?!map-editor\.config\.jsonc$)/,
 		dest: 'editor/',
@@ -125,7 +125,7 @@ export const sourceConfigs = {
 	}),
 
 	all: staticSource('all'),
-	'map-editor': staticSource('map-editor'),
+	'map-editor-config': staticSource('map-editor-config'),
 	frontend: staticSource('frontend'),
 	'frontend-dev': staticSource('frontend-dev'),
 	'frontend-tiny': staticSource('frontend-tiny'),
@@ -138,17 +138,17 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 		fileDBs: [
 			'all',
 			'frontend',
-			'external-fonts',
-			'external-sprites',
-			'external-versatiles-style',
-			'external-maplibre',
-			'external-maplibre-inspect',
-			'external-maplibre-gl-compare',
-			'external-maplibre-gl-geocoder',
-			'external-maplibre-versatiles-styler',
-			'external-versatiles-svg-renderer',
+			'fonts',
+			'sprites',
+			'versatiles-style',
+			'maplibre',
+			'maplibre-inspect',
+			'maplibre-gl-compare',
+			'maplibre-gl-geocoder',
+			'maplibre-versatiles-styler',
+			'versatiles-svg-renderer',
+			'map-editor-config',
 			'map-editor',
-			'external-map-editor',
 		],
 	},
 	{
@@ -157,17 +157,17 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 		fileDBs: [
 			'all',
 			'frontend-dev',
-			'external-fonts',
-			'external-sprites',
-			'external-versatiles-style',
-			'external-maplibre',
-			'external-maplibre-inspect',
-			'external-maplibre-gl-compare',
-			'external-maplibre-gl-geocoder',
-			'external-maplibre-versatiles-styler',
-			'external-versatiles-svg-renderer',
+			'fonts',
+			'sprites',
+			'versatiles-style',
+			'maplibre',
+			'maplibre-inspect',
+			'maplibre-gl-compare',
+			'maplibre-gl-geocoder',
+			'maplibre-versatiles-styler',
+			'versatiles-svg-renderer',
+			'map-editor-config',
 			'map-editor',
-			'external-map-editor',
 		],
 	},
 	{
@@ -176,23 +176,23 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 		fileDBs: [
 			'all',
 			'frontend',
-			'external-fonts-noto',
-			'external-sprites',
-			'external-versatiles-style',
-			'external-maplibre',
-			'external-maplibre-inspect',
-			'external-maplibre-gl-compare',
-			'external-maplibre-gl-geocoder',
-			'external-maplibre-versatiles-styler',
-			'external-versatiles-svg-renderer',
+			'fonts-noto',
+			'sprites',
+			'versatiles-style',
+			'maplibre',
+			'maplibre-inspect',
+			'maplibre-gl-compare',
+			'maplibre-gl-geocoder',
+			'maplibre-versatiles-styler',
+			'versatiles-svg-renderer',
+			'map-editor-config',
 			'map-editor',
-			'external-map-editor',
 		],
 	},
 	{
 		name: 'frontend-blank',
 		description: 'Blank frontend with only fonts and sprites.',
-		fileDBs: ['external-fonts', 'external-sprites'],
+		fileDBs: ['fonts', 'sprites'],
 	},
 	{
 		name: 'frontend-tiny',
@@ -201,11 +201,11 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 		fileDBs: [
 			'all',
 			'frontend-tiny',
-			'external-fonts-noto',
-			'external-sprites',
-			'external-versatiles-style',
-			'external-maplibre',
-			'external-maplibre-versatiles-styler',
+			'fonts-noto',
+			'sprites',
+			'versatiles-style',
+			'maplibre',
+			'maplibre-versatiles-styler',
 		],
 		ignore: [
 			'*.js.map',

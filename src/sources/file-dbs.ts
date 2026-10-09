@@ -1,7 +1,7 @@
-import { FileDB } from './filedb';
-import { StaticFileDB } from './filedb-static';
-import { ExternalFileDB } from './filedb-external';
-import { NpmFileDB } from './filedb-npm';
+import { FileDB } from './file-db';
+import { StaticFileDB } from './static';
+import { GithubFileDB } from './github';
+import { NpmFileDB } from './npm';
 import type { SourceConfig } from './source-config';
 
 /**
@@ -35,8 +35,8 @@ export async function createFileDB(config: SourceConfig, frontendFolder: string)
 	switch (config.type) {
 		case 'static':
 			return StaticFileDB.build(config, frontendFolder);
-		case 'external':
-			return ExternalFileDB.build(config);
+		case 'github':
+			return GithubFileDB.build(config);
 		case 'npm':
 			return NpmFileDB.build(config);
 		default:

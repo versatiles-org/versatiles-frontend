@@ -1,6 +1,6 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { FileDB } from '../files/filedb';
-import { FileDBs } from '../files/filedbs';
+import { FileDB } from '../sources/file-db';
+import { FileDBs } from '../sources/file-dbs';
 import type { FrontendConfig } from '../frontend/frontend';
 import { serveFrontends, type Serving } from './serve';
 

@@ -113,7 +113,7 @@ vi.mock('module', () => ({
 	})),
 }));
 
-import { NpmFileDB } from './filedb-npm';
+import { NpmFileDB } from './npm';
 
 describe('NpmFileDB', () => {
 	beforeEach(() => {

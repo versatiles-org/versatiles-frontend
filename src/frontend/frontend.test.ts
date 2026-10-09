@@ -1,11 +1,11 @@
 import { vi, describe, it, expect } from 'vitest';
 import type { FrontendConfig } from './frontend';
-import { FileDB } from '../files/filedb';
+import { FileDB } from '../sources/file-db';
 
 // Mock filedbs module
 const FileDBs = vi.fn();
-vi.mock('../files/filedbs', async (importOriginal) => {
-	const original = await importOriginal<typeof import('../files/filedbs')>();
+vi.mock('../sources/file-dbs', async (importOriginal) => {
+	const original = await importOriginal<typeof import('../sources/file-dbs')>();
 	const BaseFileDBs = original.FileDBs;
 
 	class MockFileDBs extends BaseFileDBs {
@@ -36,7 +36,7 @@ vi.mock('../files/filedbs', async (importOriginal) => {
 
 // Nothing else imports the module at runtime (frontend.ts only uses its types), so this import
 // is what runs the mock factory above, which gives FileDBs its implementation.
-await import('../files/filedbs');
+await import('../sources/file-dbs');
 const { frontendConfigs } = await import('../config');
 const { Frontend } = await import('./frontend');
 

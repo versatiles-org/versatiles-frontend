@@ -1,5 +1,5 @@
 import { existsSync, readdirSync, readFileSync, statSync, watch } from 'fs';
-import { FileDB } from './filedb';
+import { FileDB } from './file-db';
 import { basename, relative, resolve } from 'path';
 import type { StaticSourceConfig } from './source-config';
 

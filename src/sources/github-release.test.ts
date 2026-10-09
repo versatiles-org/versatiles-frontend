@@ -7,7 +7,7 @@ const { cacheMock } = vi.hoisted(() => ({
 }));
 vi.mock('../utils/cache', () => ({ cache: cacheMock }));
 
-const { getLatestGithubReleaseVersion } = await import('./release-version');
+const { getLatestGithubReleaseVersion } = await import('./github-release');
 
 // Mock fetch helper
 function mockFetchResponse(data: unknown, status = 200, headers: Record<string, string> = {}): void {

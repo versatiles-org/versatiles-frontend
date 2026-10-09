@@ -10,7 +10,7 @@ import type { NpmSourceConfig } from './source-config';
  *
  * It lives in its own file because it needs a real package on a real filesystem: esbuild is a
  * separate binary that reads the entry point itself, so the mocked `fs` used by
- * filedb-npm.test.ts cannot serve it. Only the module resolver is mocked, to point a package
+ * npm.test.ts cannot serve it. Only the module resolver is mocked, to point a package
  * name at the fixture below.
  *
  * What is worth asserting here is the contract the shim exists for, not the shape of the call to
@@ -32,7 +32,7 @@ vi.mock('module', () => ({
 	})),
 }));
 
-const { NpmFileDB } = await import('./filedb-npm');
+const { NpmFileDB } = await import('./npm');
 
 beforeAll(() => {
 	pkgDir = mkdtempSync(join(tmpdir(), 'versatiles-bundle-test-'));

@@ -36,8 +36,8 @@ interface GithubVersionConfig {
 	pin?: string;
 }
 
-export interface ExternalSourceConfig {
-	type: 'external';
+export interface GithubSourceConfig {
+	type: 'github';
 	version: GithubVersionConfig;
 	assets: AssetConfig[];
 	source?: SourceInfo;
@@ -73,4 +73,4 @@ export interface StaticSourceConfig {
 	path: string;
 }
 
-export type SourceConfig = ExternalSourceConfig | NpmSourceConfig | StaticSourceConfig;
+export type SourceConfig = GithubSourceConfig | NpmSourceConfig | StaticSourceConfig;
