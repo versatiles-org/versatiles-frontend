@@ -1,8 +1,6 @@
 import { progress, PromiseFunction } from './async_progress';
-import { Frontend } from './frontend/frontend';
 import { frontendConfigs, sourceConfigs } from './config';
-import { Server } from './server/server';
-import { LandingPage, type LandingEntry } from './server/landing';
+import { serveFrontends } from './server/serve';
 import arg from 'arg';
 import { resolve } from 'path';
 import { FileDBs } from './files/filedbs';
@@ -54,8 +52,13 @@ progress.finish();
 // One watcher covers every frontend, since they all read from the same file databases.
 fileDBs.enterWatchMode();
 
-// Development-specific configuration shared by all frontends.
-const devConfig = {
+// The frontends to serve, in the order they were named.
+const configs = names.flatMap((name) => frontendConfigs.filter((config) => config.name === name));
+
+// Loopback by default, so a development server is not published to the network.
+const { landingPort, entries } = await serveFrontends(fileDBs, configs, {
+	host: args['--host'] ?? '127.0.0.1',
+	port: args['--port'] ?? 8080,
 	proxy: [
 		{
 			from: '/tiles/',
@@ -64,25 +67,8 @@ const devConfig = {
 				: 'https://tiles.versatiles.org/tiles/',
 		},
 	],
-};
-
-// Loopback by default, so a development server is not published to the network.
-const host = args['--host'] ?? '127.0.0.1';
-
-// The frontends listen on ports chosen by the operating system: those can never collide
-// with another service by accident. The landing page below makes them discoverable.
-const entries: LandingEntry[] = [];
-for (const name of names) {
-	const config = frontendConfigs.find((c) => c.name === name);
-	if (!config) continue; // unreachable, names were validated above
-	const server = new Server(new Frontend(fileDBs, config), devConfig);
-	entries.push({ name, description: config.description, port: await server.start(0, host) });
-}
-
-const landing = new LandingPage(entries);
-const landingPort = await landing.start(args['--port'] ?? 8080, host, (busy) =>
-	console.log(`Port ${busy} is already in use, trying the next one.`)
-);
+	onBusy: (busy) => console.log(`Port ${busy} is already in use, trying the next one.`),
+});
 
 const width = Math.max(...entries.map((entry) => entry.name.length));
 console.log(`\nOverview:  http://localhost:${landingPort}/\n`);
