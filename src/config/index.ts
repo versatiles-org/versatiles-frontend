@@ -1,6 +1,5 @@
 import { githubSource, npmSource, staticSource, type SourceConfig } from '../files/source_config';
 import type { FrontendConfig } from '../frontend/frontend';
-import { File } from '../files/file';
 import { emptyGlyphPbf, limitFontFamiliesCodeblocks, removeItalicFaces, removeItalicFontIds } from './glyphs';
 
 export const sourceConfigs = {
@@ -222,17 +221,15 @@ export const frontendConfigs: FrontendConfig<keyof typeof sourceConfigs>[] = [
 		// replaced with valid, empty glyph tiles, so clients get an HTTP 200 (no glyphs)
 		// instead of a 404 when they request an out-of-range codepoint.
 		// font_families.json is updated to match, so its codeblocks do not claim the removed glyphs.
-		transform: (file: File): File | null => {
-			if (file.name === 'assets/glyphs/font_families.json') {
-				return new File(file.name, limitFontFamiliesCodeblocks(removeItalicFaces(file.bufferRaw), 1024));
+		transform: (name, content) => {
+			if (name === 'assets/glyphs/font_families.json') {
+				return limitFontFamiliesCodeblocks(removeItalicFaces(content), 1024);
 			}
-			if (file.name === 'assets/glyphs/index.json') {
-				return new File(file.name, removeItalicFontIds(file.bufferRaw));
-			}
-			const match = file.name.match(/^assets\/glyphs\/[^/]+\/(\d+)-\d+\.pbf$/);
-			if (!match) return file;
-			if (parseInt(match[1], 10) < 1024) return file;
-			return new File(file.name, emptyGlyphPbf());
+			if (name === 'assets/glyphs/index.json') return removeItalicFontIds(content);
+			const match = name.match(/^assets\/glyphs\/[^/]+\/(\d+)-\d+\.pbf$/);
+			if (!match) return content;
+			if (parseInt(match[1], 10) < 1024) return content;
+			return emptyGlyphPbf();
 		},
 	},
 ];

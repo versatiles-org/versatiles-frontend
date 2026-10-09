@@ -340,8 +340,7 @@ describe('Frontend class', () => {
 		expect(files).toStrictEqual(['a.txt']);
 	});
 
-	it('should apply transform callback to replace and drop files', async () => {
-		const { File } = await import('../files/file');
+	it('should apply transform callback to replace and drop files', () => {
 		const dbs = new FileDBs({ all: {} });
 		const allDB = dbs.get('all');
 		allDB.setFileFromBuffer('keep.txt', Buffer.from('keep'));
@@ -352,15 +351,18 @@ describe('Frontend class', () => {
 			name: 'transformed',
 			description: 'Transformed frontend.',
 			fileDBs: ['all'],
-			transform: (file) => {
-				if (file.name === 'drop.txt') return null;
-				if (file.name === 'replace.txt') return new File(file.name, Buffer.from('replaced'));
-				return file;
+			transform: (name, content) => {
+				if (name === 'drop.txt') return null;
+				if (name === 'replace.txt') return Buffer.from('replaced');
+				return content;
 			},
 		};
 
 		const frontend = new Frontend(dbs, transformConfig);
 		const files = [...frontend.iterate()].sort((a, b) => a.name.localeCompare(b.name));
+
+		// A kept file is the same File, so its precompressed brotli content is not lost.
+		expect(files.find((f) => f.name === 'keep.txt')).toBe(allDB.files.get('keep.txt'));
 
 		expect(files.map((f) => f.name)).toStrictEqual(['keep.txt', 'replace.txt']);
 		expect(files.find((f) => f.name === 'replace.txt')?.bufferRaw).toEqual(Buffer.from('replaced'));
@@ -379,7 +381,7 @@ describe('Frontend class', () => {
 			description: 'Transform-null frontend.',
 			fileDBs: ['all', 'extra'],
 			// Drop only the copy coming from the first fileDB.
-			transform: (file) => (file.bufferRaw.equals(Buffer.from('from-all')) ? null : file),
+			transform: (_name, content) => (content.equals(Buffer.from('from-all')) ? null : content),
 		};
 
 		const frontend = new Frontend(dbs, config);

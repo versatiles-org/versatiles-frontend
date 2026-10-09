@@ -78,11 +78,11 @@ export interface FrontendConfig<fileDBKeys = string> {
 	ignore?: string[];
 	filter?: (filename: string) => boolean;
 	/**
-	 * Rewrites files just before they are emitted. Return the file unchanged to keep it,
-	 * a new {@link File} (same name, different content) to replace it, or `null` to drop it.
+	 * Rewrites the content of files just before they are emitted. Return the given content to
+	 * keep the file, other content to replace it, or `null` to drop it. A file keeps its name.
 	 * Applied after `ignore`/`filter`, so it only sees files that survived those.
 	 */
-	transform?: (file: File) => File | null;
+	transform?: (name: string, content: Buffer) => Buffer | null;
 }
 
 /**
@@ -210,12 +210,13 @@ export class Frontend {
 			for (const file of fileDB.iterate()) {
 				if (!this.ignoreFilter(file.name)) continue;
 				if (seen.has(file.name)) continue;
-				const transformed = this.config.transform ? this.config.transform(file) : file;
+				const content = this.config.transform ? this.config.transform(file.name, file.bufferRaw) : file.bufferRaw;
 				// A transform returning null drops the file without claiming its name, so a
 				// later fileDB can still provide it — matching the ignore/filter `continue` above.
-				if (transformed == null) continue;
+				if (content == null) continue;
 				seen.add(file.name);
-				yield transformed;
+				// An unchanged file keeps its File, and with it the brotli result of the precompression.
+				yield content === file.bufferRaw ? file : new File(file.name, content);
 			}
 		}
 	}
@@ -229,9 +230,9 @@ export class Frontend {
 			if (!buffer) continue;
 			if (!this.config.transform) return buffer;
 			// Keep the dev server in sync with the tarball: apply the same rewrite here.
-			const transformed = this.config.transform(new File(path, buffer));
+			const transformed = this.config.transform(path, buffer);
 			if (transformed == null) continue;
-			return transformed.bufferRaw;
+			return transformed;
 		}
 		return null;
 	}
