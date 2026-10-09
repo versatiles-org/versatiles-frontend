@@ -1,10 +1,12 @@
 import { FileDB } from './filedb';
-import { PromiseFunction, ProgressLabel, progress } from '../async_progress';
 import { StaticFileDB } from './filedb-static';
 import { ExternalFileDB } from './filedb-external';
 import { NpmFileDB } from './filedb-npm';
 import type { SourceConfig } from './source_config';
 
+/**
+ * The file databases of all sources, by the name of the source.
+ */
 export class FileDBs {
 	fileDBs = new Map<string, FileDB>();
 	constructor() {}
@@ -16,32 +18,8 @@ export class FileDBs {
 		if (fileDB === undefined) throw Error(`file db not found: ${name}`);
 		return fileDB;
 	}
-	precompress(): PromiseFunction {
-		let s: ProgressLabel;
-		return PromiseFunction.single(
-			async () => {
-				// Add a progress label for file compression.
-				s = progress.add('precompress files');
-			},
-			async () => {
-				// Mark the start of file compression, perform the compression,
-				// update the progress label with the compression status, and then mark it as finished.
-				s.start();
-				const entries = Array.from(this.fileDBs.values()).map((fileDB) => ({ fileDB, sizeSum: 0, sizePos: 0 }));
-				await Promise.all(
-					entries.map(async (entry) => {
-						await entry.fileDB.compress((sizePos, sizeSum) => {
-							entry.sizeSum = sizeSum;
-							entry.sizePos = sizePos;
-							const allSum = entries.reduce((sum, e) => sum + e.sizeSum, 0);
-							const allPos = entries.reduce((sum, e) => sum + e.sizePos, 0);
-							s.updateLabel(`precompress files: ${((100 * allPos) / allSum).toFixed(0)}%`);
-						});
-					})
-				);
-				s.end();
-			}
-		);
+	values(): MapIterator<FileDB> {
+		return this.fileDBs.values();
 	}
 	enterWatchMode(): void {
 		for (const fileDB of this.fileDBs.values()) fileDB.enterWatchMode();
@@ -49,58 +27,20 @@ export class FileDBs {
 }
 
 /**
- * Loads every file source into the file databases.
+ * Loads the files of a source into a new file database of the matching kind.
  *
  * @param frontendFolder - The folder of the static sources, which their paths are relative to.
  */
-export function loadFileDBs(
-	fileDBs: FileDBs,
-	sourceConfigs: Record<string, SourceConfig>,
-	frontendFolder: string
-): PromiseFunction {
-	let s: ProgressLabel;
-	let parallel = PromiseFunction.parallel();
-
-	return PromiseFunction.single(
-		async () => {
-			s = progress.add('load file sources');
-			const configs = Object.entries(sourceConfigs);
-			parallel = PromiseFunction.parallel(
-				...configs.map(([name, config]): PromiseFunction => {
-					let label: ProgressLabel;
-					return PromiseFunction.single(
-						async () => {
-							label = progress.add(name, 1);
-						},
-						async () => {
-							label.start();
-							let fileDB: FileDB;
-							switch (config.type) {
-								case 'static':
-									fileDB = await StaticFileDB.build(config, frontendFolder);
-									break;
-								case 'external':
-									fileDB = await ExternalFileDB.build(config);
-									break;
-								case 'npm':
-									fileDB = await NpmFileDB.build(config);
-									break;
-								default:
-									// @ts-expect-error Just to be sure
-									throw Error(`unknown file db type: ${config.type}`);
-							}
-							fileDBs.set(name, fileDB);
-							label.end();
-						}
-					);
-				})
-			);
-			await parallel.init();
-		},
-		async () => {
-			s.start();
-			await parallel.run();
-			s.end();
-		}
-	);
+export async function createFileDB(config: SourceConfig, frontendFolder: string): Promise<FileDB> {
+	switch (config.type) {
+		case 'static':
+			return StaticFileDB.build(config, frontendFolder);
+		case 'external':
+			return ExternalFileDB.build(config);
+		case 'npm':
+			return NpmFileDB.build(config);
+		default:
+			// @ts-expect-error Just to be sure
+			throw Error(`unknown file db type: ${config.type}`);
+	}
 }

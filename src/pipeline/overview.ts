@@ -1,6 +1,6 @@
 import { resolve } from 'path';
 import { statSync } from 'fs';
-import type { Frontend } from './frontend';
+import type { Frontend } from '../frontend/frontend';
 import { groupDigits } from '../utils';
 
 /**

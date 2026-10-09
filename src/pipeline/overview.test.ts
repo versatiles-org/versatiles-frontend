@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from 'vitest';
 import { formatSize, generateOverview } from './overview';
-import type { Frontend } from './frontend';
+import type { Frontend } from '../frontend/frontend';
 import { File } from '../files/file';
 import { mkdtempSync, writeFileSync, rmSync } from 'fs';
 import { join } from 'path';

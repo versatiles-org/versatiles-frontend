@@ -1,10 +1,10 @@
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
 
-import { cleanupFolder, notes } from './utils';
+import { cleanupFolder } from './utils';
 import { PromiseFunction, progress } from './async_progress';
-import { generateFrontends } from './frontend/generate';
-import { FileDBs, loadFileDBs } from './files/filedbs';
+import { generateFrontends, loadSources, precompress, ReleaseNotes } from './pipeline';
+import { FileDBs } from './files/filedbs';
 import { frontendConfigs, sourceConfigs } from './config';
 
 //progress.disableAnsi();
@@ -14,6 +14,7 @@ const projectFolder = resolve(import.meta.dirname, '..');
 const dstFolder = resolve(projectFolder, 'release');
 
 const packageJson = JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')) as { version: string };
+const notes = new ReleaseNotes();
 notes.setVersion(String(packageJson.version));
 
 // Set the header for the progress display to indicate the build process is starting.
@@ -27,9 +28,9 @@ try {
 	const fileDBs = new FileDBs();
 	await PromiseFunction.run(
 		PromiseFunction.sequential(
-			loadFileDBs(fileDBs, sourceConfigs, resolve(projectFolder, 'frontends')),
-			fileDBs.precompress(),
-			generateFrontends(fileDBs, frontendConfigs, dstFolder)
+			loadSources(fileDBs, sourceConfigs, resolve(projectFolder, 'frontends')),
+			precompress(fileDBs),
+			generateFrontends(fileDBs, frontendConfigs, dstFolder, notes)
 		)
 	);
 

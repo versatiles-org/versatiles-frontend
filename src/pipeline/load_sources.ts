@@ -1,0 +1,25 @@
+import { PromiseFunction } from '../async_progress';
+import { createFileDB, FileDBs } from '../files/filedbs';
+import type { SourceConfig } from '../files/source_config';
+
+/**
+ * Loads every file source into the file databases, in parallel, with a progress label each.
+ *
+ * @param frontendFolder - The folder of the static sources, which their paths are relative to.
+ */
+export function loadSources(
+	fileDBs: FileDBs,
+	sourceConfigs: Record<string, SourceConfig>,
+	frontendFolder: string
+): PromiseFunction {
+	return PromiseFunction.wrapProgress(
+		'load file sources',
+		PromiseFunction.parallel(
+			...Object.entries(sourceConfigs).map(([name, config]) =>
+				PromiseFunction.wrapAsync(name, 1, async () => {
+					fileDBs.set(name, await createFileDB(config, frontendFolder));
+				})
+			)
+		)
+	);
+}

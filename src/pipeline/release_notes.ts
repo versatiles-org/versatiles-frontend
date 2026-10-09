@@ -84,7 +84,3 @@ export class ReleaseNotes {
 		writeFileSync(filename, notes + this.suffix);
 	}
 }
-
-// Singleton instance of ReleaseNotes for use throughout the application.
-const releaseNotes = new ReleaseNotes();
-export default releaseNotes;

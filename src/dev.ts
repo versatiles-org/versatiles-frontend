@@ -5,7 +5,8 @@ import { Server } from './server/server';
 import { LandingPage, type LandingEntry } from './server/landing';
 import arg from 'arg';
 import { resolve } from 'path';
-import { FileDBs, loadFileDBs } from './files/filedbs';
+import { FileDBs } from './files/filedbs';
+import { loadSources } from './pipeline';
 
 // Disables ANSI color codes in progress output for simplicity in development environments.
 //progress.disableAnsi();
@@ -45,7 +46,7 @@ progress.setHeader('Preparing Server');
 // Loads and prepares assets for the frontend using the custom FileSystem.
 // Every source is loaded regardless of which frontends are served, so serving all of them
 // costs little more than serving one: each Frontend is just a filter over the shared files.
-await PromiseFunction.run(loadFileDBs(fileDBs, sourceConfigs, resolve(projectFolder, 'frontends')));
+await PromiseFunction.run(loadSources(fileDBs, sourceConfigs, resolve(projectFolder, 'frontends')));
 
 // Indicates completion of the asset preparation stage.
 progress.finish();

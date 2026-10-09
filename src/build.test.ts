@@ -65,17 +65,19 @@ vi.mock('./files/release_version', () => ({
 	),
 }));
 
-// Mock release_notes module. Declared through vi.hoisted: the utils barrel loads every utils
-// module as soon as any of them is imported, so the hoisted factory below can run first.
+// Mock the release notes: build.ts creates one instance, which these methods stand in for.
+// Declared through vi.hoisted, because the hoisted factory below refers to it.
 const releaseNotesMock = vi.hoisted(() => ({
 	add: vi.fn((_source: { name: string; url: string }) => ({ setVersion: vi.fn() })),
 	append: vi.fn(),
 	setVersion: vi.fn(),
 	save: vi.fn(),
-	labelList: [],
-	labelMap: new Map(),
 }));
-vi.mock('./utils/release_notes', () => ({ default: releaseNotesMock }));
+vi.mock('./pipeline/release_notes', () => ({
+	ReleaseNotes: vi.fn(function () {
+		return releaseNotesMock;
+	}),
+}));
 
 // Mock utils module
 const { cleanupFolder, ensureFolder } = vi.hoisted(() => ({

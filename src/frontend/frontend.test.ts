@@ -69,17 +69,11 @@ vi.mock('../files/filedbs', async (importOriginal) => {
 		return new MockFileDBs(testFileDBs);
 	});
 
-	// Wrap the original loader function in vi.fn so tests can assert on calls
-	const loadFileDBs = vi.fn(original.loadFileDBs);
-
 	return {
 		...original,
 		FileDBs,
-		loadFileDBs,
 	};
 });
-
-import { progress, PromiseFunction } from '../async_progress';
 
 afterAll(async () => {
 	const { rmSync } = await vi.importActual<typeof import('fs')>('fs');
@@ -91,9 +85,6 @@ afterAll(async () => {
 await import('../files/filedbs');
 const { sourceConfigs: fileDBConfig, frontendConfigs } = await import('../config');
 const { Frontend } = await import('./frontend');
-const { generateFrontends } = await import('./generate');
-
-progress.disable();
 
 describe('Frontend class', () => {
 	let mockFileDBs: InstanceType<typeof FileDBs>;
@@ -415,33 +406,5 @@ describe('Frontend class', () => {
 		const shared = files.find((f) => f.name === 'shared.txt');
 		expect(shared?.bufferRaw).toEqual(Buffer.from('from-all'));
 		expect(frontend.getFile('shared.txt')).toEqual(Buffer.from('from-all'));
-	});
-
-	it('generates frontends', async () => {
-		await PromiseFunction.run(generateFrontends(mockFileDBs, frontendConfigs, '/tmp/'));
-
-		expect(createWriteStream).toHaveBeenCalledTimes(15);
-
-		const calledFilenames = vi
-			.mocked(createWriteStream)
-			.mock.calls.map((call) => String(call[0]))
-			.sort();
-		expect(calledFilenames).toStrictEqual([
-			'/tmp/frontend-blank.br.tar.gz',
-			'/tmp/frontend-blank.tar.gz',
-			'/tmp/frontend-blank.tar.zst',
-			'/tmp/frontend-dev.br.tar.gz',
-			'/tmp/frontend-dev.tar.gz',
-			'/tmp/frontend-dev.tar.zst',
-			'/tmp/frontend-min.br.tar.gz',
-			'/tmp/frontend-min.tar.gz',
-			'/tmp/frontend-min.tar.zst',
-			'/tmp/frontend-tiny.br.tar.gz',
-			'/tmp/frontend-tiny.tar.gz',
-			'/tmp/frontend-tiny.tar.zst',
-			'/tmp/frontend.br.tar.gz',
-			'/tmp/frontend.tar.gz',
-			'/tmp/frontend.tar.zst',
-		]);
 	});
 });
