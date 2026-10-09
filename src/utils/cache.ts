@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readdirSync, readFileSync, renameSync, statSync, writeFileSync } from 'fs';
 import { createHash } from 'crypto';
 import { resolve } from 'path';
-import { cleanupFolder, ensureFolder } from './utils';
+import { cleanupFolder, ensureFolder } from './folders';
 
 /**
  * The cache folder: `cache/` next to the project, unless `VERSATILES_CACHE_DIR` names another.

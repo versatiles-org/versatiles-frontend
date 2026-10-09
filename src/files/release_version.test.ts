@@ -5,9 +5,9 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 const { cacheMock } = vi.hoisted(() => ({
 	cacheMock: vi.fn(async (_action: string, _key: string, cbBuffer: () => Promise<Buffer>) => cbBuffer()),
 }));
-vi.mock('./cache', () => ({ cache: cacheMock }));
+vi.mock('../utils/cache', () => ({ cache: cacheMock }));
 
-const { getLatestGithubReleaseVersion } = await import('../utils/release_version');
+const { getLatestGithubReleaseVersion } = await import('./release_version');
 
 // Mock fetch helper
 function mockFetchResponse(data: unknown, status = 200, headers: Record<string, string> = {}): void {

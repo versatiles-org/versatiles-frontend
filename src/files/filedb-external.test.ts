@@ -115,14 +115,14 @@ vi.mock('../async_progress/progress', async (originalImport) => {
 });
 
 // Mock release_version module
-vi.mock('../utils/release_version', () => ({
+vi.mock('./release_version', () => ({
 	getLatestGithubReleaseVersion: vi.fn<(owner: string, repo: string, allowPrerelease?: boolean) => Promise<string>>(
 		async () => '1.2.3'
 	),
 }));
 
 import { ExternalFileDB } from './filedb-external';
-import { getLatestGithubReleaseVersion } from '../utils';
+import { getLatestGithubReleaseVersion } from './release_version';
 
 // Source configs for tests
 const fontsAllConfig: ExternalSourceConfig = {

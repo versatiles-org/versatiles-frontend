@@ -53,16 +53,6 @@ vi.mock('../async_progress/progress', async (originalImport) => {
 	};
 });
 
-// Mock release_notes module
-const { releaseNotesMock, setVersionMock } = vi.hoisted(() => {
-	const setVersionMock = vi.fn();
-	const releaseNotesMock = {
-		add: vi.fn(() => ({ setVersion: setVersionMock })),
-	};
-	return { releaseNotesMock, setVersionMock };
-});
-vi.mock('../utils/release_notes', () => ({ default: releaseNotesMock }));
-
 // Mock fs module
 const { mockFiles } = vi.hoisted(() => {
 	const mockFiles: Record<string, { content: string | Buffer; isDir: boolean; mtimeMs: number }> = {};
@@ -262,11 +252,11 @@ describe('NpmFileDB', () => {
 			source: { name: 'Test', url: 'https://example.com' },
 		};
 
-		await NpmFileDB.build(config);
+		const db = await NpmFileDB.build(config);
 
-		// The release notes mock should have been called with the version from package.json
-		expect(releaseNotesMock.add).toHaveBeenCalledWith({ name: 'Test', url: 'https://example.com' });
-		expect(setVersionMock).toHaveBeenCalledWith('3.4.5');
+		// The source and the version from package.json go into the release notes.
+		expect(db.source).toStrictEqual({ name: 'Test', url: 'https://example.com' });
+		expect(db.version).toBe('3.4.5');
 	});
 
 	// resolvePackageRoot tries three strategies in turn, because packages differ in what they
@@ -293,7 +283,7 @@ describe('NpmFileDB', () => {
 			const db = await NpmFileDB.build(config);
 
 			expect(Array.from(db.files.keys())).toStrictEqual(['lib/index.js']);
-			expect(setVersionMock).toHaveBeenCalledWith('3.4.5');
+			expect(db.version).toBe('3.4.5');
 		});
 
 		it('falls back to ESM resolution when require cannot resolve the package', async () => {
@@ -319,7 +309,7 @@ describe('NpmFileDB', () => {
 			const db = await NpmFileDB.build({ ...config, pkg: 'tar' });
 
 			expect(Array.from(db.files.keys())).toStrictEqual(['lib/index.js']);
-			expect(setVersionMock).toHaveBeenCalledWith('7.0.0');
+			expect(db.version).toBe('7.0.0');
 		});
 
 		it('reports every failed strategy when the package cannot be resolved at all', async () => {

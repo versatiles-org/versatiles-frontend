@@ -10,7 +10,7 @@ vi.mock('fs', () => ({
 }));
 
 import { existsSync, mkdirSync, rmSync } from 'fs';
-import { cleanupFolder, ensureFolder } from './utils';
+import { cleanupFolder, ensureFolder } from './folders';
 
 describe('cleanupFolder', () => {
 	it('should remove and recreate the folder', () => {

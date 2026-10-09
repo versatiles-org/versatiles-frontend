@@ -1,9 +1,8 @@
 import { Curl } from './curl';
 import { basename } from 'path';
-import { notes } from '../utils';
 import { FileDB } from './filedb';
 import { safeJoinDest } from './safe-path';
-import { getLatestGithubReleaseVersion } from '../utils';
+import { getLatestGithubReleaseVersion } from './release_version';
 import type { ExternalSourceConfig, AssetConfig } from './source_config';
 
 export class ExternalFileDB extends FileDB {
@@ -12,10 +11,8 @@ export class ExternalFileDB extends FileDB {
 
 		const version = await db.resolveVersion(config);
 
-		if (config.source) {
-			const label = notes.add(config.source);
-			label.setVersion(version);
-		}
+		db.source = config.source;
+		db.version = version;
 
 		for (const asset of config.assets) {
 			const url = asset.url.replaceAll('${version}', version);

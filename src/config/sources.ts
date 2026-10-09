@@ -1,5 +1,10 @@
-import type { SourceInfo } from '../utils';
-import type { AssetConfig, ExternalSourceConfig, NpmSourceConfig, StaticSourceConfig } from '../files/source_config';
+import type {
+	AssetConfig,
+	ExternalSourceConfig,
+	NpmSourceConfig,
+	SourceInfo,
+	StaticSourceConfig,
+} from '../files/source_config';
 
 /*
  * Shorthands for the file sources in the configuration.

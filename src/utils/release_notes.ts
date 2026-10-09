@@ -1,6 +1,6 @@
 import { writeFileSync } from 'fs';
-/** A component of the release, as the release notes list it: its name and where it comes from. */
-export interface SourceInfo {
+/** A component of the release: its name and where it comes from. */
+interface SourceInfo {
 	name: string;
 	url: string;
 }

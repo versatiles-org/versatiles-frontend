@@ -1,5 +1,4 @@
-import { fetchRetry } from './fetch';
-import { cache } from './cache';
+import { cache, fetchRetry } from '../utils';
 
 /**
  * How long a resolved version is reused before asking GitHub again. Every build resolves a

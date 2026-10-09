@@ -1,11 +1,18 @@
 import { forEachAsync } from '../utils';
 import { File } from './file';
+import type { SourceInfo } from './source_config';
 
 /**
  * A custom file system interface for storing and managing File instances.
  */
 export abstract class FileDB {
 	public readonly files = new Map<string, File>(); // A map to store File instances.
+
+	/** What the files come from, for the release notes. Unset for local files. */
+	public source?: SourceInfo;
+
+	/** The version of {@link source}. */
+	public version = '';
 
 	public constructor() {}
 

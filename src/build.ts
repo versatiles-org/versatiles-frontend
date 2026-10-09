@@ -1,8 +1,7 @@
 import { resolve } from 'path';
 import { readFileSync } from 'fs';
 
-import { cleanupFolder } from './utils';
-import { notes } from './utils';
+import { cleanupFolder, notes } from './utils';
 import { PromiseFunction, progress } from './async_progress';
 import { generateFrontends } from './frontend/generate';
 import { FileDBs, loadFileDBs } from './files/filedbs';
@@ -33,6 +32,12 @@ try {
 			generateFrontends(fileDBs, frontendConfigs, dstFolder)
 		)
 	);
+
+	// List the sources in the release notes, in the order of the configuration.
+	for (const name of Object.keys(sourceConfigs)) {
+		const { source, version } = fileDBs.get(name);
+		if (source) notes.add(source).setVersion(version);
+	}
 
 	// Save release notes in the destination folder.
 	notes.save(resolve(dstFolder, 'notes.md'));

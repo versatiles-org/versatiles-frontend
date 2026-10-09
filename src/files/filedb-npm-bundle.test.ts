@@ -32,10 +32,6 @@ vi.mock('module', () => ({
 	})),
 }));
 
-vi.mock('../utils/release_notes', () => ({
-	default: { add: vi.fn(() => ({ setVersion: vi.fn() })) },
-}));
-
 const { NpmFileDB } = await import('./filedb-npm');
 
 beforeAll(() => {

@@ -1,8 +1,12 @@
-import type { SourceInfo } from '../utils';
-
 /*
  * The configurations of the file sources: what the file databases load, and from where.
  */
+
+/** A component of the release: its name and where it comes from, as the release notes list it. */
+export interface SourceInfo {
+	name: string;
+	url: string;
+}
 
 export interface AssetConfig {
 	url: string;

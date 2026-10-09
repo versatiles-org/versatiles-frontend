@@ -3,6 +3,5 @@
 export { cache, clearCache } from './cache';
 export { fetchRetry } from './fetch';
 export { forEachAsync } from './parallel';
-export { default as notes, type SourceInfo } from './release_notes';
-export { getLatestGithubReleaseVersion } from './release_version';
-export { cleanupFolder } from './utils';
+export { default as notes } from './release_notes';
+export { cleanupFolder } from './folders';

@@ -2,7 +2,6 @@ import { existsSync, readdirSync, readFileSync, statSync } from 'fs';
 import { basename, dirname, join } from 'path';
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
-import { notes } from '../utils';
 import { FileDB } from './filedb';
 import { safeJoinDest } from './safe-path';
 import type { NpmBundleConfig, NpmSourceConfig } from './source_config';
@@ -15,10 +14,10 @@ export class NpmFileDB extends FileDB {
 
 		const pkgJsonPath = join(pkgDir, 'package.json');
 		const pkgJson = readPackageJson(pkgJsonPath);
-		const label = notes.add(config.source);
+		db.source = config.source;
 		// An empty version renders as "?.?.?" in the release notes, which reads better than the
 		// string "undefined" a missing field would otherwise produce.
-		label.setVersion(pkgJson.version ?? '');
+		db.version = pkgJson.version ?? '';
 
 		addPath(pkgDir, '');
 		if (config.bundle) await addBundle(db, pkgDir, config.dest, config.bundle);

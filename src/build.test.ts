@@ -59,7 +59,7 @@ vi.mock('./utils/cache', () => ({
 }));
 
 // Mock release_version module
-vi.mock('./utils/release_version', () => ({
+vi.mock('./files/release_version', () => ({
 	getLatestGithubReleaseVersion: vi.fn<(owner: string, repo: string, allowPrerelease?: boolean) => Promise<string>>(
 		async () => '1.2.3'
 	),
@@ -68,7 +68,7 @@ vi.mock('./utils/release_version', () => ({
 // Mock release_notes module. Declared through vi.hoisted: the utils barrel loads every utils
 // module as soon as any of them is imported, so the hoisted factory below can run first.
 const releaseNotesMock = vi.hoisted(() => ({
-	add: vi.fn(),
+	add: vi.fn((_source: { name: string; url: string }) => ({ setVersion: vi.fn() })),
 	append: vi.fn(),
 	setVersion: vi.fn(),
 	save: vi.fn(),
@@ -82,7 +82,7 @@ const { cleanupFolder, ensureFolder } = vi.hoisted(() => ({
 	cleanupFolder: vi.fn().mockReturnValue(undefined),
 	ensureFolder: vi.fn().mockReturnValue(undefined),
 }));
-vi.mock('./utils/utils', () => ({
+vi.mock('./utils/folders', () => ({
 	cleanupFolder,
 	ensureFolder,
 }));
@@ -126,8 +126,11 @@ vi.mock('./files/filedb-external', async (importOriginal) => {
 			super();
 		}
 
-		public static async build(_config: unknown): Promise<ExternalFileDB> {
-			return new ExternalFileDB();
+		// Keeps the source of the config, like the real one, so the release notes can list it.
+		public static async build(config: { source?: { name: string; url: string } }): Promise<ExternalFileDB> {
+			const db = new ExternalFileDB();
+			db.source = config.source;
+			return db;
 		}
 
 		public enterWatchMode(): void {
@@ -151,8 +154,10 @@ vi.mock('./files/filedb-npm', async (importOriginal) => {
 			super();
 		}
 
-		public static async build(_config: unknown): Promise<NpmFileDB> {
-			return new NpmFileDB();
+		public static async build(config: { source: { name: string; url: string } }): Promise<NpmFileDB> {
+			const db = new NpmFileDB();
+			db.source = config.source;
+			return db;
 		}
 
 		public enterWatchMode(): void {
@@ -225,6 +230,13 @@ describe('Build Process', () => {
 			'frontend-blank',
 			'frontend-tiny',
 		]);
+
+		// The release notes list the sources in the order of the configuration.
+		const { sourceConfigs } = await import('./config');
+		const sources = Object.values(sourceConfigs).flatMap((config) =>
+			'source' in config && config.source ? [config.source.name] : []
+		);
+		expect(releaseNotesMock.add.mock.calls.map(([source]) => source.name)).toStrictEqual(sources);
 
 		// Confirm that release notes are saved
 		expect(releaseNotesMock.save).toHaveBeenCalledWith(expect.any(String));
