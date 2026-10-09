@@ -1,14 +1,13 @@
 import { resolve } from 'path';
 import { statSync } from 'fs';
 import type { Frontend } from './frontend';
+import { groupDigits } from '../utils';
 
 /**
  * Formats a byte count as KB with no decimal point.
  */
 export function formatSize(bytes: number): string {
-	return Math.round(bytes / 1000)
-		.toString()
-		.replace(/\B(?=(\d{3})+(?!\d))/g, "'");
+	return groupDigits(Math.round(bytes / 1000));
 }
 
 /**

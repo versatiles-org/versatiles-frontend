@@ -63,3 +63,14 @@ export async function listenWithFallback(
 	// Every candidate was busy - fall back to an arbitrary free port rather than giving up.
 	return listen(app, 0, host);
 }
+
+/**
+ * Closes a server, including its open connections, so it does not wait for keep-alive
+ * connections of browsers to time out.
+ */
+export async function close(server: HttpServer): Promise<void> {
+	server.closeAllConnections();
+	await new Promise<void>((resolve, reject) => {
+		server.close((error) => (error ? reject(error) : resolve()));
+	});
+}

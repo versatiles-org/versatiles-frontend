@@ -8,13 +8,26 @@ export interface SourceInfo {
 	url: string;
 }
 
-export interface AssetConfig {
+/** How the entries of an archive or package become file names in the bundle. */
+export interface EntryMapping {
+	/** The folder the entries go to, e.g. `assets/glyphs/`. */
+	dest: string;
+	/**
+	 * Leading folder to drop, e.g. `dist/`. Entries outside of it are skipped, and `include`
+	 * and `rename` see the names without it.
+	 */
+	stripPrefix?: string;
+	/** Only entries matching it are taken. */
+	include?: RegExp;
+	/** Drops the folders of the entries, keeping only the file names. */
+	flatten?: boolean;
+	/** New names for entries, by their name after `flatten`. */
+	rename?: Record<string, string>;
+}
+
+export interface AssetConfig extends EntryMapping {
 	url: string;
 	format: 'tar.gz' | 'tar.zst' | 'zip';
-	dest: string;
-	include?: RegExp;
-	flatten?: boolean;
-	rename?: Record<string, string>;
 }
 
 interface GithubVersionConfig {
@@ -48,19 +61,10 @@ export interface NpmBundleConfig {
 	setup?: string;
 }
 
-export interface NpmSourceConfig {
+export interface NpmSourceConfig extends EntryMapping {
 	type: 'npm';
 	pkg: string;
 	bundle?: NpmBundleConfig;
-	/**
-	 * Leading folder of the package to drop, e.g. `dist/`. Files outside of it are skipped,
-	 * and `include` and `rename` see the paths without it.
-	 */
-	stripPrefix?: string;
-	include?: RegExp;
-	flatten?: boolean;
-	rename?: Record<string, string>;
-	dest: string;
 	source: SourceInfo;
 }
 

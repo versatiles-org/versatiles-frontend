@@ -27,7 +27,7 @@ try {
 	const fileDBs = new FileDBs();
 	await PromiseFunction.run(
 		PromiseFunction.sequential(
-			loadFileDBs(fileDBs, sourceConfigs),
+			loadFileDBs(fileDBs, sourceConfigs, resolve(projectFolder, 'frontends')),
 			fileDBs.precompress(),
 			generateFrontends(fileDBs, frontendConfigs, dstFolder)
 		)

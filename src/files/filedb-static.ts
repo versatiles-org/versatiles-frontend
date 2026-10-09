@@ -1,11 +1,7 @@
 import { existsSync, readdirSync, readFileSync, statSync, watch } from 'fs';
 import { FileDB } from './filedb';
 import { basename, relative, resolve } from 'path';
-
-export interface StaticFileDBConfig {
-	type: 'static';
-	path: string;
-}
+import type { StaticSourceConfig } from './source_config';
 
 export class StaticFileDB extends FileDB {
 	private path: string;
@@ -15,7 +11,7 @@ export class StaticFileDB extends FileDB {
 		this.path = path;
 	}
 
-	public static async build(config: StaticFileDBConfig, frontendFolder: string): Promise<StaticFileDB> {
+	public static async build(config: StaticSourceConfig, frontendFolder: string): Promise<StaticFileDB> {
 		const db = new StaticFileDB(resolve(frontendFolder, config.path));
 		addPath(db.path);
 		return db;

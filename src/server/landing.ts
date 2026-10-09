@@ -1,7 +1,7 @@
 import express from 'express';
 import escapeHtml from 'escape-html';
 import type { Server as HttpServer } from 'http';
-import { listenWithFallback } from './listen';
+import { close, listenWithFallback } from './listen';
 
 /**
  * One frontend served by the development server.
@@ -45,10 +45,7 @@ export class LandingPage {
 		const server = this.server;
 		if (!server) return;
 		this.server = undefined;
-		server.closeAllConnections();
-		await new Promise<void>((resolve, reject) => {
-			server.close((error) => (error ? reject(error) : resolve()));
-		});
+		await close(server);
 	}
 }
 

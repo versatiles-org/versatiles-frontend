@@ -5,3 +5,4 @@ export { fetchRetry } from './fetch';
 export { forEachAsync } from './parallel';
 export { default as notes } from './release_notes';
 export { cleanupFolder } from './folders';
+export { groupDigits } from './format';

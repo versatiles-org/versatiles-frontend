@@ -3,7 +3,7 @@ import { basename, dirname, join } from 'path';
 import { createRequire } from 'module';
 import { fileURLToPath } from 'url';
 import { FileDB } from './filedb';
-import { safeJoinDest } from './safe-path';
+import { mapEntryName, safeJoinDest } from './entry_path';
 import type { NpmBundleConfig, NpmSourceConfig } from './source_config';
 
 export class NpmFileDB extends FileDB {
@@ -30,18 +30,8 @@ export class NpmFileDB extends FileDB {
 					addPath(join(absPath, name), relPath ? `${relPath}/${name}` : name);
 				}
 			} else {
-				if (config.stripPrefix) {
-					if (!relPath.startsWith(config.stripPrefix)) return;
-					relPath = relPath.slice(config.stripPrefix.length);
-				}
-				if (config.include && !config.include.test(relPath)) return;
-				let destName = config.flatten ? basename(relPath) : relPath;
-				if (config.rename?.[destName]) destName = config.rename[destName];
-				const dest = safeJoinDest(config.dest, destName);
-				if (dest === false) {
-					console.warn(`Skipping unsafe package entry "${relPath}" (escapes "${config.dest}")`);
-					return;
-				}
+				const dest = mapEntryName(config, relPath);
+				if (dest === false) return;
 				db.setFileFromBuffer(dest, readFileSync(absPath));
 			}
 		}

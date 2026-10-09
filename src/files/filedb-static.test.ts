@@ -1,5 +1,5 @@
 import { vi, describe, it, expect, afterAll } from 'vitest';
-import type { StaticFileDBConfig } from './filedb-static';
+import type { StaticSourceConfig } from './source_config';
 
 vi.mock('fs', () => {
 	const mockFileSystem = new Map<string, string | false>([
@@ -50,7 +50,7 @@ describe('StaticFileDB', () => {
 	});
 
 	it('build() should correctly populate the database', async () => {
-		const config: StaticFileDBConfig = { type: 'static', path: '/test/path' };
+		const config: StaticSourceConfig = { type: 'static', path: '/test/path' };
 		const db = await StaticFileDB.build(config, '/');
 
 		expect(db.getFile('file1.txt')).toEqual(Buffer.from('Content of file1'));
@@ -59,7 +59,7 @@ describe('StaticFileDB', () => {
 	});
 
 	it('build() should throw an error if path does not exist', async () => {
-		const config: StaticFileDBConfig = { type: 'static', path: '/invalid/path' };
+		const config: StaticSourceConfig = { type: 'static', path: '/invalid/path' };
 
 		await expect(StaticFileDB.build(config, '/')).rejects.toThrow('path "/invalid/path" does not exist');
 	});

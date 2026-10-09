@@ -1,4 +1,4 @@
-import { clearCache } from './utils';
+import { clearCache, groupDigits } from './utils';
 
 /**
  * Empties the download/compression cache.
@@ -8,16 +8,11 @@ import { clearCache } from './utils';
  * has outgrown its usefulness - the next build refetches and recompresses what it needs.
  */
 
-/** Groups digits for readability, e.g. 49075 -> 49'075. Matches the release overview table. */
-function group(value: number): string {
-	return value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, "'");
-}
-
 const { entries, bytes } = clearCache();
 
 if (entries === 0) {
 	console.log('Cache is already empty.');
 } else {
 	const label = entries === 1 ? 'entry' : 'entries';
-	console.log(`Removed ${group(entries)} ${label} (${group(Math.round(bytes / 1e6))} MB).`);
+	console.log(`Removed ${groupDigits(entries)} ${label} (${groupDigits(Math.round(bytes / 1e6))} MB).`);
 }

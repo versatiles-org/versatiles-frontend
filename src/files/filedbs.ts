@@ -3,10 +3,7 @@ import { PromiseFunction, ProgressLabel, progress } from '../async_progress';
 import { StaticFileDB } from './filedb-static';
 import { ExternalFileDB } from './filedb-external';
 import { NpmFileDB } from './filedb-npm';
-import { resolve } from 'path';
 import type { SourceConfig } from './source_config';
-
-const frontendFolder = resolve(import.meta.dirname, '../../frontends');
 
 export class FileDBs {
 	fileDBs = new Map<string, FileDB>();
@@ -51,7 +48,16 @@ export class FileDBs {
 	}
 }
 
-export function loadFileDBs(fileDBs: FileDBs, sourceConfigs: Record<string, SourceConfig>): PromiseFunction {
+/**
+ * Loads every file source into the file databases.
+ *
+ * @param frontendFolder - The folder of the static sources, which their paths are relative to.
+ */
+export function loadFileDBs(
+	fileDBs: FileDBs,
+	sourceConfigs: Record<string, SourceConfig>,
+	frontendFolder: string
+): PromiseFunction {
 	let s: ProgressLabel;
 	let parallel = PromiseFunction.parallel();
 

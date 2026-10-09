@@ -1,7 +1,6 @@
 import { Curl } from './curl';
-import { basename } from 'path';
 import { FileDB } from './filedb';
-import { safeJoinDest } from './safe-path';
+import { mapEntryName } from './entry_path';
 import { getLatestGithubReleaseVersion } from './release_version';
 import type { ExternalSourceConfig, AssetConfig } from './source_config';
 
@@ -42,17 +41,7 @@ export class ExternalFileDB extends FileDB {
 
 	private async fetchAsset(url: string, asset: AssetConfig): Promise<void> {
 		const curl = new Curl(this, url);
-		const mapFilename = (filename: string): string | false => {
-			if (asset.include && !asset.include.test(filename)) return false;
-			let name = asset.flatten ? basename(filename) : filename;
-			if (asset.rename?.[name]) name = asset.rename[name];
-			const dest = safeJoinDest(asset.dest, name);
-			if (dest === false) {
-				console.warn(`Skipping unsafe archive entry "${filename}" (escapes "${asset.dest}")`);
-				return false;
-			}
-			return dest;
-		};
+		const mapFilename = (filename: string): string | false => mapEntryName(asset, filename);
 
 		switch (asset.format) {
 			case 'tar.gz':

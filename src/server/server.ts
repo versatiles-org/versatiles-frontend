@@ -5,7 +5,7 @@ import type { Server as HttpServer } from 'http';
 import { posix } from 'path';
 import { lookup } from 'mrmime';
 import { Frontend } from '../frontend/frontend';
-import { listen } from './listen';
+import { close, listen } from './listen';
 
 /**
  * Defines the structure for development server configurations,
@@ -15,9 +15,6 @@ export interface DevConfig {
 	proxy?: { from: string; to: string }[]; // Array of proxy configurations.
 }
 
-/**
- * Represents a development server capable of serving files and proxying requests based on configuration.
- */
 /**
  * Percent-decodes a request path, or returns false if it is malformed (e.g. "%ZZ").
  *
@@ -47,6 +44,9 @@ function contentTypeFor(path: string): string {
 	return lookup(path) ?? 'application/octet-stream';
 }
 
+/**
+ * Represents a development server capable of serving files and proxying requests based on configuration.
+ */
 export class Server {
 	private readonly app: Express;
 
@@ -133,12 +133,8 @@ export class Server {
 	}
 
 	/**
-	 * Starts the server and resolves with the port it is actually listening on.
-	 *
-	 * Express calls the `listen` callback even when the bind failed, so a taken port would
-	 * otherwise look like a successful start while another service answers the requests.
-	 * Only the `listening` event means the socket is ours; `error` (e.g. EADDRINUSE) is
-	 * reported to the caller so it can pick another port.
+	 * Starts the server and resolves with the port it is actually listening on. Fails if the
+	 * port is taken, see {@link listen}.
 	 *
 	 * @param port - The port to bind to, or 0 to let the operating system pick a free one.
 	 * @param host - The interface to bind to. Loopback by default, so a development server
@@ -159,9 +155,6 @@ export class Server {
 		const server = this.server;
 		if (!server) return;
 		this.server = undefined;
-		server.closeAllConnections();
-		await new Promise<void>((resolve, reject) => {
-			server.close((error) => (error ? reject(error) : resolve()));
-		});
+		await close(server);
 	}
 }

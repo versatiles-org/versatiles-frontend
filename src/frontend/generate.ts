@@ -45,7 +45,7 @@ export function generateFrontends(
 	);
 }
 
-export function generateFrontend(
+function generateFrontend(
 	config: FrontendConfig,
 	fileDBs: FileDBs,
 	dstFolder: string,
