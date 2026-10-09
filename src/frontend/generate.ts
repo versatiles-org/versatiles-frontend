@@ -2,7 +2,7 @@ import { FileDBs } from '../files/filedbs';
 import type { FrontendConfig } from './frontend';
 import { Frontend } from './frontend';
 import { PromiseFunction, progress, type ProgressLabel } from '../async_progress';
-import { loadFrontendConfigs } from './load';
+import { frontendConfigs } from '../config';
 import { generateOverview } from './overview';
 import notes from '../utils/release_notes';
 
@@ -24,8 +24,7 @@ export function generateFrontends(fileDBs: FileDBs, dstFolder: string): PromiseF
 	return PromiseFunction.single(
 		async () => {
 			s = progress.add('generate frontends');
-			const configs = await loadFrontendConfigs();
-			const todos = configs.map((config: FrontendConfig): PromiseFunction =>
+			const todos = frontendConfigs.map((config: FrontendConfig): PromiseFunction =>
 				generateFrontend(config, fileDBs, dstFolder, frontends)
 			);
 			parallel = PromiseFunction.parallel(...todos);

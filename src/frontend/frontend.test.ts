@@ -67,14 +67,12 @@ vi.mock('../files/filedbs', async (importOriginal) => {
 		return new MockFileDBs(testFileDBs);
 	});
 
-	// Wrap the original loader functions in vi.fn so tests can assert on calls
-	const loadSourceConfigs = vi.fn(original.loadSourceConfigs);
+	// Wrap the original loader function in vi.fn so tests can assert on calls
 	const loadFileDBs = vi.fn(original.loadFileDBs);
 
 	return {
 		...original,
 		FileDBs,
-		loadSourceConfigs,
 		loadFileDBs,
 	};
 });
@@ -86,14 +84,14 @@ afterAll(async () => {
 	if (tarballs.dir) rmSync(tarballs.dir, { recursive: true, force: true });
 });
 
-const { loadSourceConfigs } = await import('../files/filedbs');
+// Nothing else imports the module at runtime (frontend.ts only uses its types), so this import
+// is what runs the mock factory above, which gives FileDBs its implementation.
+await import('../files/filedbs');
+const { sourceConfigs: fileDBConfig, frontendConfigs } = await import('../config');
 const { Frontend } = await import('./frontend');
-const { loadFrontendConfigs } = await import('./load');
 const { generateFrontends } = await import('./generate');
 
 progress.disable();
-
-const fileDBConfig = await loadSourceConfigs();
 
 describe('Frontend class', () => {
 	let mockFileDBs: InstanceType<typeof FileDBs>;
@@ -224,7 +222,7 @@ describe('Frontend class', () => {
 		});
 
 		it("keeps frontend-tiny's glyph transform working for ranges that share a buffer", async () => {
-			const tiny = (await loadFrontendConfigs()).find((c) => c.name === 'frontend-tiny');
+			const tiny = frontendConfigs.find((c) => c.name === 'frontend-tiny');
 			if (!tiny?.transform) throw Error('frontend-tiny has no transform');
 
 			// As loaded from a deduplicated fonts release: bold shares its buffers with regular where
@@ -255,7 +253,7 @@ describe('Frontend class', () => {
 		});
 
 		it('drops the italic faces from frontend-tiny', async () => {
-			const tiny = (await loadFrontendConfigs()).find((c) => c.name === 'frontend-tiny');
+			const tiny = frontendConfigs.find((c) => c.name === 'frontend-tiny');
 			if (!tiny) throw Error('frontend-tiny not found');
 
 			const dbs = new FileDBs({ all: {} });
@@ -297,9 +295,10 @@ describe('Frontend class', () => {
 		});
 	});
 
-	it('loads frontend configurations correctly', async () => {
-		const configs = await loadFrontendConfigs();
-		expect(configs).toContainEqual(expect.objectContaining({ name: expect.any(String), fileDBs: expect.any(Array) }));
+	it('defines frontend configurations', () => {
+		expect(frontendConfigs).toContainEqual(
+			expect.objectContaining({ name: expect.any(String), fileDBs: expect.any(Array) })
+		);
 	});
 
 	it('should apply filter callback', () => {

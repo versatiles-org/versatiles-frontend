@@ -1,6 +1,6 @@
 import { progress, PromiseFunction } from './async_progress';
 import { Frontend } from './frontend/frontend';
-import { loadFrontendConfigs } from './frontend/load';
+import { frontendConfigs } from './config';
 import { Server } from './server/server';
 import { LandingPage, type LandingEntry } from './server/landing';
 import arg from 'arg';
@@ -8,9 +8,6 @@ import { FileDBs, loadFileDBs } from './files/filedbs';
 
 // Disables ANSI color codes in progress output for simplicity in development environments.
 //progress.disableAnsi();
-
-// Loads the configuration for all frontends within the project.
-const frontendConfigs = await loadFrontendConfigs();
 
 // parse arguments
 const args = arg(
