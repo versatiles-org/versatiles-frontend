@@ -180,23 +180,8 @@ vi.mock('./frontend/frontend', async (originalImport) => {
 	type FileDBs = ConstructorParameters<typeof OriginalFrontend>[0];
 	type FrontendConfig = ConstructorParameters<typeof OriginalFrontend>[1];
 
-	class MockedFrontend extends OriginalFrontend {
-		constructor(fileDBs: FileDBs, config: FrontendConfig) {
-			super(fileDBs, config);
-		}
-		async saveAsTarGz() {
-			// no-op in tests
-		}
-		async saveAsBrTarGz() {
-			// no-op in tests
-		}
-		async saveAsTarZst() {
-			// no-op in tests
-		}
-	}
-
 	const Frontend = vi.fn(function (fileDBs: FileDBs, config: FrontendConfig) {
-		return vi.mocked(new MockedFrontend(fileDBs, config));
+		return new OriginalFrontend(fileDBs, config);
 	});
 
 	return {
@@ -205,8 +190,16 @@ vi.mock('./frontend/frontend', async (originalImport) => {
 	};
 });
 
+// Mock the tarball writing, so the test writes nothing into release/.
+vi.mock('./frontend/tarball', () => ({
+	saveAsTarGz: vi.fn(async () => {}),
+	saveAsBrTarGz: vi.fn(async () => {}),
+	saveAsTarZst: vi.fn(async () => {}),
+}));
+
 import { Progress } from './async-progress';
 const { Frontend } = await import('./frontend/frontend');
+const tarball = await import('./frontend/tarball');
 
 describe('Build Process', () => {
 	beforeEach(() => {
@@ -232,6 +225,12 @@ describe('Build Process', () => {
 			'frontend-blank',
 			'frontend-tiny',
 		]);
+
+		// Every frontend is written in all three formats.
+		const names = vi.mocked(Frontend).mock.calls.map((call) => call[1].name);
+		for (const save of [tarball.saveAsTarGz, tarball.saveAsBrTarGz, tarball.saveAsTarZst]) {
+			expect(vi.mocked(save).mock.calls.map(([frontend]) => frontend.config.name)).toStrictEqual(names);
+		}
 
 		// The release notes list the sources in the order of the configuration.
 		const { sourceConfigs } = await import('./config');
