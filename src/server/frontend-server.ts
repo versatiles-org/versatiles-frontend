@@ -7,12 +7,15 @@ import { lookup } from 'mrmime';
 import { Frontend } from '../frontend/frontend';
 import { close, listen } from './listen';
 
-/**
- * Defines the structure for development server configurations,
- * specifically for defining proxy rules.
- */
-export interface DevConfig {
-	proxy?: { from: string; to: string }[]; // Array of proxy configurations.
+/** Forwards requests whose path starts with `from` to the URL `to` plus the rest of the path. */
+export interface ProxyRule {
+	from: string;
+	to: string;
+}
+
+export interface FrontendServerOptions {
+	/** Requests that match no file of the frontend go to the first matching rule. */
+	proxy?: ProxyRule[];
 }
 
 /**
@@ -45,20 +48,19 @@ function contentTypeFor(path: string): string {
 }
 
 /**
- * Represents a development server capable of serving files and proxying requests based on configuration.
+ * A development server for one frontend: serves its files and proxies the other requests,
+ * e.g. for the tiles, according to the proxy rules.
  */
-export class Server {
+export class FrontendServer {
 	private readonly app: Express;
 
 	private server?: HttpServer;
 
 	/**
-	 * Constructs a Server instance.
-	 *
-	 * @param fileSystem - The file system from which to serve files.
-	 * @param config - Optional development configuration for the server.
+	 * @param frontend - The frontend to serve.
+	 * @param options - The proxy rules.
 	 */
-	public constructor(frontend: Frontend, config?: DevConfig) {
+	public constructor(frontend: Frontend, options?: FrontendServerOptions) {
 		this.app = express();
 
 		this.app.get(/.*/, (req, res) => {
@@ -111,9 +113,9 @@ export class Server {
 			 * @returns A promise that resolves to true if the request was proxied, false otherwise.
 			 */
 			async function tryProxy(path: string): Promise<boolean> {
-				if (!config?.proxy) return false;
+				if (!options?.proxy) return false;
 
-				const proxy = config.proxy.find((p) => path.startsWith(p.from));
+				const proxy = options.proxy.find((p) => path.startsWith(p.from));
 				if (!proxy) return false;
 
 				const url = proxy.to + path.slice(proxy.from.length);

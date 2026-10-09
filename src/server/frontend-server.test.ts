@@ -3,7 +3,7 @@ import http from 'http';
 import { networkInterfaces } from 'os';
 import type { AddressInfo } from 'net';
 import type { Frontend } from '../frontend/frontend';
-import { Server } from './server';
+import { FrontendServer } from './frontend-server';
 
 // Helper to create a mock Frontend
 function createMockFrontend(files: Record<string, string>): Frontend {
@@ -40,7 +40,7 @@ async function closeServer(httpServer: http.Server): Promise<void> {
 }
 
 // Helper to start the server on a random port and return base URL + cleanup function
-async function startTestServer(server: Server): Promise<{ baseUrl: string; httpServer: http.Server }> {
+async function startTestServer(server: FrontendServer): Promise<{ baseUrl: string; httpServer: http.Server }> {
 	// Access private app for testing
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	const app = (server as any).app;
@@ -56,7 +56,7 @@ async function get(baseUrl: string, path: string): Promise<{ status: number; bod
 	return { status: response.status, body, headers: response.headers };
 }
 
-describe('Server', () => {
+describe('FrontendServer', () => {
 	let httpServer: http.Server;
 	let baseUrl: string;
 
@@ -65,9 +65,9 @@ describe('Server', () => {
 		if (httpServer) await closeServer(httpServer);
 	});
 
-	async function setup(files: Record<string, string>, config?: ConstructorParameters<typeof Server>[1]) {
+	async function setup(files: Record<string, string>, config?: ConstructorParameters<typeof FrontendServer>[1]) {
 		const frontend = createMockFrontend(files);
-		const server = new Server(frontend, config);
+		const server = new FrontendServer(frontend, config);
 		const result = await startTestServer(server);
 		httpServer = result.httpServer;
 		baseUrl = result.baseUrl;
@@ -294,11 +294,11 @@ describe('Server', () => {
 	});
 });
 
-describe('Server.start', () => {
-	const servers: Server[] = [];
+describe('FrontendServer.start', () => {
+	const servers: FrontendServer[] = [];
 
-	function createServer(files: Record<string, string> = {}): Server {
-		const server = new Server(createMockFrontend(files));
+	function createServer(files: Record<string, string> = {}): FrontendServer {
+		const server = new FrontendServer(createMockFrontend(files));
 		servers.push(server);
 		return server;
 	}

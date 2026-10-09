@@ -1,7 +1,7 @@
 import type { FileDBs } from '../sources/file-dbs';
 import { Frontend, type FrontendConfig } from '../frontend/frontend';
-import { LandingPage, type LandingEntry } from './landing';
-import { Server, type DevConfig } from './server';
+import { LandingPage, type LandingEntry } from './landing-page';
+import { FrontendServer, type ProxyRule } from './frontend-server';
 
 export interface ServeOptions {
 	/** The interface to bind to. Loopback keeps the servers off the network. */
@@ -9,7 +9,7 @@ export interface ServeOptions {
 	/** The preferred port of the landing page; the next free one is taken if it is busy. */
 	port: number;
 	/** Proxy rules shared by all frontends, e.g. for the tiles. */
-	proxy?: DevConfig['proxy'];
+	proxy?: ProxyRule[];
 	/** Called for every port of the landing page that turned out to be taken. */
 	onBusy?: (port: number) => void;
 }
@@ -34,10 +34,10 @@ export async function serveFrontends(
 	configs: FrontendConfig[],
 	options: ServeOptions
 ): Promise<Serving> {
-	const servers: Server[] = [];
+	const servers: FrontendServer[] = [];
 	const entries: LandingEntry[] = [];
 	for (const config of configs) {
-		const server = new Server(new Frontend(fileDBs, config), { proxy: options.proxy });
+		const server = new FrontendServer(new Frontend(fileDBs, config), { proxy: options.proxy });
 		servers.push(server);
 		entries.push({ name: config.name, description: config.description, port: await server.start(0, options.host) });
 	}

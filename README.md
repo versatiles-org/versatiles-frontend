@@ -95,7 +95,7 @@ npm run dev -- -l 8081 frontend-dev
 
 <!--- This chapter is generated automatically --->
 
-[![Dependency graph](assets/dependency-graph.svg)](assets/dependency-graph.svg?raw=true)
+[![Dependency graph](docs/dependency-graph.svg)](docs/dependency-graph.svg?raw=true)
 
 ## Resources
 

@@ -5,7 +5,7 @@ import type { ProgressLabel, ProgressLabel as ProgressLabelType, Progress as Pro
 // Mock progress module
 vi.mock('./progress', async (originalImport) => {
 	const originalModule = (await originalImport()) as typeof import('./progress');
-	originalModule.default.disable();
+	originalModule.progress.disable();
 
 	function mockProgressLabel(progressLabel: ProgressLabelType) {
 		vi.spyOn(progressLabel, 'updateLabel');
@@ -49,14 +49,14 @@ vi.mock('./progress', async (originalImport) => {
 		Progress: vi.fn(function () {
 			return progress;
 		}),
-		default: progress,
+		progress,
 		ProgressLabel,
 	};
 });
 
-import progress from './progress';
+import { progress } from './progress';
 
-const PromiseFunctions = (await import('./async')).default;
+const PromiseFunctions = (await import('./promise-function')).PromiseFunction;
 
 /**
  * Yields for a fixed number of microtask turns - deterministic, unlike a timer of random length,

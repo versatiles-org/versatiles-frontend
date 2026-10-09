@@ -245,5 +245,4 @@ export class Progress {
 }
 
 // The singleton instance of Progress for use throughout the application.
-const globalProgress = new Progress();
-export default globalProgress;
+export const progress = new Progress();

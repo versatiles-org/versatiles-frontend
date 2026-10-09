@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { emptyGlyphPbf, limitFontFamiliesCodeblocks, removeItalicFaces, removeItalicFontIds } from './glyphs';
+import { emptyGlyphPbf, limitFontFamiliesCodeblocks, removeItalicFaces, removeItalicFontIds } from './glyph-transforms';
 
 describe('limitFontFamiliesCodeblocks', () => {
 	function limit(faces: object[], maxCodepoint: number): unknown {

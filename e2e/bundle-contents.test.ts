@@ -1,5 +1,5 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import { Bundles, listTarFiles } from './utils';
+import { Bundles, listTarFiles } from './bundles';
 import { frontendConfigs } from '../src/config';
 
 function expectMinSizes(actual: Record<string, number> | number, expected: Record<string, number>) {

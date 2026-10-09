@@ -4,7 +4,7 @@ import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } fro
 // Mock progress module
 vi.mock('./async-progress/progress', async (originalImport) => {
 	const originalModule = (await originalImport()) as typeof import('./async-progress/progress');
-	originalModule.default.disable();
+	originalModule.progress.disable();
 
 	function mockProgressLabel(progressLabel: ProgressLabelType) {
 		vi.spyOn(progressLabel, 'updateLabel');
@@ -48,7 +48,7 @@ vi.mock('./async-progress/progress', async (originalImport) => {
 		Progress: vi.fn(function () {
 			return progress;
 		}),
-		default: progress,
+		progress,
 		ProgressLabel,
 	};
 });

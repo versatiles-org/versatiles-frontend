@@ -1,2 +1,2 @@
-export { default as PromiseFunction } from './async';
-export { default as progress, Progress, ProgressLabel } from './progress';
+export { PromiseFunction } from './promise-function';
+export { progress, Progress, ProgressLabel } from './progress';

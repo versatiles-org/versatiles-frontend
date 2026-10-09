@@ -6,7 +6,7 @@ import { execFileSync } from 'child_process';
 import { gunzipSync, zstdDecompressSync } from 'zlib';
 import tar from 'tar-stream';
 import { FileDB } from '../sources/file-db';
-import { emptyGlyphPbf } from '../config/glyphs';
+import { emptyGlyphPbf } from '../config/glyph-transforms';
 
 // Mock cache module
 vi.mock('../utils/cache', () => ({

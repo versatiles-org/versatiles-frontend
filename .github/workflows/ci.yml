@@ -78,7 +78,7 @@ jobs:
         run: npm run lint
 
       - name: Run tests
-        run: npm run test-coverage
+        run: npm run test:coverage
 
       - name: Upload test coverage
         # One upload is enough; both runs cover the same lines.

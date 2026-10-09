@@ -1,5 +1,5 @@
 import type { ProgressLabel } from './progress';
-import progress from './progress';
+import { progress } from './progress';
 import { forEachAsync } from '../utils';
 
 type AsyncFunction = () => Promise<void>;
@@ -8,7 +8,7 @@ type AsyncFunction = () => Promise<void>;
  * Represents a wrapper around asynchronous functions, allowing for complex async flow control
  * like sequential or parallel execution with optional progress tracking.
  */
-export default class PromiseFunction {
+export class PromiseFunction {
 	#init?: AsyncFunction;
 
 	#run?: AsyncFunction;

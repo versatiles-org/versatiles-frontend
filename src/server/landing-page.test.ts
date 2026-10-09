@@ -1,5 +1,5 @@
 import { describe, it, expect, afterEach } from 'vitest';
-import { LandingPage, renderPage, type LandingEntry } from './landing';
+import { LandingPage, renderPage, type LandingEntry } from './landing-page';
 
 const entries: LandingEntry[] = [
 	{ name: 'frontend', description: 'Full standard frontend.', port: 50001 },

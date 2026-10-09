@@ -1,7 +1,7 @@
 import type { SourceConfig } from '../sources/source-config';
 import { githubSource, npmSource, staticSource } from './sources';
 import type { FrontendConfig } from '../frontend/frontend';
-import { emptyGlyphPbf, limitFontFamiliesCodeblocks, removeItalicFaces, removeItalicFontIds } from './glyphs';
+import { emptyGlyphPbf, limitFontFamiliesCodeblocks, removeItalicFaces, removeItalicFontIds } from './glyph-transforms';
 
 export const sourceConfigs = {
 	fonts: githubSource('versatiles-org/versatiles-fonts', {
