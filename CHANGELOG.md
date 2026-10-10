@@ -5,6 +5,56 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.16.0] - 2026-10-10
+
+### Features
+
+- integrate VersaTiles Map Editor into frontend and update related configurations ([3522fd3](https://github.com/versatiles-org/versatiles-frontend/commit/3522fd3daedd89872e5224e03e484d38b6c668dd))
+- update asset handling to support stripPrefix option in file sources, close #90 ([8dc8b02](https://github.com/versatiles-org/versatiles-frontend/commit/8dc8b028634bb505c5c4a69964ad968e32594b18))
+
+### Code Refactoring
+
+- move frontends/config.ts to src/config.ts ([1475960](https://github.com/versatiles-org/versatiles-frontend/commit/1475960f682a987049d0845578e722e7643b86b7))
+- import the frontend and source configs statically ([4286f37](https://github.com/versatiles-org/versatiles-frontend/commit/4286f37a9940510742dc05ffa58ce7f062fa2440))
+- move file, glyphs and source_config from src/files to src ([90d56c3](https://github.com/versatiles-org/versatiles-frontend/commit/90d56c33d56205c64ebfa4935137fecb3c39ac56))
+- layer the modules so that folders only depend downwards ([14a6e1f](https://github.com/versatiles-org/versatiles-frontend/commit/14a6e1f883880f12bf510890eced0c74798b37b8))
+- let FrontendConfig.transform rewrite content instead of File objects ([861d2f3](https://github.com/versatiles-org/versatiles-frontend/commit/861d2f3270609fcbe4f825e790d8974b6b6f7cbf))
+- move the source helpers to src/config/sources.ts ([b1e02a6](https://github.com/versatiles-org/versatiles-frontend/commit/b1e02a6a26aa5739a74d5a14a4841236b31b6e23))
+- add a barrel for src/utils and import only through it ([972f148](https://github.com/versatiles-org/versatiles-frontend/commit/972f148f2a3928cb1e71e22cb77451ee5086d843))
+- decouple files/ from the release notes and tidy up utils/ ([9ed84a4](https://github.com/versatiles-org/versatiles-frontend/commit/9ed84a4bedcbd851057a82059ff951ebdec3f2c3))
+- remove duplicated config types, entry mapping, formatting and server shutdown code ([e164dd6](https://github.com/versatiles-org/versatiles-frontend/commit/e164dd61858dedda51d09292b3de37ba9685906b))
+- move build orchestration and release notes to src/pipeline ([2280b95](https://github.com/versatiles-org/versatiles-frontend/commit/2280b95507982813d23aafb7006abb91c9003657))
+- rename Curl to Archive and hand extracted files to a callback ([05c9b1f](https://github.com/versatiles-org/versatiles-frontend/commit/05c9b1fa530c6b8d0d5aaae7de2f1b44eaa6c79e))
+- split the tarball writing from Frontend into frontend/tarball.ts ([436db0c](https://github.com/versatiles-org/versatiles-frontend/commit/436db0c72c0f4ef11e618c5001da49622bfae23b))
+- move the dev server orchestration to server/serve.ts ([88b7765](https://github.com/versatiles-org/versatiles-frontend/commit/88b776541ed10c6276f3f5d630b6096b6036e09a))
+- use kebab-case for all module and folder names ([db1257e](https://github.com/versatiles-org/versatiles-frontend/commit/db1257eb9fb7d1ece32306f84376ae12386655a8))
+- rename src/files to src/sources and name the sources after what they are ([21265d0](https://github.com/versatiles-org/versatiles-frontend/commit/21265d0b79ecb884540c9c2e7c3d6f088fd84e65))
+- rename the frontends/ folder of the static sources to static/ ([6ca64ce](https://github.com/versatiles-org/versatiles-frontend/commit/6ca64cea664615716dfd990137c8c5b904b329ef))
+- rename modules after what they contain ([15bb232](https://github.com/versatiles-org/versatiles-frontend/commit/15bb2329372d5b20f6e15bdcae3fda1a70439d23))
+- add a barrel for src/sources and import only through it ([3c68985](https://github.com/versatiles-org/versatiles-frontend/commit/3c68985746fe7149a6d9f35ab94e7e52eaadc124))
+
+### Documentation
+
+- bring the README up to date with the dev server and project structure ([0e080a1](https://github.com/versatiles-org/versatiles-frontend/commit/0e080a1c152e20b48817bd8e4ea79a3618743f8c))
+- add sections on running the tests and adding a frontend or library ([c8f8e01](https://github.com/versatiles-org/versatiles-frontend/commit/c8f8e01e18109dba0afb1c777cc23db5d8ffe0cb))
+
+### Tests
+
+- add integration tests for frontend bundles and implement testIntegration function ([5e45ea7](https://github.com/versatiles-org/versatiles-frontend/commit/5e45ea70a7e9b61b21bfa8abf9f4dcf4460fd799))
+- move the README check to src/config, next to the config it checks ([7fab848](https://github.com/versatiles-org/versatiles-frontend/commit/7fab84840ba971a0ea27c1deeb27a31f553e2cb1))
+- mock the tarball writing in build.test.ts, so it writes nothing into release/ ([c5fd5e0](https://github.com/versatiles-org/versatiles-frontend/commit/c5fd5e0903e19f5051d80e0445020417f6439d0d))
+
+### Chores
+
+- add ignore rule for typescript dependency in dependabot configuration ([800c375](https://github.com/versatiles-org/versatiles-frontend/commit/800c375f54586aa54b5472d79f8618e1cfa5b159))
+- update dependencies in package.json ([629fb65](https://github.com/versatiles-org/versatiles-frontend/commit/629fb6540bae8197d4c435d8a5f914dca9a23739))
+- remove mapbox-gl-rtl-text dependency and related references ([6d903cf](https://github.com/versatiles-org/versatiles-frontend/commit/6d903cfdcab1bfadf0fa82c1f1f0a6577f1d28b6))
+- update Playwright snapshot images for Chromium on Darwin and Linux ([f789629](https://github.com/versatiles-org/versatiles-frontend/commit/f789629b0772b971fb579a0a5c5585acef6d74b9))
+- update external-map-editor version to 3.1.1 ([ee991e4](https://github.com/versatiles-org/versatiles-frontend/commit/ee991e490e76c1d015576853a632996f5297f600))
+- update brace-expansion, markdown-it, and proxy-addr versions in package-lock.json ([64919a4](https://github.com/versatiles-org/versatiles-frontend/commit/64919a4bcc463f919535e36db0e523c42380804e))
+- update dependencies for Playwright, release-tool, style, dotenv, express, and maplibre packages ([cd262f8](https://github.com/versatiles-org/versatiles-frontend/commit/cd262f8f041d6ed575d08a3688c610d5ac68d350))
+- update dependencies for @types/node, @versatiles/maplibre-svg-export, and dotenv ([5a77237](https://github.com/versatiles-org/versatiles-frontend/commit/5a7723707b7e5c23b809dd7555796c4c9c1f2b14))
+
 ## [3.15.3] - 2026-09-22
 
 ### Code Refactoring
