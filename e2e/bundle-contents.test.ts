@@ -187,6 +187,8 @@ describe('Bundle contents', () => {
 		expect.soft(path.file('view/index.html')).toStrictEqual(withEditor);
 		expect.soft(path.file('map-editor.config.jsonc')).toStrictEqual(withEditor);
 		expect.soft(path.file('favicon.ico')).toStrictEqual(withEditor);
+		expect.soft(path.file('favicon.svg')).toStrictEqual(withEditor);
+		expect.soft(path.file('apple-touch-icon.png')).toStrictEqual(withEditor);
 		expect.soft(path.file('THIRD_PARTY_LICENSES.txt')).toStrictEqual(withEditor);
 		// The files of the app have hashed names, so only their number and size are checked.
 		expectMinSizes(path.sizes(/^_app\//), { frontend: 1.5e6, 'frontend-dev': 1.5e6, 'frontend-min': 1.5e6 });
