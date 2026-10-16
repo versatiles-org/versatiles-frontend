@@ -5,6 +5,21 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.16.1] - 2026-10-16
+
+### Bug Fixes
+
+- add missing folder mapping for 'editor/' in mapFolder function, close #91 ([aee39c3](https://github.com/versatiles-org/versatiles-frontend/commit/aee39c3d8b085167f2ff5146ce2e605be3208157))
+
+### Tests
+
+- add case to fold editor subfolders into a single row in generateOverview ([5fd32a7](https://github.com/versatiles-org/versatiles-frontend/commit/5fd32a7f138e5320bf75b885656b0afcab8c8498))
+- add soft assertions for favicon files in bundle contents ([0b67309](https://github.com/versatiles-org/versatiles-frontend/commit/0b673090828107a1943ab447aa275ea84f47dd34))
+
+### Chores
+
+- update dependencies to latest versions ([c229194](https://github.com/versatiles-org/versatiles-frontend/commit/c2291948d5aa3b98c6009c599dec9dab66be5ce9))
+
 ## [3.16.0] - 2026-10-10
 
 ### Features
