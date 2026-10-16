@@ -130,5 +130,8 @@ function mapFolder(folder: string): string {
 	if (folder.startsWith('assets/sprites/')) {
 		return 'assets/sprites/';
 	}
+	if (folder.startsWith('editor/')) {
+		return 'editor/';
+	}
 	return folder;
 }
