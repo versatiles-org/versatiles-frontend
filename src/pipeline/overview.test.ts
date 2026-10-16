@@ -90,6 +90,19 @@ describe('generateOverview', () => {
 		expect(result).toContain('assets/glyphs/*');
 	});
 
+	it('folds editor subfolders into a single row', () => {
+		const f = mockFrontend('test', [
+			{ name: 'editor/index.html', size: 1000000 },
+			{ name: 'editor/_app/immutable/chunks/a.js', size: 2000000 },
+			{ name: 'editor/view/index.html', size: 3000000 },
+		]);
+		const result = generateOverview([f]);
+		const editorLines = result.split('\n').filter((l) => l.startsWith('editor/'));
+
+		expect(editorLines).toHaveLength(1);
+		expect(editorLines[0]).toMatch(/^editor\/\s+6'000$/);
+	});
+
 	it('wraps table in code block with heading', () => {
 		const f = mockFrontend('test', [{ name: 'a.txt', size: 1000000 }]);
 		const result = generateOverview([f]);
