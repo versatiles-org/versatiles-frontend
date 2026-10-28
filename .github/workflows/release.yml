@@ -65,11 +65,28 @@ jobs:
       - name: Update release
         run: gh release edit $RELEASE_TAG --draft=false --latest --prerelease=false --notes-file=release/notes.md
 
+      # github.token cannot start workflows in other repositories, so mint a short-lived
+      # token from the organisation's release GitHub App, for versatiles-docker and Actions only.
+      - name: Create token for the Docker repository
+        id: app-token
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ vars.RELEASE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          owner: versatiles-org
+          repositories: versatiles-docker
+          permission-actions: write
+
+      # Only the frontend image changes. The inputs must match versatiles-docker's
+      # release.yml exactly: GitHub rejects a dispatch that names an unknown input.
       - name: Trigger Docker release
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
         run: |
-          curl -X POST \
-            --fail-with-body \
-            -H "Authorization: token ${{ secrets.PAT_TOKEN }}" \
-            -H "Accept: application/vnd.github.v3+json" \
-            https://api.github.com/repos/versatiles-org/versatiles-docker/actions/workflows/release.yml/dispatches \
-            -d '{"ref":"main","inputs":{"build_base":false,"build_frontend":true,"build_nginx":false,"build_tippecanoe":false,"build_tilemaker":false,"build_planetiler":false,"build_gdal":false}}'
+          gh workflow run release.yml --repo versatiles-org/versatiles-docker --ref main \
+            -f build_base=false \
+            -f build_frontend=true \
+            -f build_nginx=false \
+            -f build_tippecanoe=false \
+            -f build_gdal=false \
+            -f build_planetiler=false
