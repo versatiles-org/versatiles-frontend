@@ -5,6 +5,22 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.17.0] - 2026-11-04
+
+### Features
+
+- add GitHub App token creation for Docker repository release workflow ([6fd338a](https://github.com/versatiles-org/versatiles-frontend/commit/6fd338a99eeab5909b3ad62d0c6235a52cffbeb9))
+- move VersaTiles logo and support link into a top-left map control ([e299bb4](https://github.com/versatiles-org/versatiles-frontend/commit/e299bb4499715e42559f89d935233886062ca424))
+- move VersaTiles logo and support link into a top-left map control ([cf31b6b](https://github.com/versatiles-org/versatiles-frontend/commit/cf31b6b08c701a192bc07730c7cbd701ef2dc361))
+
+### Tests
+
+- update screenshot snapshots for Playwright tests ([6d38349](https://github.com/versatiles-org/versatiles-frontend/commit/6d38349292738e598bdb7f7d3ee197ef2d9af9e7))
+
+### Chores
+
+- update dependencies to latest versions ([8ffcba5](https://github.com/versatiles-org/versatiles-frontend/commit/8ffcba50ea1f5bab37e1e65282c7d209693d6da0))
+
 ## [3.16.1] - 2026-10-16
 
 ### Bug Fixes
