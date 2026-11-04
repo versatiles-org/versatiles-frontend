@@ -21,7 +21,7 @@ const BRAND_HEART_SVG =
 class VersaTilesBrandControl {
 	onAdd() {
 		this._container = document.createElement('div');
-		this._container.className = 'maplibregl-ctrl maplibregl-ctrl-group versatiles-brand';
+		this._container.className = 'maplibregl-ctrl versatiles-brand';
 
 		const home = document.createElement('a');
 		home.className = 'versatiles-brand-home';
