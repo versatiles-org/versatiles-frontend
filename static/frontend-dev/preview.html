@@ -12,6 +12,9 @@
 		<script defer src="/assets/lib/versatiles-geocoder/versatiles-geocoder.js"></script>
 		<link href="/assets/lib/versatiles-geocoder/versatiles-geocoder.css" rel="stylesheet" />
 
+		<script defer src="/assets/lib/versatiles-brand/versatiles-brand.js"></script>
+		<link href="/assets/lib/versatiles-brand/versatiles-brand.css" rel="stylesheet" />
+
 		<script defer src="/assets/lib/versatiles-style/versatiles-style.js"></script>
 
 		<script defer src="/assets/lib/versatiles-svg-renderer/versatiles-svg-renderer.js"></script>
@@ -93,9 +96,6 @@
 	</head>
 
 	<body style="margin: 0; height: 100%">
-		<a href="https://versatiles.org" style="position: absolute; bottom: 1em; left: 1em; z-index: 1">
-			<img src="/assets/images/versatiles-logo.png" alt="VersaTiles" width="32" />
-		</a>
 		<div id="map" class="maplibregl-compact" style="position: absolute; top: 0; bottom: 0; width: 100%"></div>
 		<script>
 			// The library tags above are deferred, so they have not run yet while this inline
@@ -145,6 +145,8 @@
 
 					map.addControl(new MetadataControl(id, metadata), 'top-right');
 
+					// Added first, so the logo and support link sit on top of the left corner.
+					map.addControl(createVersaTilesBrand(), 'top-left');
 					map.addControl(createVersaTilesGeocoder(), 'top-left');
 
 					// collapse attribution control

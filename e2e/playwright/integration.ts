@@ -53,6 +53,11 @@ const LIBRARIES: Record<string, { scripts: string[]; styles: string[]; global: s
 		styles: [],
 		global: 'VersaTilesSVG.SVGExportControl',
 	},
+	'versatiles-brand': {
+		scripts: ['versatiles-brand/versatiles-brand.js'],
+		styles: ['versatiles-brand/versatiles-brand.css'],
+		global: 'createVersaTilesBrand',
+	},
 	'versatiles-geocoder': {
 		scripts: ['versatiles-geocoder/versatiles-geocoder.js'],
 		styles: ['versatiles-geocoder/versatiles-geocoder.css'],
@@ -193,6 +198,16 @@ export function testIntegration(features: BundleFeatures) {
 
 			guard.expectOnlyThisHost(['/tiles/osm/', '/assets/glyphs/', '/assets/sprites/']);
 			expect(errors).toStrictEqual([]);
+		});
+
+		test('main map links to versatiles.org and the donation page', async ({ page, serverUrl }) => {
+			await page.goto(serverUrl + features.mapPage);
+			const brand = page.locator('.maplibregl-ctrl-top-left .versatiles-brand');
+			await expect(brand.getByRole('link', { name: 'VersaTiles' })).toHaveAttribute('href', 'https://versatiles.org');
+			await expect(brand.getByRole('link', { name: 'Support us' })).toHaveAttribute(
+				'href',
+				'https://versatiles.org/donate/'
+			);
 		});
 
 		if (features.editor) {

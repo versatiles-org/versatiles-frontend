@@ -139,6 +139,16 @@ describe('Bundle contents', () => {
 			expect.soft(path.rest()).toStrictEqual({});
 		});
 
+		// Not a third-party package: our own logo and support link, served from static/all/
+		// like versatiles-geocoder below.
+		it('contains versatiles-brand in every frontend with a page', () => {
+			const path = bundles.withPrefix('assets/lib/versatiles-brand/');
+			const withPages = { frontend: true, 'frontend-dev': true, 'frontend-min': true, 'frontend-tiny': true };
+			expect.soft(path.file('versatiles-brand.js')).toStrictEqual(withPages);
+			expect.soft(path.file('versatiles-brand.css')).toStrictEqual(withPages);
+			expect.soft(path.rest()).toStrictEqual({});
+		});
+
 		// Not a third-party package: our own location search, served from static/all/ and
 		// used by every frontend that has a page. frontend-blank ships no HTML, so it has none.
 		it('contains versatiles-geocoder in every frontend with a page', () => {

@@ -123,6 +123,15 @@ test.describe('overview page', () => {
 		await expect(logo).toBeVisible();
 	});
 
+	test('links to versatiles.org and the donation page', async ({ page, serverUrl }) => {
+		await page.goto(serverUrl);
+		await expect(page.locator('h1 a')).toHaveAttribute('href', 'https://versatiles.org');
+		await expect(page.getByRole('link', { name: 'Support us' })).toHaveAttribute(
+			'href',
+			'https://versatiles.org/donate/'
+		);
+	});
+
 	test('tile sources are listed', async ({ page, serverUrl }) => {
 		await page.goto(serverUrl);
 		await expect(page.locator('#list .box')).toHaveCount(2);
@@ -258,5 +267,5 @@ testIntegration({
 	styler: false,
 	tools: true,
 	editor: true,
-	libraries: ['compare', 'geocoder', 'inspect', 'style', 'styler', 'svg', 'versatiles-geocoder'],
+	libraries: ['compare', 'geocoder', 'inspect', 'style', 'styler', 'svg', 'versatiles-brand', 'versatiles-geocoder'],
 });

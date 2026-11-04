@@ -124,5 +124,5 @@ testIntegration({
 	styler: true,
 	tools: false,
 	editor: false,
-	libraries: ['style', 'styler', 'versatiles-geocoder'],
+	libraries: ['style', 'styler', 'versatiles-brand', 'versatiles-geocoder'],
 });

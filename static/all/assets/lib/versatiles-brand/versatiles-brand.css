@@ -1,0 +1,44 @@
+.versatiles-brand {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	padding: 4px;
+	background: #fff;
+	font:
+		14px/1 system-ui,
+		sans-serif;
+}
+
+.versatiles-brand a {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 3px 6px;
+	border-radius: 3px;
+	color: #333;
+	text-decoration: none;
+	white-space: nowrap;
+}
+
+.versatiles-brand a:hover {
+	background: rgba(0, 0, 0, 0.05);
+}
+
+.versatiles-brand img {
+	display: block;
+}
+
+.versatiles-brand-name {
+	font-weight: 600;
+}
+
+.versatiles-brand-support {
+	font-size: 12px;
+}
+
+/* Narrow screens: the logo stands for the name, so the support link stays in view. */
+@media screen and (max-width: 639px) {
+	.versatiles-brand-name {
+		display: none;
+	}
+}
