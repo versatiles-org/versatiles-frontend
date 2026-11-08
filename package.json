@@ -46,7 +46,7 @@
     "@types/node": "^26.6.6",
     "@types/tar-stream": "^3.1.5",
     "@types/unzipper": "^0.10.11",
-    "@versatiles/map-editor": "^4.1.0",
+    "@versatiles/map-editor": "^4.2.0",
     "@versatiles/maplibre-svg-export": "^2.5.0",
     "@versatiles/release-tool": "^2.21.0",
     "@versatiles/style": "^9.0.0",
