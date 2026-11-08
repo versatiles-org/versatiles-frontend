@@ -210,7 +210,6 @@ export function testIntegration(features: BundleFeatures) {
 			);
 		});
 
-		// The map editor 4.1 still loads the tilesets by their names before @versatiles/style 9.
 		if (features.editor) {
 			test('map editor loads everything from this host', async ({ page, serverUrl }) => {
 				const guard = await HostGuard.install(page, serverUrl);
@@ -219,17 +218,17 @@ export function testIntegration(features: BundleFeatures) {
 
 				await page.goto(`${serverUrl}/editor/`);
 				await expect(page).toHaveTitle('VersaTiles Map Editor');
-				await guard.waitForLocal(/^\/tiles\/osm\/\d+\/\d+\/\d+/);
+				await guard.waitForLocal(/^\/tiles\/osm-vector\/\d+\/\d+\/\d+/);
 
 				// The satellite background is the other tile source the editor uses.
 				await page.getByRole('radio', { name: 'Satellite' }).click();
-				await guard.waitForLocal(/^\/tiles\/satellite\/\d+\/\d+\/\d+/);
+				await guard.waitForLocal(/^\/tiles\/satellite-raster\/\d+\/\d+\/\d+/);
 				await guard.until(page.waitForLoadState('networkidle'));
 
 				guard.expectOnlyThisHost([
 					'/editor/map-editor.config.jsonc',
-					'/tiles/osm/',
-					'/tiles/satellite/',
+					'/tiles/osm-vector/',
+					'/tiles/satellite-raster/',
 					'/assets/glyphs/',
 					'/assets/sprites/',
 				]);
@@ -242,11 +241,11 @@ export function testIntegration(features: BundleFeatures) {
 				page.on('pageerror', (err) => errors.push(err.message));
 
 				await page.goto(`${serverUrl}/editor/view/`);
-				await guard.waitForLocal(/^\/tiles\/osm\/\d+\/\d+\/\d+/);
+				await guard.waitForLocal(/^\/tiles\/osm-vector\/\d+\/\d+\/\d+/);
 				await guard.until(page.waitForLoadState('networkidle'));
 
 				await expect(page.locator('.maplibregl-canvas')).toBeAttached();
-				guard.expectOnlyThisHost(['/editor/map-editor.config.jsonc', '/tiles/osm/']);
+				guard.expectOnlyThisHost(['/editor/map-editor.config.jsonc', '/tiles/osm-vector/']);
 				expect(errors).toStrictEqual([]);
 			});
 		} else {

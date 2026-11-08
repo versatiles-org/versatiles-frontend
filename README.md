@@ -16,7 +16,7 @@ VersaTiles Frontend provides pre-packaged web assets to serve interactive maps, 
 - **frontend-blank**: Blank frontend with only fonts and sprites.
 - **frontend-tiny**: Minimal frontend with sprites, MapLibre, VersaTiles style and Noto Sans fonts supporting only Latin characters.
 
-`frontend`, `frontend-dev` and `frontend-min` also contain the [VersaTiles Map Editor](https://github.com/versatiles-org/versatiles-map-editor) at `/editor/`, with the viewer of shared maps at `/editor/view/`. It uses the tiles, sprites and fonts of the server it runs on (`/tiles/osm`, and `/tiles/satellite` for the satellite background), see `static/map-editor-config/editor/map-editor.config.jsonc`.
+`frontend`, `frontend-dev` and `frontend-min` also contain the [VersaTiles Map Editor](https://github.com/versatiles-org/versatiles-map-editor) at `/editor/`, with the viewer of shared maps at `/editor/view/`. It uses the tiles, sprites and fonts of the server it runs on (`/tiles/osm-vector`, and `/tiles/satellite-raster` for the satellite background), see `static/map-editor-config/editor/map-editor.config.jsonc`.
 
 See the [latest release notes](https://github.com/versatiles-org/versatiles-frontend/releases/latest) for details on included components and asset sizes.
 
