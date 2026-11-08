@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.17.1] - 2026-11-08
+
+### Tests
+
+- expect the osm-vector tileset of @versatiles/style 9 ([9ada0d4](https://github.com/versatiles-org/versatiles-frontend/commit/9ada0d45980113b15ab46d8ae58ba7b84e154204))
+- expect the tilesets of map editor 4.2.0 under their new names ([f292db8](https://github.com/versatiles-org/versatiles-frontend/commit/f292db8b2fe66b948272978df46391f41540b34d))
+
+### Chores
+
+- update Playwright and VersaTiles style dependencies to latest versions ([c33ca75](https://github.com/versatiles-org/versatiles-frontend/commit/c33ca75f4e764d03436b87f9f5c05840b0f46b33))
+- update @versatiles/map-editor to version 4.2.0 ([0da3766](https://github.com/versatiles-org/versatiles-frontend/commit/0da37669034de1ac43ed0c4e8a1734afb5f9c19e))
+
 ## [3.17.0] - 2026-11-04
 
 ### Features
