@@ -196,7 +196,7 @@ export function testIntegration(features: BundleFeatures) {
 				await guard.until(waitForMapLoaded(page));
 			}
 
-			guard.expectOnlyThisHost(['/tiles/osm/', '/assets/glyphs/', '/assets/sprites/']);
+			guard.expectOnlyThisHost(['/tiles/osm-vector/', '/assets/glyphs/', '/assets/sprites/']);
 			expect(errors).toStrictEqual([]);
 		});
 
@@ -210,6 +210,7 @@ export function testIntegration(features: BundleFeatures) {
 			);
 		});
 
+		// The map editor 4.1 still loads the tilesets by their names before @versatiles/style 9.
 		if (features.editor) {
 			test('map editor loads everything from this host', async ({ page, serverUrl }) => {
 				const guard = await HostGuard.install(page, serverUrl);
@@ -383,7 +384,7 @@ export function testIntegration(features: BundleFeatures) {
 
 				await expect(page.locator('.maplibregl-compare .compare-swiper-vertical')).toBeVisible();
 				await expect(page.locator('.maplibregl-ctrl-geocoder input')).toBeVisible();
-				guard.expectOnlyThisHost(['/tiles/osm/', '/assets/glyphs/', '/assets/sprites/']);
+				guard.expectOnlyThisHost(['/tiles/osm-vector/', '/assets/glyphs/', '/assets/sprites/']);
 				expect(errors).toStrictEqual([]);
 			});
 		}

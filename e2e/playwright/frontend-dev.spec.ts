@@ -4,9 +4,9 @@ import type { Page } from '@playwright/test';
 
 test.use({
 	bundleName: 'frontend-dev',
-	tileIndex: ['osm', 'hillshade'],
+	tileIndex: ['osm-vector', 'hillshade'],
 	tilesMeta: {
-		osm: {
+		'osm-vector': {
 			tilejson: '3.0.0',
 			name: 'VersaTiles OSM',
 			description: 'Vector tiles based on OSM in Shortbread scheme',
@@ -14,7 +14,7 @@ test.use({
 			tile_format: 'vnd.mapbox-vector-tile',
 			tile_schema: 'shortbread@1.0',
 			attribution: '<a href="https://www.openstreetmap.org/copyright">© OpenStreetMap contributors</a>',
-			tiles: ['/tiles/osm/{z}/{x}/{y}'],
+			tiles: ['/tiles/osm-vector/{z}/{x}/{y}'],
 			bounds: [-180, -85.051129, 180, 85.051129],
 			minzoom: 0,
 			maxzoom: 14,
@@ -155,7 +155,7 @@ test.describe('overview page', () => {
 		await page.goto(serverUrl);
 		await expect(page.locator('#list .box')).toHaveCount(2);
 		const links = page.locator('#list a.box');
-		await expect(links.first()).toHaveAttribute('href', 'preview.html?id=osm');
+		await expect(links.first()).toHaveAttribute('href', 'preview.html?id=osm-vector');
 		await expect(links.nth(1)).toHaveAttribute('href', 'preview.html?id=hillshade');
 	});
 
@@ -171,12 +171,12 @@ test.describe('overview page', () => {
 
 test.describe('preview page', () => {
 	test('title is "VersaTiles - Preview"', async ({ page, serverUrl }) => {
-		await page.goto(`${serverUrl}/preview.html?id=osm`);
+		await page.goto(`${serverUrl}/preview.html?id=osm-vector`);
 		await expect(page).toHaveTitle('VersaTiles - Preview');
 	});
 
 	test('#map with canvas', async ({ page, serverUrl }) => {
-		await page.goto(`${serverUrl}/preview.html?id=osm`);
+		await page.goto(`${serverUrl}/preview.html?id=osm-vector`);
 		await waitForMapReady(page);
 		const map = page.locator('#map');
 		await expect(map).toBeVisible();
@@ -184,25 +184,25 @@ test.describe('preview page', () => {
 	});
 
 	test('geolocate control present', async ({ page, serverUrl }) => {
-		await page.goto(`${serverUrl}/preview.html?id=osm`);
+		await page.goto(`${serverUrl}/preview.html?id=osm-vector`);
 		await waitForMapReady(page);
 		await expect(page.locator('.maplibregl-ctrl-geolocate')).toBeVisible();
 	});
 
 	test('inspect control present', async ({ page, serverUrl }) => {
-		await page.goto(`${serverUrl}/preview.html?id=osm`);
+		await page.goto(`${serverUrl}/preview.html?id=osm-vector`);
 		await waitForMapReady(page);
 		await expect(page.getByRole('button', { name: 'Toggle Inspect' })).toBeAttached();
 	});
 
 	test('location search (geocoder) control present', async ({ page, serverUrl }) => {
-		await page.goto(`${serverUrl}/preview.html?id=osm`);
+		await page.goto(`${serverUrl}/preview.html?id=osm-vector`);
 		await waitForMapReady(page);
 		await expect(page.locator('.versatiles-geocoder-input')).toBeVisible();
 	});
 
 	test('metadata panel shows tiles.json of the source', async ({ page, serverUrl }) => {
-		await page.goto(`${serverUrl}/preview.html?id=osm`);
+		await page.goto(`${serverUrl}/preview.html?id=osm-vector`);
 		await waitForMapReady(page);
 		const button = page.getByRole('button', { name: 'Show source metadata' });
 		const panel = page.locator('.metadata-panel');
@@ -235,7 +235,7 @@ test.describe('preview page', () => {
 	});
 
 	test('logo is present', async ({ page, serverUrl }) => {
-		await page.goto(`${serverUrl}/preview.html?id=osm`);
+		await page.goto(`${serverUrl}/preview.html?id=osm-vector`);
 		const logo = page.locator('img[alt="VersaTiles"]');
 		await expect(logo).toBeVisible();
 	});
@@ -243,7 +243,7 @@ test.describe('preview page', () => {
 	test('screenshot', async ({ page, serverUrl }) => {
 		await installMapIdleHook(page);
 		await page.setViewportSize({ width: 1024, height: 768 });
-		await page.goto(`${serverUrl}/preview.html?id=osm#${SCREENSHOT_LOCATION}`);
+		await page.goto(`${serverUrl}/preview.html?id=osm-vector#${SCREENSHOT_LOCATION}`);
 		await waitForMapRendered(page);
 		await expect(page).toHaveScreenshot();
 	});
@@ -263,7 +263,7 @@ test.describe('preview page without id', () => {
 });
 
 testIntegration({
-	mapPage: '/preview.html?id=osm',
+	mapPage: '/preview.html?id=osm-vector',
 	styler: false,
 	tools: true,
 	editor: true,
