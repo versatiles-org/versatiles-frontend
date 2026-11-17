@@ -60,9 +60,9 @@ test('page loads without console errors', async ({ page, serverUrl }) => {
 	expect(errors).toStrictEqual([]);
 });
 
-test('title is "VersaTiles"', async ({ page, serverUrl }) => {
+test('title is "VersaTiles · Interactive map"', async ({ page, serverUrl }) => {
 	await page.goto(serverUrl);
-	await expect(page).toHaveTitle('VersaTiles');
+	await expect(page).toHaveTitle('VersaTiles · Interactive map');
 });
 
 test('#map div exists and contains a canvas', async ({ page, serverUrl }) => {

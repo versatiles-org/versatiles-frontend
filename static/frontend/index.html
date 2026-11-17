@@ -1,10 +1,54 @@
 <!doctype html>
-<html>
+<html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<title>VersaTiles</title>
+		<title>VersaTiles · Interactive map</title>
 		<meta name="viewport" content="initial-scale=1,maximum-scale=1,user-scalable=no" />
 		<link rel="icon" type="image/png" href="/assets/images/versatiles-logo.png" />
+
+		<!--
+			Every VersaTiles server ships this page, so the texts must fit any of them: no host name, no
+			canonical link and no og:image, which would need an absolute URL. Map views differ only in
+			the URL fragment (#map=…), which search engines ignore, so they all count as one page.
+		-->
+		<meta
+			name="description"
+			content="Explore the world with free satellite imagery and vector maps based on OpenStreetMap: search places, switch map styles, inspect map data, export SVG, or run it all on your own server."
+		/>
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content="VersaTiles · Interactive map" />
+		<meta
+			property="og:description"
+			content="Explore the world with free satellite imagery and vector maps based on OpenStreetMap: search places, switch map styles, inspect map data, export SVG, or run it all on your own server."
+		/>
+
+		<style>
+			.versatiles-about {
+				max-width: 280px;
+				font:
+					12px/1.4 system-ui,
+					sans-serif;
+				color: #333;
+			}
+			.versatiles-about summary {
+				padding: 6px 10px;
+				cursor: pointer;
+			}
+			.versatiles-about[open] summary {
+				font-weight: 600;
+			}
+			.versatiles-about h1 {
+				margin: 0 10px 4px;
+				font-size: 14px;
+			}
+			.versatiles-about p,
+			.versatiles-about ul {
+				margin: 0 10px 8px;
+			}
+			.versatiles-about ul {
+				padding-left: 16px;
+			}
+		</style>
 
 		<script defer src="/assets/lib/maplibre-gl/maplibre-gl.js"></script>
 		<link href="/assets/lib/maplibre-gl/maplibre-gl.css" rel="stylesheet" />
@@ -25,6 +69,26 @@
 
 	<body style="margin: 0; height: 100%">
 		<div id="map" class="maplibregl-compact" style="position: absolute; top: 0; bottom: 0; width: 100%"></div>
+
+		<!--
+			Plain HTML rather than built by the script below, so that search engines and link previews
+			read it without running the map. The script moves it into a map control.
+		-->
+		<details id="about" class="versatiles-about">
+			<summary>About this map</summary>
+			<h1>VersaTiles</h1>
+			<p>
+				VersaTiles lets you explore the world with free satellite imagery and vector maps based on OpenStreetMap. Search
+				for places, switch map styles, inspect the map data, export the view as SVG, and run everything on your own
+				server.
+			</p>
+			<ul>
+				<li><a href="https://versatiles.org/">VersaTiles website</a></li>
+				<li><a href="https://docs.versatiles.org/">Documentation</a></li>
+				<li><a href="https://github.com/versatiles-org">GitHub organization</a></li>
+			</ul>
+		</details>
+
 		<script>
 			// The library tags above are deferred, so they have not run yet while this inline
 			// script is parsed. DOMContentLoaded fires once they have all executed.
@@ -109,6 +173,22 @@
 						},
 					},
 					'top-right'
+				);
+
+				// The about box from the HTML above, as a control above the attribution. Not bottom-left:
+				// on wide screens the open styler panel reaches down there.
+				map.addControl(
+					{
+						onAdd() {
+							this.container = document.getElementById('about');
+							this.container.classList.add('maplibregl-ctrl', 'maplibregl-ctrl-group');
+							return this.container;
+						},
+						onRemove() {
+							this.container.remove();
+						},
+					},
+					'bottom-right'
 				);
 
 				// collapse attribution control

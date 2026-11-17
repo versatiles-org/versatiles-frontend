@@ -60,9 +60,9 @@ test('page loads without console errors', async ({ page, serverUrl }) => {
 	expect(errors).toStrictEqual([]);
 });
 
-test('title is "VersaTiles"', async ({ page, serverUrl }) => {
+test('title is "VersaTiles · Interactive map"', async ({ page, serverUrl }) => {
 	await page.goto(serverUrl);
-	await expect(page).toHaveTitle('VersaTiles');
+	await expect(page).toHaveTitle('VersaTiles · Interactive map');
 });
 
 test('#map div exists and contains a canvas', async ({ page, serverUrl }) => {
@@ -286,6 +286,31 @@ test('map editor control opens the editor', async ({ page, serverUrl }) => {
 	await page.getByRole('button', { name: 'Open map editor' }).click();
 	await expect(page).toHaveURL(`${serverUrl}/editor/`);
 	await expect(page).toHaveTitle('VersaTiles Map Editor');
+});
+
+test('page has a description for search engines and link previews', async ({ page, serverUrl }) => {
+	await page.goto(serverUrl);
+	await expect(page.locator('meta[name="description"]')).toHaveAttribute('content', /OpenStreetMap/);
+	await expect(page.locator('meta[property="og:title"]')).toHaveAttribute('content', 'VersaTiles · Interactive map');
+	await expect(page.locator('meta[property="og:description"]')).toHaveAttribute('content', /OpenStreetMap/);
+});
+
+// Crawlers that do not run the map's script must still find the text, so it has to be in the
+// HTML as served, not added by the script.
+test('about text is in the served HTML', async ({ request, serverUrl }) => {
+	const html = await (await request.get(serverUrl)).text();
+	expect(html).toContain('<details id="about"');
+	expect(html).toContain('href="https://versatiles.org/"');
+});
+
+test('about box is a closed map control that opens', async ({ page, serverUrl }) => {
+	await page.goto(serverUrl);
+	await waitForMapReady(page);
+	const about = page.locator('.maplibregl-ctrl-bottom-right #about');
+	await expect(about).toBeVisible();
+	await expect(about.getByRole('link', { name: 'Documentation' })).toBeHidden();
+	await about.getByText('About this map').click();
+	await expect(about.getByRole('link', { name: 'Documentation' })).toBeVisible();
 });
 
 testIntegration({
