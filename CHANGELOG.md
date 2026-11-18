@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.18.0] - 2026-11-18
+
+### Features
+
+- **frontend:** add a description, link preview tags and an about box for search engines ([494a9e4](https://github.com/versatiles-org/versatiles-frontend/commit/494a9e46b64ef26459fc7c6b40d7605327eb2bec))
+
+### Bug Fixes
+
+- **frontend:** place the about box next to the attribution button ([edec264](https://github.com/versatiles-org/versatiles-frontend/commit/edec264326bf02414d5c4b34e5c713b825ccfd5c))
+
 ## [3.17.2] - 2026-11-11
 
 ### Chores
