@@ -97,7 +97,7 @@ Sources and frontends are defined in [`src/config/index.ts`](src/config/index.ts
 ## Project Structure
 
 - **cache/**: Caches requests, compresses files. It is never evicted automatically, so every upstream release leaves the previous version's entries behind. Empty it with `npm run cache:clean` when it has grown too large — the next build refetches and recompresses whatever it needs.
-- **docs/**: Images for this README, such as the dependency graph below.
+- **docs/**: Images for this README, such as the dependency graph below, and [how the map controls follow dark map styles](docs/color-scheme.md).
 - **e2e/**: Tests of the built bundles in `release/`: their contents, and in `playwright/` the frontends in a browser.
 - **release/**: The packaged frontends and their release notes, `notes.md`.
 - **scripts/**: Helper scripts, e.g. to update the Playwright screenshots on Linux.
