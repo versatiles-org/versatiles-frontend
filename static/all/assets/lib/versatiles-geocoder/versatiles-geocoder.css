@@ -76,6 +76,53 @@
 	font-size: 14px;
 }
 
+/*
+	The map's colour scheme, as the styler signals it with data-color-scheme on the map container.
+	Rules of its own rather than the class maplibregl-ctrl-scheme-aware, which would give the
+	container, a mere wrapper of the field and the results, a background. The variables are those
+	of the other controls, so a page that sets them sets these too. Without light-dark() the values
+	would be invalid, so older browsers keep the light colours.
+*/
+@supports (color: light-dark(#000, #fff)) {
+	.maplibregl-map[data-color-scheme='dark'] .versatiles-geocoder {
+		color-scheme: dark;
+	}
+
+	.maplibregl-map[data-color-scheme='light'] .versatiles-geocoder {
+		color-scheme: light;
+	}
+
+	.maplibregl-map[data-color-scheme] .versatiles-geocoder-input,
+	.maplibregl-map[data-color-scheme] .versatiles-geocoder-results {
+		background: var(--maplibregl-ctrl-bg, light-dark(#fff, #161b22));
+	}
+
+	.maplibregl-map[data-color-scheme] .versatiles-geocoder-input,
+	.maplibregl-map[data-color-scheme] .versatiles-geocoder-title {
+		color: var(--maplibregl-ctrl-fg, light-dark(#000, #e4e9ef));
+	}
+
+	.maplibregl-map[data-color-scheme] .versatiles-geocoder-result + .versatiles-geocoder-result {
+		border-top-color: var(--maplibregl-ctrl-line, light-dark(#eee, #2a313b));
+	}
+
+	.maplibregl-map[data-color-scheme] .versatiles-geocoder-result:hover,
+	.maplibregl-map[data-color-scheme] .versatiles-geocoder-result.is-highlighted {
+		background: light-dark(#f0f3ff, #1c2b42);
+	}
+
+	.maplibregl-map[data-color-scheme] .versatiles-geocoder-context,
+	.maplibregl-map[data-color-scheme] .versatiles-geocoder-message {
+		color: light-dark(#666, #a2acb9);
+	}
+
+	/* the dark shadow is lost on a dark map: a faint light ring instead */
+	.maplibregl-map[data-color-scheme='dark'] .versatiles-geocoder-input,
+	.maplibregl-map[data-color-scheme='dark'] .versatiles-geocoder-results {
+		box-shadow: 0 0 0 1px rgb(255 255 255 / 12%);
+	}
+}
+
 /* On narrow screens the full-width search bar would cover the
    top-left and top-right controls (e.g. the styler button), so
    push those controls below it. */

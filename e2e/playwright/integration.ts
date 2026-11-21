@@ -189,7 +189,8 @@ export function testIntegration(features: BundleFeatures) {
 			await guard.until(waitForMapLoaded(page));
 
 			if (features.styler) {
-				// Another style loads its own sprites and fonts.
+				// Another style loads its own sprites and fonts: one that only the sidebar offers.
+				await page.getByRole('button', { name: 'Open the style editor' }).click();
 				await page.getByRole('button', { name: /^Base style:/ }).click();
 				await page.locator('label[title="gray-dark"]').click();
 				await expect(page.getByRole('button', { name: 'Base style: gray-dark' })).toBeVisible();
@@ -262,9 +263,11 @@ export function testIntegration(features: BundleFeatures) {
 				await waitForMapLoaded(page);
 				const before = await layerIds(page);
 
-				// The satellite style has layers of its own, unlike the themes of the vector map.
-				await page.getByRole('button', { name: /^Base style:/ }).click();
-				await page.locator('label[title="satellite"]').click();
+				// The satellite style has layers of its own, unlike the themes of the vector map. The
+				// closed styler is a bar of base styles; satellite waits for its tiles' metadata.
+				const bar = page.locator('.styler-quickbar');
+				await expect(bar.getByRole('radio', { name: 'satellite', exact: true })).toBeEnabled();
+				await bar.locator('label[title="satellite"]').click();
 				await waitForMapLoaded(page);
 
 				expect(await layerIds(page)).not.toStrictEqual(before);

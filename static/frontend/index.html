@@ -168,9 +168,10 @@
 				map.addControl(createVersaTilesBrand(), 'top-left');
 				map.addControl(createVersaTilesGeocoder(), 'top-left');
 
-				// Keep the styler collapsed on mobile, where screen space is tight.
-				const isMobile = window.matchMedia('(max-width: 639px)').matches;
-				map.addControl(new VersaTilesStylerControl({ open: !isMobile }), 'top-left');
+				// Closed, the styler is a bar of base styles (light, dark, satellite), and its cog opens the
+				// sidebar. On a dark style it marks the map with data-color-scheme="dark", and the controls
+				// with the class maplibregl-ctrl-scheme-aware turn dark with it.
+				map.addControl(new VersaTilesStylerControl({ quickStyles: true }), 'top-left');
 				map.addControl(new VersaTilesSVG.SVGExportControl(), 'top-right');
 
 				// Link to the map editor, which is a site of its own in /editor/.
@@ -178,13 +179,14 @@
 					{
 						onAdd() {
 							this.container = document.createElement('div');
-							this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group';
+							// follows the map's colour scheme, as the styler signals it
+							this.container.className = 'maplibregl-ctrl maplibregl-ctrl-group maplibregl-ctrl-scheme-aware';
 							const button = document.createElement('button');
 							button.type = 'button';
 							button.title = 'Open map editor';
 							button.setAttribute('aria-label', button.title);
 							button.innerHTML =
-								'<svg viewBox="0 0 24 24" width="29" height="29" style="display: block; padding: 6px; box-sizing: border-box" fill="none" stroke="#333" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-5L16 4l4 4L9 19z M14 6l4 4" /></svg>';
+								'<svg viewBox="0 0 24 24" width="29" height="29" style="display: block; padding: 6px; box-sizing: border-box" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20l1-5L16 4l4 4L9 19z M14 6l4 4" /></svg>';
 							button.addEventListener('click', () => (window.location.href = '/editor/'));
 							this.container.append(button);
 							return this.container;
@@ -202,7 +204,7 @@
 					{
 						onAdd() {
 							this.container = document.getElementById('about');
-							this.container.classList.add('maplibregl-ctrl', 'maplibregl-ctrl-group');
+							this.container.classList.add('maplibregl-ctrl', 'maplibregl-ctrl-group', 'maplibregl-ctrl-scheme-aware');
 							return this.container;
 						},
 						onRemove() {

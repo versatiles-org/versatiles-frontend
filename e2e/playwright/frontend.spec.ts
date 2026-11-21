@@ -96,7 +96,9 @@ test('VersaTiles logo loads', async ({ page, serverUrl }) => {
 test('VersaTilesStylerControl is present', async ({ page, serverUrl }) => {
 	await page.goto(serverUrl);
 	await waitForMapReady(page);
-	await expect(page.getByRole('button', { name: 'Toggle style editor' })).toBeAttached();
+	// closed, as a bar of base styles with a button that opens the sidebar
+	await expect(page.locator('.styler-quickbar').getByRole('radio')).toHaveCount(3);
+	await expect(page.getByRole('button', { name: 'Open the style editor' })).toBeVisible();
 });
 
 test('MaplibreInspect control is present', async ({ page, serverUrl }) => {
@@ -311,6 +313,36 @@ test('about box is a closed map control that opens', async ({ page, serverUrl })
 	await expect(about.getByRole('link', { name: 'Documentation' })).toBeHidden();
 	await about.getByText('About this map').click();
 	await expect(about.getByRole('link', { name: 'Documentation' })).toBeVisible();
+});
+
+test('on a dark style, the own controls follow the map into dark colours', async ({ page, serverUrl }) => {
+	await page.goto(`${serverUrl}/#map=${SCREENSHOT_LOCATION}&style=colorful-dark`);
+	await waitForMapReady(page);
+	// the styler signals the scheme of its style on the map container
+	await expect(page.locator('.maplibregl-map')).toHaveAttribute('data-color-scheme', 'dark');
+
+	const dark = 'rgb(22, 27, 34)';
+	const ink = 'rgb(228, 233, 239)';
+	const editor = page.getByRole('button', { name: 'Open map editor' });
+	await expect(editor.locator('xpath=..')).toHaveCSS('background-color', dark);
+	await expect(editor).toHaveCSS('color', ink);
+	await expect(page.locator('#about')).toHaveCSS('background-color', dark);
+	await expect(page.locator('#about')).toHaveCSS('color', ink);
+	await expect(page.locator('.versatiles-geocoder-input')).toHaveCSS('background-color', dark);
+	await expect(page.locator('.versatiles-geocoder-input')).toHaveCSS('color', ink);
+	await expect(page.locator('.versatiles-brand a').first()).toHaveCSS('color', ink);
+});
+
+test('on a light style, the own controls stay light', async ({ page, serverUrl }) => {
+	await page.goto(`${serverUrl}/#map=${SCREENSHOT_LOCATION}&style=colorful`);
+	await waitForMapReady(page);
+	await expect(page.locator('.maplibregl-map')).toHaveAttribute('data-color-scheme', 'light');
+
+	const editor = page.getByRole('button', { name: 'Open map editor' });
+	await expect(editor.locator('xpath=..')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+	await expect(page.locator('#about')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+	await expect(page.locator('.versatiles-geocoder-input')).toHaveCSS('background-color', 'rgb(255, 255, 255)');
+	await expect(page.locator('.versatiles-brand a').first()).toHaveCSS('color', 'rgb(51, 51, 51)');
 });
 
 testIntegration({

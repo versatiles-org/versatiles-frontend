@@ -22,6 +22,16 @@
 		0 0 6px #fff;
 }
 
+/* On a dark map, as the styler signals it with data-color-scheme on the map container: light
+   text with a dark halo, as the labels of dark styles. */
+.maplibregl-map[data-color-scheme='dark'] .versatiles-brand a {
+	color: #e4e9ef;
+	text-shadow:
+		0 0 2px #000,
+		0 0 4px #000,
+		0 0 6px #000;
+}
+
 .versatiles-brand a:hover span {
 	text-decoration: underline;
 }

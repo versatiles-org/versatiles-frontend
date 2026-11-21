@@ -48,9 +48,10 @@
 				map.addControl(createVersaTilesBrand(), 'top-left');
 				map.addControl(createVersaTilesGeocoder(), 'top-left');
 
-				// Keep the styler collapsed on mobile, where screen space is tight.
-				const isMobile = window.matchMedia('(max-width: 639px)').matches;
-				map.addControl(new VersaTilesStylerControl({ open: !isMobile }), 'top-left');
+				// Closed, the styler is a bar of base styles (light, dark, satellite), and its cog opens the
+				// sidebar. On a dark style it marks the map with data-color-scheme="dark", and the controls
+				// with the class maplibregl-ctrl-scheme-aware turn dark with it.
+				map.addControl(new VersaTilesStylerControl({ quickStyles: true }), 'top-left');
 
 				// collapse attribution control
 				document.getElementsByClassName('maplibregl-ctrl-attrib')[0].classList.remove('maplibregl-compact-show');

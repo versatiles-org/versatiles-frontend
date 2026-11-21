@@ -96,7 +96,9 @@ test('VersaTiles logo loads', async ({ page, serverUrl }) => {
 test('VersaTilesStylerControl is present', async ({ page, serverUrl }) => {
 	await page.goto(serverUrl);
 	await waitForMapReady(page);
-	await expect(page.getByRole('button', { name: 'Toggle style editor' })).toBeAttached();
+	// closed, as a bar of base styles with a button that opens the sidebar
+	await expect(page.locator('.styler-quickbar').getByRole('radio')).toHaveCount(3);
+	await expect(page.getByRole('button', { name: 'Open the style editor' })).toBeVisible();
 });
 
 test('screenshot', async ({ page, serverUrl }) => {
