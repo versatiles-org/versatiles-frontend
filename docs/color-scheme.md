@@ -56,6 +56,27 @@ The class gives its element a background, so it suits controls that are a box: a
 - **A dialog or popup** gets the scheme only while it is inside the map container. One attached to `<body>` reads `data-color-scheme` from the container and sets `color-scheme` on itself.
 - **A third-party control that doesn't opt in** can be opted in from outside: add the class to its container after `onAdd`, and restyle what the class doesn't reach, such as icons drawn as images in a fixed colour.
 
+## Migrating a MapLibre plugin
+
+Add `maplibregl-ctrl-scheme-aware` to your control's container. Don't count on another library providing the CSS for the class; until MapLibre does, ship the rules your control needs. Replace your fixed colours with the variables, each with its `light-dark()` default as the fallback. Draw icons in `currentColor`, inline or as a CSS mask, instead of as images in a fixed colour. Gate the rules on the attribute and wrap them in `@supports`, as described above. If your plugin follows `prefers-color-scheme` or has its own dark option or class, let the attribute decide instead, and keep the option only as an override. Then check two things: on a dark style your control turns dark, and on a map without the attribute it stays exactly as before, even on a dark page.
+
+```css
+@supports (color: light-dark(#000, #fff)) {
+	/* The map's scheme on the control only: it resolves light-dark() and turns form fields and scrollbars. */
+	.maplibregl-map[data-color-scheme='dark'] .my-control {
+		color-scheme: dark;
+	}
+	.maplibregl-map[data-color-scheme='light'] .my-control {
+		color-scheme: light;
+	}
+	/* The colours, only on a map with the attribute, so that a dark page alone doesn't turn them dark. */
+	.maplibregl-map[data-color-scheme] .my-control {
+		background: var(--maplibregl-ctrl-bg, light-dark(#fff, #161b22));
+		color: var(--maplibregl-ctrl-fg, light-dark(#333, #e4e9ef));
+	}
+}
+```
+
 ## In VersaTiles
 
 | Where                                                                                                                             | What it does                                                                                                                                                                                                                          |
