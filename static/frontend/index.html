@@ -86,6 +86,8 @@
 
 		<script defer src="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.js"></script>
 		<link href="/assets/lib/maplibre-gl-inspect/maplibre-gl-inspect.css" rel="stylesheet" />
+		<script defer src="/assets/lib/versatiles-inspect/versatiles-inspect.js"></script>
+		<link href="/assets/lib/versatiles-inspect/versatiles-inspect.css" rel="stylesheet" />
 	</head>
 
 	<body style="margin: 0; height: 100%">
@@ -134,8 +136,9 @@
 					}),
 					'top-right'
 				);
+				// Inspect, with its button, popup and inspect map following the map's colour scheme.
 				map.addControl(
-					new MaplibreInspect({
+					createVersaTilesInspect({
 						sources: {
 							'versatiles-shortbread': [
 								'addresses',

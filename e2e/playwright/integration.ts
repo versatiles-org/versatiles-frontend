@@ -1,4 +1,4 @@
-import { test, expect } from './fixtures.js';
+import { test, expect, SCREENSHOT_LOCATION } from './fixtures.js';
 import type { Page } from '@playwright/test';
 
 /**
@@ -62,6 +62,12 @@ const LIBRARIES: Record<string, { scripts: string[]; styles: string[]; global: s
 		scripts: ['versatiles-geocoder/versatiles-geocoder.js'],
 		styles: ['versatiles-geocoder/versatiles-geocoder.css'],
 		global: 'createVersaTilesGeocoder',
+	},
+	// Needs maplibre-gl-inspect, so it comes after 'inspect' in a list.
+	'versatiles-inspect': {
+		scripts: ['versatiles-inspect/versatiles-inspect.js'],
+		styles: ['versatiles-inspect/versatiles-inspect.css'],
+		global: 'createVersaTilesInspect',
 	},
 };
 
@@ -288,6 +294,59 @@ export function testIntegration(features: BundleFeatures) {
 				await page.getByRole('button', { name: 'Toggle Inspect' }).click();
 				await expect.poll(() => layerIds(page)).toStrictEqual(before);
 			});
+
+			if (features.styler) {
+				for (const scheme of ['dark', 'light'] as const) {
+					test(`inspect follows a ${scheme} style with its button, popup and inspect map`, async ({
+						page,
+						serverUrl,
+					}) => {
+						const style = scheme === 'dark' ? 'colorful-dark' : 'colorful';
+						const [bg, ink, mapBackground] =
+							scheme === 'dark'
+								? ['rgb(22, 27, 34)', 'rgb(228, 233, 239)', '#000']
+								: ['rgb(255, 255, 255)', 'rgb(51, 51, 51)', '#fff'];
+						await exposeMap(page);
+						await page.goto(`${serverUrl}${features.mapPage}#map=${SCREENSHOT_LOCATION}&style=${style}`);
+						await waitForMapLoaded(page);
+						await expect(page.locator('.maplibregl-map')).toHaveAttribute('data-color-scheme', scheme);
+
+						// The icon is a mask in the text colour, drawn by ::before.
+						const button = page.getByRole('button', { name: 'Toggle Inspect' });
+						await expect(button.locator('xpath=..')).toHaveCSS('background-color', bg);
+						await expect(button).toHaveCSS('background-image', 'none');
+						const iconColor = () => button.evaluate((el) => getComputedStyle(el, '::before').backgroundColor);
+						expect(await iconColor()).toBe(ink);
+
+						await button.click();
+						await expect
+							.poll(() =>
+								page.evaluate(() => {
+									const map = (window as unknown as { __map: ExposedMap }).__map;
+									const layer = map.getStyle().layers[0] as { paint?: Record<string, unknown> };
+									return layer.paint?.['background-color'];
+								})
+							)
+							.toBe(mapBackground);
+						// The icon of the map, while inspecting, is drawn the same way.
+						expect(await iconColor()).toBe(ink);
+
+						// Hovering a feature of the inspect map shows the popup. Not every point has one, so
+						// the mouse moves over a grid until the popup shows.
+						const box = (await page.locator('.maplibregl-canvas').boundingBox())!;
+						const popup = page.locator('.versatiles-inspect-popup');
+						for (let i = 0; i < 64 && !(await popup.isVisible()); i++) {
+							const x = box.x + box.width * (0.25 + 0.5 * ((i % 8) / 7));
+							const y = box.y + box.height * (0.25 + 0.5 * (Math.floor(i / 8) / 7));
+							await page.mouse.move(x, y);
+						}
+						await expect(popup).toBeVisible();
+						const content = page.locator('.versatiles-inspect-popup .maplibregl-popup-content');
+						await expect(content).toHaveCSS('background-color', bg);
+						await expect(page.locator('.versatiles-inspect-popup .maplibregl-inspect_popup')).toHaveCSS('color', ink);
+					});
+				}
+			}
 
 			test('SVG export renders the map', async ({ page, serverUrl }) => {
 				await exposeMap(page);

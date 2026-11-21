@@ -159,6 +159,16 @@ describe('Bundle contents', () => {
 			expect.soft(path.rest()).toStrictEqual({});
 		});
 
+		// Not a third-party package: our setup of maplibre-gl-inspect, served from static/frontend/,
+		// so only in the frontends whose page has inspect.
+		it('contains versatiles-inspect in frontend and frontend-min', () => {
+			const path = bundles.withPrefix('assets/lib/versatiles-inspect/');
+			const withInspect = { frontend: true, 'frontend-min': true };
+			expect.soft(path.file('versatiles-inspect.js')).toStrictEqual(withInspect);
+			expect.soft(path.file('versatiles-inspect.css')).toStrictEqual(withInspect);
+			expect.soft(path.rest()).toStrictEqual({});
+		});
+
 		afterAll(() => {
 			expect(bundles.withPrefix('assets/lib/').rest()).toStrictEqual({}); // no other files in lib/
 		});

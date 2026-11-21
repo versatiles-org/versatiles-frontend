@@ -126,5 +126,15 @@ testIntegration({
 	styler: true,
 	tools: true,
 	editor: true,
-	libraries: ['compare', 'geocoder', 'inspect', 'style', 'styler', 'svg', 'versatiles-brand', 'versatiles-geocoder'],
+	libraries: [
+		'compare',
+		'geocoder',
+		'inspect',
+		'style',
+		'styler',
+		'svg',
+		'versatiles-brand',
+		'versatiles-geocoder',
+		'versatiles-inspect',
+	],
 });
