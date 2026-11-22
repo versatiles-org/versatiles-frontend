@@ -163,7 +163,10 @@ async function exposeMap(page: Page) {
 
 interface ExposedMap {
 	loaded(): boolean;
-	getStyle(): { layers: { id: string }[] };
+	getStyle(): {
+		sources: Record<string, { type: string }>;
+		layers: { id: string; source?: string; 'source-layer'?: string }[];
+	};
 }
 
 /** Waits until the exposed map has loaded its style and the tiles in view. */
@@ -180,6 +183,23 @@ async function layerIds(page: Page): Promise<string[]> {
 	return page.evaluate(() =>
 		(window as unknown as { __map: ExposedMap }).__map.getStyle().layers.map((layer) => layer.id)
 	);
+}
+
+/** The source-layers the style of the exposed map draws, sorted, by the id of their source. */
+async function sourceLayers(page: Page): Promise<Record<string, string[]>> {
+	return page.evaluate(() => {
+		const result: Record<string, string[]> = {};
+		for (const layer of (window as unknown as { __map: ExposedMap }).__map.getStyle().layers) {
+			if (layer.source && layer['source-layer']) (result[layer.source] ??= []).push(layer['source-layer']);
+		}
+		for (const id of Object.keys(result)) result[id] = [...new Set(result[id])].sort();
+		return result;
+	});
+}
+
+/** The ids of the sources of the exposed map. */
+async function sourceIds(page: Page): Promise<string[]> {
+	return page.evaluate(() => Object.keys((window as unknown as { __map: ExposedMap }).__map.getStyle().sources));
 }
 
 /** Defines the tests for the bundle of the spec file, which has the given features. */
@@ -296,6 +316,35 @@ export function testIntegration(features: BundleFeatures) {
 			});
 
 			if (features.styler) {
+				test('inspect draws every layer of the style, the land cover too', async ({ page, serverUrl }) => {
+					await exposeMap(page);
+					await page.goto(serverUrl + features.mapPage);
+					await waitForMapLoaded(page);
+					const drawn = await sourceLayers(page);
+					// The land cover is a tileset of its own on this server, so the style has a source for it.
+					expect(drawn['versatiles-landcover']).toStrictEqual(['landcover']);
+
+					await page.getByRole('button', { name: 'Toggle Inspect' }).click();
+					await expect.poll(() => sourceLayers(page)).toStrictEqual(drawn);
+				});
+
+				test('inspect works on a satellite style without the OSM overlay', async ({ page, serverUrl }) => {
+					// MapLibre reports a style it rejects as an error on the console.
+					const errors: string[] = [];
+					page.on('console', (message) => message.type() === 'error' && errors.push(message.text()));
+					page.on('pageerror', (err) => errors.push(err.message));
+					await exposeMap(page);
+					const config = Buffer.from(JSON.stringify({ osmOverlay: false })).toString('base64url');
+					await page.goto(`${serverUrl}${features.mapPage}#style=satellite&config=${config}`);
+					await waitForMapLoaded(page);
+					expect(await sourceIds(page)).not.toContain('versatiles-shortbread');
+
+					// Satellite imagery has no layers to inspect, so the inspect map is its background alone.
+					await page.getByRole('button', { name: 'Toggle Inspect' }).click();
+					await expect.poll(() => layerIds(page)).toStrictEqual(['background']);
+					expect(errors).toStrictEqual([]);
+				});
+
 				for (const scheme of ['dark', 'light'] as const) {
 					test(`inspect follows a ${scheme} style with its button, popup and inspect map`, async ({
 						page,
