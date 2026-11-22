@@ -47,7 +47,7 @@
     "@types/tar-stream": "^3.1.5",
     "@types/unzipper": "^0.10.11",
     "@versatiles/map-editor": "^4.3.0",
-    "@versatiles/maplibre-svg-export": "^2.7.0",
+    "@versatiles/maplibre-svg-export": "^2.8.0",
     "@versatiles/release-tool": "^2.23.0",
     "@versatiles/style": "^9.1.0",
     "@vitest/coverage-v8": "^5.1.1",
