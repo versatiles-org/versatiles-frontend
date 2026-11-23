@@ -5,6 +5,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.19.0] - 2026-11-23
+
+### Features
+
+- show the styler as a bar of base styles, and let the own controls follow dark map styles (closes #93) ([c3d9f13](https://github.com/versatiles-org/versatiles-frontend/commit/c3d9f133859f40c3489d01b8c96022ddbc50df08))
+- let the inspect button, popup and inspect map follow dark map styles ([06d0012](https://github.com/versatiles-org/versatiles-frontend/commit/06d0012cd79e41852b9f69f08f35690a3401b7ef))
+
+### Bug Fixes
+
+- let inspect show every source of the style, the land cover too ([b26d4e3](https://github.com/versatiles-org/versatiles-frontend/commit/b26d4e3283d8331c90361f4958b257655e51a101))
+
+### Documentation
+
+- describe how the map controls follow dark map styles ([7625e16](https://github.com/versatiles-org/versatiles-frontend/commit/7625e16e7303b739d3b7cc03278591f461b34203))
+- add how a MapLibre plugin migrates to the colour-scheme convention ([95f6946](https://github.com/versatiles-org/versatiles-frontend/commit/95f6946bc6c10618162657cec72bde2bb0ccff9c))
+
+### Tests
+
+- expect inspect to draw the vector_layers of a source too, which @versatiles/style keeps since 9.1.1 ([952bb3d](https://github.com/versatiles-org/versatiles-frontend/commit/952bb3d5ac3a9bc33b658599d04ad3227e3995b6))
+
+### Chores
+
+- update dependencies to latest versions in package-lock.json ([110ffcf](https://github.com/versatiles-org/versatiles-frontend/commit/110ffcf26ce828d76d782e8fecbffe3077ec4a76))
+- update @versatiles/maplibre-svg-export to version 2.8.0 ([a8e9e73](https://github.com/versatiles-org/versatiles-frontend/commit/a8e9e73d9b23fc8d2df812229600fda104f98c93))
+- update dependencies to latest versions in package.json and package-lock.json ([82e68f8](https://github.com/versatiles-org/versatiles-frontend/commit/82e68f872b2174891965ae18d574f976b6b7878e))
+
 ## [3.18.1] - 2026-11-18
 
 ### Chores
