@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - show the styler as a bar of base styles, and let the own controls follow dark map styles (closes #93) ([c3d9f13](https://github.com/versatiles-org/versatiles-frontend/commit/c3d9f133859f40c3489d01b8c96022ddbc50df08))
 - let the inspect button, popup and inspect map follow dark map styles ([06d0012](https://github.com/versatiles-org/versatiles-frontend/commit/06d0012cd79e41852b9f69f08f35690a3401b7ef))
+- add a version.json to every bundle with its version, commit, build time and components (closes #94) ([5bc2891](https://github.com/versatiles-org/versatiles-frontend/commit/5bc289143bf39907f54cb55f829256c3148fc674))
 
 ### Bug Fixes
 
@@ -20,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - describe how the map controls follow dark map styles ([7625e16](https://github.com/versatiles-org/versatiles-frontend/commit/7625e16e7303b739d3b7cc03278591f461b34203))
 - add how a MapLibre plugin migrates to the colour-scheme convention ([95f6946](https://github.com/versatiles-org/versatiles-frontend/commit/95f6946bc6c10618162657cec72bde2bb0ccff9c))
+- serve osm-vector.versatiles in the README examples, which the frontends ask for as /tiles/osm-vector ([4927ee3](https://github.com/versatiles-org/versatiles-frontend/commit/4927ee305baca720063f6bc807b6966b5e05379f))
 
 ### Tests
 
