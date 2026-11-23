@@ -164,7 +164,7 @@ async function exposeMap(page: Page) {
 interface ExposedMap {
 	loaded(): boolean;
 	getStyle(): {
-		sources: Record<string, { type: string }>;
+		sources: Record<string, { type: string; vector_layers?: { id: string }[] }>;
 		layers: { id: string; source?: string; 'source-layer'?: string }[];
 	};
 }
@@ -195,6 +195,23 @@ async function sourceLayers(page: Page): Promise<Record<string, string[]>> {
 		for (const id of Object.keys(result)) result[id] = [...new Set(result[id])].sort();
 		return result;
 	});
+}
+
+/**
+ * The source-layers inspect should draw for the style of the exposed map, sorted, by the id of their
+ * source: those the style draws, and those a vector source lists in its `vector_layers`.
+ */
+async function inspectableLayers(page: Page): Promise<Record<string, string[]>> {
+	const result = await sourceLayers(page);
+	const listed = await page.evaluate(() =>
+		Object.entries((window as unknown as { __map: ExposedMap }).__map.getStyle().sources).map(
+			([id, source]) => [id, (source.vector_layers ?? []).map((layer) => layer.id)] as const
+		)
+	);
+	for (const [id, layers] of listed) {
+		if (layers.length > 0) result[id] = [...new Set([...(result[id] ?? []), ...layers])].sort();
+	}
+	return result;
 }
 
 /** The ids of the sources of the exposed map. */
@@ -320,12 +337,12 @@ export function testIntegration(features: BundleFeatures) {
 					await exposeMap(page);
 					await page.goto(serverUrl + features.mapPage);
 					await waitForMapLoaded(page);
-					const drawn = await sourceLayers(page);
+					const inspectable = await inspectableLayers(page);
 					// The land cover is a tileset of its own on this server, so the style has a source for it.
-					expect(drawn['versatiles-landcover']).toStrictEqual(['landcover']);
+					expect(inspectable['versatiles-landcover']).toStrictEqual(['landcover']);
 
 					await page.getByRole('button', { name: 'Toggle Inspect' }).click();
-					await expect.poll(() => sourceLayers(page)).toStrictEqual(drawn);
+					await expect.poll(() => sourceLayers(page)).toStrictEqual(inspectable);
 				});
 
 				test('inspect works on a satellite style without the OSM overlay', async ({ page, serverUrl }) => {
