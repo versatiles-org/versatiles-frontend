@@ -49,7 +49,7 @@ In all containers, files with the same content as an earlier file are stored as 
 
 ```bash
 curl -L "https://github.com/versatiles-org/versatiles-frontend/releases/latest/download/frontend-dev.br.tar.gz" -o ./frontend-dev.br.tar.gz
-versatiles serve -s ./frontend-dev.br.tar.gz "osm.versatiles"
+versatiles serve -s ./frontend-dev.br.tar.gz "osm-vector.versatiles"
 ```
 
 ## Developer Guide
@@ -74,7 +74,7 @@ Features:
 - You can also use a local tile server from a different local port by running:
 
 ```sh
-versatiles serve -p 8081 osm.versatiles overlay.versatiles
+versatiles serve -p 8081 osm-vector.versatiles overlay.versatiles
 # then run this in another shell
 npm run dev -- -l 8081 frontend-dev
 ```
