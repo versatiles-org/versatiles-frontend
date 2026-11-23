@@ -29,13 +29,18 @@ export class Frontend {
 
 	public readonly ignoreFilter: (pathname: string) => boolean;
 
+	/** Files made for this frontend, such as `version.json`. They win over the file databases'. */
+	public readonly extraFiles: File[];
+
 	/**
 	 * @param fileDBs - The file databases the frontend takes its files from.
 	 * @param config - Which of them it uses, and how it filters and transforms their files.
+	 * @param extraFiles - Files made for this frontend, neither filtered nor transformed.
 	 */
-	public constructor(fileDBs: FileDBs, config: FrontendConfig) {
+	public constructor(fileDBs: FileDBs, config: FrontendConfig, extraFiles: File[] = []) {
 		this.fileDBs = fileDBs;
 		this.config = config;
+		this.extraFiles = extraFiles;
 
 		this.ignoreFilter = this.buildFilter(config);
 	}
@@ -61,6 +66,10 @@ export class Frontend {
 		// Dedupe by name, first fileDB wins — matching getFile()'s first-match lookup, so
 		// overlapping filenames aren't double-counted in the overview or double-emitted in the tar.
 		const seen = new Set<string>();
+		for (const file of this.extraFiles) {
+			seen.add(file.name);
+			yield file;
+		}
 		for (const fileDBId of this.config.fileDBs) {
 			const fileDB = this.fileDBs.get(fileDBId);
 			for (const file of fileDB.iterate()) {
@@ -79,6 +88,8 @@ export class Frontend {
 
 	public getFile(path: string): Buffer | null {
 		if (!path) return null; // do not ask for empty paths
+		const extraFile = this.extraFiles.find((file) => file.name === path);
+		if (extraFile) return extraFile.bufferRaw;
 		if (!this.ignoreFilter(path)) return null;
 		for (const fileDBId of this.config.fileDBs) {
 			const fileDB = this.fileDBs.get(fileDBId);

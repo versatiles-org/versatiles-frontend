@@ -1,6 +1,6 @@
 import { vi, describe, it, expect } from 'vitest';
 import type { FrontendConfig } from './frontend';
-import { FileDB } from '../sources';
+import { File, FileDB } from '../sources';
 
 // Mock filedbs module. Declared through vi.hoisted: the sources barrel imported above loads
 // file-dbs, and with it the hoisted factory below, before the rest of this file runs.
@@ -199,5 +199,26 @@ describe('Frontend class', () => {
 		const shared = files.find((f) => f.name === 'shared.txt');
 		expect(shared?.bufferRaw).toEqual(Buffer.from('from-all'));
 		expect(frontend.getFile('shared.txt')).toEqual(Buffer.from('from-all'));
+	});
+
+	it('puts its extra files first, over the files of its fileDBs, and does not filter them', () => {
+		const dbs = new FileDBs({ all: {} });
+		dbs.get('all').setFileFromBuffer('version.json', Buffer.from('from-all'));
+		dbs.get('all').setFileFromBuffer('index.html', Buffer.from('page'));
+
+		const config: FrontendConfig = {
+			name: 'extra',
+			description: 'Extra files frontend.',
+			fileDBs: ['all'],
+			ignore: ['*.json'],
+		};
+
+		const frontend = new Frontend(dbs, config, [new File('version.json', Buffer.from('made'))]);
+		const files = [...frontend.iterate()];
+		expect(files.map((f) => [f.name, f.bufferRaw.toString()])).toStrictEqual([
+			['version.json', 'made'],
+			['index.html', 'page'],
+		]);
+		expect(frontend.getFile('version.json')).toEqual(Buffer.from('made'));
 	});
 });

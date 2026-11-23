@@ -47,6 +47,30 @@ export async function listTarFiles(filename: string): Promise<FileEntry[]> {
 	return files.sort((a, b) => a.name.localeCompare(b.name));
 }
 
+/**
+ * Reads the content of one entry of a .tar.gz or .tar.zst file in the release folder, or null if
+ * there is no such entry.
+ */
+export async function readTarFile(filename: string, name: string): Promise<Buffer | null> {
+	let content: Buffer | null = null;
+	await pipeline(
+		createReadStream(resolve(releaseDir, filename)),
+		filename.endsWith('.zst') ? createZstdDecompress() : createGunzip(),
+		tar.t({
+			onReadEntry: (entry) => {
+				if (entry.path !== name) {
+					entry.resume();
+					return;
+				}
+				const chunks: Buffer[] = [];
+				entry.on('data', (chunk: Buffer) => chunks.push(chunk));
+				entry.on('end', () => (content = Buffer.concat(chunks)));
+			},
+		})
+	);
+	return content;
+}
+
 interface Bundle {
 	name: string;
 	files: FileEntry[];

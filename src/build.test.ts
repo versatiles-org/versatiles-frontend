@@ -1,4 +1,5 @@
 import { vi, describe, it, expect, beforeEach } from 'vitest';
+import { readFileSync } from 'fs';
 import type { ProgressLabel as ProgressLabelType, Progress as ProgressType } from './async-progress/progress';
 
 // Mock progress module
@@ -179,9 +180,10 @@ vi.mock('./frontend/frontend', async (originalImport) => {
 	const OriginalFrontend = originalModule.Frontend;
 	type FileDBs = ConstructorParameters<typeof OriginalFrontend>[0];
 	type FrontendConfig = ConstructorParameters<typeof OriginalFrontend>[1];
+	type ExtraFiles = ConstructorParameters<typeof OriginalFrontend>[2];
 
-	const Frontend = vi.fn(function (fileDBs: FileDBs, config: FrontendConfig) {
-		return new OriginalFrontend(fileDBs, config);
+	const Frontend = vi.fn(function (fileDBs: FileDBs, config: FrontendConfig, extraFiles: ExtraFiles) {
+		return new OriginalFrontend(fileDBs, config, extraFiles);
 	});
 
 	return {
@@ -230,6 +232,16 @@ describe('Build Process', () => {
 		const names = vi.mocked(Frontend).mock.calls.map((call) => call[1].name);
 		for (const save of [tarball.saveAsTarGz, tarball.saveAsBrTarGz, tarball.saveAsTarZst]) {
 			expect(vi.mocked(save).mock.calls.map(([frontend]) => frontend.config.name)).toStrictEqual(names);
+		}
+
+		// Every frontend gets a version.json with the version of package.json.
+		const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {
+			version: string;
+		};
+		for (const [, config, extraFiles] of vi.mocked(Frontend).mock.calls) {
+			expect(extraFiles?.map((file) => file.name)).toStrictEqual(['version.json']);
+			const info = JSON.parse(extraFiles![0].bufferRaw.toString()) as Record<string, unknown>;
+			expect(info).toMatchObject({ name: 'VersaTiles Frontend', frontend: config.name, version });
 		}
 
 		// The release notes list the sources in the order of the configuration.

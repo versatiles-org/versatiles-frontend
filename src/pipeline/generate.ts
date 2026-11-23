@@ -1,6 +1,7 @@
 import type { FileDBs } from '../sources';
 import { Frontend, type FrontendConfig } from '../frontend/frontend';
 import { saveAsBrTarGz, saveAsTarGz, saveAsTarZst } from '../frontend/tarball';
+import { versionFile, type BuildInfo } from '../frontend/version-file';
 import { PromiseFunction, progress, type ProgressLabel } from '../async-progress';
 import { generateOverview } from './overview';
 import type { ReleaseNotes } from './release-notes';
@@ -14,13 +15,15 @@ import type { ReleaseNotes } from './release-notes';
  * @param frontendConfigs - The frontends to generate.
  * @param dstFolder - The destination folder where the generated frontend bundles will be saved.
  * @param notes - The release notes, which get the list of frontends and the asset overview.
+ * @param build - What the build is made from, for the `version.json` of every frontend.
  * @returns A PromiseFunction instance that encapsulates the asynchronous operations of generating all frontends.
  */
 export function generateFrontends(
 	fileDBs: FileDBs,
 	frontendConfigs: FrontendConfig[],
 	dstFolder: string,
-	notes: ReleaseNotes
+	notes: ReleaseNotes,
+	build: BuildInfo
 ): PromiseFunction {
 	let s: ProgressLabel;
 	let parallel = PromiseFunction.parallel();
@@ -30,7 +33,7 @@ export function generateFrontends(
 		async () => {
 			s = progress.add('generate frontends');
 			const todos = frontendConfigs.map((config: FrontendConfig): PromiseFunction =>
-				generateFrontend(config, fileDBs, dstFolder, frontends)
+				generateFrontend(config, fileDBs, dstFolder, frontends, build)
 			);
 			parallel = PromiseFunction.parallel(...todos);
 			await parallel.init();
@@ -51,7 +54,8 @@ function generateFrontend(
 	config: FrontendConfig,
 	fileDBs: FileDBs,
 	dstFolder: string,
-	frontends: Frontend[]
+	frontends: Frontend[],
+	build: BuildInfo
 ): PromiseFunction {
 	const { name } = config;
 	let s: ProgressLabel, sBr: ProgressLabel, sGz: ProgressLabel, sZst: ProgressLabel;
@@ -71,7 +75,7 @@ function generateFrontend(
 			sGz.start();
 			sZst.start();
 			// Create a new Frontend instance and generate the compressed tarballs.
-			const frontend = new Frontend(fileDBs, config);
+			const frontend = new Frontend(fileDBs, config, [versionFile(config, fileDBs, build)]);
 			frontends.push(frontend);
 			await Promise.all([
 				(async () => {

@@ -33,10 +33,17 @@ describe('generateFrontends', () => {
 		const notes = new ReleaseNotes();
 		const append = vi.spyOn(notes, 'append');
 
-		await PromiseFunction.run(generateFrontends(new FileDBs(), configs, '/tmp/dst', notes));
+		const build = { version: '1.2.3', commit: 'abc', built: '2026-01-01T00:00:00.000Z' };
+
+		await PromiseFunction.run(generateFrontends(new FileDBs(), configs, '/tmp/dst', notes, build));
 
 		const frontends = vi.mocked(Frontend).mock.instances;
 		expect(vi.mocked(Frontend).mock.calls.map((call) => call[1].name)).toStrictEqual(['first', 'second']);
+		// Each frontend gets a version.json of its own.
+		const versionFiles = vi.mocked(Frontend).mock.calls.map(([, , extraFiles]) => extraFiles!.map((file) => file.name));
+		expect(versionFiles).toStrictEqual([['version.json'], ['version.json']]);
+		const second = JSON.parse(vi.mocked(Frontend).mock.calls[1][2]![0].bufferRaw.toString()) as Record<string, unknown>;
+		expect(second).toMatchObject({ frontend: 'second', ...build });
 		for (const save of [tarball.saveAsTarGz, tarball.saveAsBrTarGz, tarball.saveAsTarZst]) {
 			expect(vi.mocked(save).mock.calls).toStrictEqual(frontends.map((frontend) => [frontend, '/tmp/dst']));
 		}

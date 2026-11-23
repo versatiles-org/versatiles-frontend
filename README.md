@@ -24,6 +24,8 @@ See the [latest release notes](https://github.com/versatiles-org/versatiles-fron
 
 You can [download the packaged frontends as the latest release](https://github.com/versatiles-org/versatiles-frontend/releases/latest/). Packages ending with `*.tar.gz` contain the original web frontend files. Packages ending with `*.br.tar.gz` contain the web frontend files pre-compressed with Brotli for faster serving. Packages ending with `*.tar.zst` contain the original files in a much smaller Zstandard-compressed container. All packages store duplicate files as tar hardlinks, which versatiles-rs serves from version 4.14.0 on.
 
+Every package has a `version.json` at its root, so a running server answers at `/version.json`. It names the frontend, its version, the commit and time it was built from, and the version of each component it contains.
+
 ## Improve the frontends
 
 ### Clone and Build

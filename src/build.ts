@@ -6,6 +6,7 @@ import { PromiseFunction, progress } from './async-progress';
 import { generateFrontends, loadSources, precompress, ReleaseNotes } from './pipeline';
 import { FileDBs } from './sources';
 import { frontendConfigs, sourceConfigs } from './config';
+import { getCommit, type BuildInfo } from './frontend/version-file';
 
 //progress.disableAnsi();
 
@@ -16,6 +17,11 @@ const dstFolder = resolve(projectFolder, 'release');
 const packageJson = JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')) as { version: string };
 const notes = new ReleaseNotes();
 notes.setVersion(String(packageJson.version));
+const build: BuildInfo = {
+	version: String(packageJson.version),
+	commit: getCommit(projectFolder),
+	built: new Date().toISOString(),
+};
 
 // Set the header for the progress display to indicate the build process is starting.
 progress.setHeader('Building Release');
@@ -30,7 +36,7 @@ try {
 		PromiseFunction.sequential(
 			loadSources(fileDBs, sourceConfigs, resolve(projectFolder, 'static')),
 			precompress(fileDBs),
-			generateFrontends(fileDBs, frontendConfigs, dstFolder, notes)
+			generateFrontends(fileDBs, frontendConfigs, dstFolder, notes, build)
 		)
 	);
 

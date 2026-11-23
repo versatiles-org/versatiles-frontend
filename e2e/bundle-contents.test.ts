@@ -1,6 +1,7 @@
 import { describe, it, expect, afterAll } from 'vitest';
-import { Bundles, listTarFiles } from './bundles';
-import { frontendConfigs } from '../src/config';
+import { readFileSync } from 'fs';
+import { Bundles, listTarFiles, readTarFile } from './bundles';
+import { frontendConfigs, sourceConfigs } from '../src/config';
 
 function expectMinSizes(actual: Record<string, number> | number, expected: Record<string, number>) {
 	for (const [bundle, min] of Object.entries(expected)) {
@@ -232,9 +233,36 @@ describe('Bundle contents', () => {
 		});
 	});
 
+	it('contains version.json', () => {
+		expect.soft(bundles.withPrefix('').file('version.json')).toBeTruthy();
+	});
+
 	afterAll(() => {
 		bundles.expectEmpty();
 	});
+});
+
+describe('version.json', () => {
+	const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {
+		version: string;
+	};
+
+	for (const config of frontendConfigs) {
+		it(`names the version, the commit and the components of ${config.name}`, async () => {
+			const content = await readTarFile(config.name + '.tar.gz', 'version.json');
+			const info = JSON.parse(String(content)) as Record<string, unknown>;
+
+			// The sources of the bundle, each once, in the order of its configuration.
+			const sources = config.fileDBs.flatMap((id) => {
+				const source = sourceConfigs[id];
+				return 'source' in source && source.source ? [source.source.name] : [];
+			});
+			expect(info).toMatchObject({ name: 'VersaTiles Frontend', frontend: config.name, version });
+			expect(info.commit).toMatch(/^[0-9a-f]{40}$/);
+			expect(Date.parse(String(info.built))).not.toBeNaN();
+			expect(Object.keys(info.components as object)).toStrictEqual([...new Set(sources)]);
+		});
+	}
 });
 
 describe('brotli bundles match regular bundles', () => {
