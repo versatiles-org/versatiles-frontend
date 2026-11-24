@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.20.0] - 2026-11-24
+
+### Features
+
+- serve every library also from a folder named with its version, for long caching (closes #97) ([e07d327](https://github.com/versatiles-org/versatiles-frontend/commit/e07d327e4449761311d14d12ffebefa45c20a915))
+
 ## [3.19.0] - 2026-11-23
 
 ### Features
