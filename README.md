@@ -54,6 +54,20 @@ curl -L "https://github.com/versatiles-org/versatiles-frontend/releases/latest/d
 versatiles serve -s ./frontend-dev.br.tar.gz "osm-vector.versatiles"
 ```
 
+### Caching
+
+Every library under `assets/lib/` is also in a folder named with its version, such as `assets/lib/maplibre-gl@6.0.0/`, and the HTML of the frontends loads it from there. A library from npm or GitHub carries its own version; the ones in this repository carry the frontend's. Such a path always stands for the same file, so the server can let browsers keep it for a year. With versatiles-rs 5.15 or later, add `immutable` to the frontend's entry in the configuration file:
+
+```yaml
+static:
+  - src: ./frontend-dev.br.tar.gz
+    immutable: ['assets/lib/*@*/**']
+```
+
+Older versions of versatiles-rs refuse the configuration file with this field, so add it only after updating. Every other file is sent with `no-cache` from versatiles-rs 5.14 on: browsers ask each time whether it is still current.
+
+The versioned folders change with every release, and the previous ones are gone from a server that updated. A page elsewhere that embeds a library from a tile server should keep using the unversioned path, such as `/assets/lib/maplibre-gl/maplibre-gl.js`.
+
 ## Developer Guide
 
 ### Run in Developer Mode

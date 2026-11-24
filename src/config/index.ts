@@ -52,6 +52,11 @@ export const sourceConfigs = {
 	// MapLibre GL JS 6 is ESM-only and ships no UMD build, so we bundle it into a classic
 	// script exposing the `maplibregl` global. That keeps the plain `<script src>` tags in the
 	// frontends working, and the UMD plugins below still find the global they expect.
+	//
+	// The bundle is the only library whose bytes are made here. Its versioned folder is named
+	// after maplibre's version (assets/lib/maplibre-gl@6.0.0/), and servers may let browsers keep
+	// it for a year. A change below that changes how the bundle behaves therefore reaches
+	// browsers only with maplibre's next version: until then they keep the old bundle.
 	maplibre: npmSource('maplibre-gl', {
 		bundle: {
 			entry: 'dist/maplibre-gl.mjs',

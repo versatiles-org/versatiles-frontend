@@ -27,6 +27,17 @@ export class File {
 	}
 
 	/**
+	 * The same content under another name, sharing the brotli result if there is one.
+	 *
+	 * @param name - The name of the copy.
+	 */
+	public renamed(name: string): File {
+		const copy = new File(name, this.bufferRaw);
+		copy.bufferBr = this.bufferBr;
+		return copy;
+	}
+
+	/**
 	 * Compresses the raw buffer using Brotli algorithm and caches the result.
 	 *
 	 * Keyed on the content alone, never on the name: brotli output is a pure function of its

@@ -12,6 +12,8 @@ export interface ServeOptions {
 	proxy?: ProxyRule[];
 	/** Called for every port of the landing page that turned out to be taken. */
 	onBusy?: (port: number) => void;
+	/** The frontend's version (package.json), for the versioned library folders, as in the bundles. */
+	version?: string;
 }
 
 export interface Serving {
@@ -37,7 +39,7 @@ export async function serveFrontends(
 	const servers: FrontendServer[] = [];
 	const entries: LandingEntry[] = [];
 	for (const config of configs) {
-		const server = new FrontendServer(new Frontend(fileDBs, config), { proxy: options.proxy });
+		const server = new FrontendServer(new Frontend(fileDBs, config, [], options.version), { proxy: options.proxy });
 		servers.push(server);
 		entries.push({ name: config.name, description: config.description, port: await server.start(0, options.host) });
 	}

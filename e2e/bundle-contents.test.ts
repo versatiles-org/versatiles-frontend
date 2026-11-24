@@ -12,6 +12,37 @@ function expectMinSizes(actual: Record<string, number> | number, expected: Recor
 
 const BUNDLE_NAMES = frontendConfigs.map((c) => c.name);
 
+const packageVersion = (
+	JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as { version: string }
+).version;
+
+/** Whether a path is in a versioned library folder, such as `assets/lib/maplibre-gl@6.0.0/`. */
+function isVersioned(path: string): boolean {
+	return /^assets\/lib\/[^/@]+@[^/]+\//.test(path);
+}
+
+/**
+ * Whether a path matches a pattern of versatiles' `immutable` setting: `*` matches within one
+ * segment, `**` as a whole segment any number of segments, none included.
+ */
+function matchesPattern(pattern: string, path: string): boolean {
+	const match = (p: string[], s: string[]): boolean => {
+		if (p.length === 0) return s.length === 0;
+		if (p[0] === '**') return s.some((_, i) => match(p.slice(1), s.slice(i))) || match(p.slice(1), []);
+		if (s.length === 0) return false;
+		const segment = new RegExp(
+			'^' +
+				p[0]
+					.split('*')
+					.map((t) => t.replace(/[.+?^${}()|[\]\\]/g, '\\$&'))
+					.join('[^/]*') +
+				'$'
+		);
+		return segment.test(s[0]) && match(p.slice(1), s.slice(1));
+	};
+	return match(pattern.split('/'), path.split('/'));
+}
+
 const bundles = new Bundles(
 	await Promise.all(
 		BUNDLE_NAMES.map(async (name) => ({
@@ -170,6 +201,41 @@ describe('Bundle contents', () => {
 			expect.soft(path.rest()).toStrictEqual({});
 		});
 
+		it('contains every library also in its versioned folder, as the same file', () => {
+			// The libraries of this repository carry the frontend's version, the others their own.
+			const OWN_LIBRARIES = ['versatiles-brand', 'versatiles-geocoder', 'versatiles-inspect'];
+			for (const bundle of bundles.bundles) {
+				const libFiles = bundle.files.filter((f) => f.name.startsWith('assets/lib/'));
+				const unversioned = new Map(libFiles.filter((f) => !isVersioned(f.name)).map((f) => [f.name, f]));
+				const versioned = libFiles.filter((f) => isVersioned(f.name));
+				const counterparts = new Set<string>();
+				for (const file of versioned) {
+					const [, name, version, rest] = file.name.match(/^assets\/lib\/([^/@]+)@([^/]+)\/(.+)$/) ?? [];
+					const original = unversioned.get(`assets/lib/${name}/${rest}`);
+					expect.soft(original, `${bundle.name}: ${file.name} has no unversioned file`).toBeDefined();
+					if (!original) continue;
+					counterparts.add(original.name);
+					// The same content: the tarball links one to the other, unless both are empty (an empty
+					// file takes no space, so it is never linked).
+					const linked =
+						(file.size === 0 && original.size === 0) ||
+						file.linkTo === original.name ||
+						original.linkTo === file.name ||
+						(file.linkTo != null && file.linkTo === original.linkTo);
+					expect.soft(linked, `${bundle.name}: ${file.name} is not a link to ${original.name}`).toBe(true);
+					if (OWN_LIBRARIES.includes(name)) {
+						expect.soft(version, `${bundle.name}: version of ${name}`).toBe(packageVersion);
+					} else {
+						expect.soft(version, `${bundle.name}: version of ${name}`).toMatch(/^\d+\.\d+\.\d+/);
+					}
+				}
+				const missing = [...unversioned.keys()].filter((name) => !counterparts.has(name));
+				expect.soft(missing, `${bundle.name}: library files without a versioned copy`).toStrictEqual([]);
+			}
+			// Claims the versioned copies, checked above.
+			bundles.withPrefix('assets/lib/').count(/^[^/]+@[^/]+\//);
+		});
+
 		afterAll(() => {
 			expect(bundles.withPrefix('assets/lib/').rest()).toStrictEqual({}); // no other files in lib/
 		});
@@ -242,10 +308,42 @@ describe('Bundle contents', () => {
 	});
 });
 
+describe('caching of the versioned library folders', () => {
+	// The pattern the README tells servers to set, e.g. `immutable: ['assets/lib/*@*/**']`.
+	const readme = readFileSync(new URL('../README.md', import.meta.url), 'utf8');
+	const pattern = readme.match(/^\s+immutable: \['([^']+)'\]$/m)?.[1];
+
+	it('is documented in the README', () => {
+		expect(pattern).toBe('assets/lib/*@*/**');
+	});
+
+	for (const bundle of bundles.bundles) {
+		it(`matches exactly the versioned library files of ${bundle.name}`, () => {
+			const matched = bundle.files.filter((f) => matchesPattern(pattern ?? '', f.name)).map((f) => f.name);
+			const versioned = bundle.files.filter((f) => isVersioned(f.name)).map((f) => f.name);
+			expect(matched).toStrictEqual(versioned);
+		});
+	}
+
+	for (const config of frontendConfigs) {
+		for (const page of ['index.html', 'preview.html']) {
+			it(`loads only versioned libraries that exist from ${page} of ${config.name}`, async () => {
+				const bundle = bundles.bundles.find((b) => b.name === config.name);
+				if (!bundle?.files.some((f) => f.name === page)) return;
+				const html = String(await readTarFile(config.name + '.tar.gz', page));
+				const names = new Set(bundle.files.map((f) => f.name));
+				const references = [...html.matchAll(/\/(assets\/lib\/[^"'\s)]+)/g)].map((m) => m[1]);
+				for (const path of references) {
+					expect.soft(isVersioned(path), `${config.name}/${page} loads unversioned ${path}`).toBe(true);
+					expect.soft(names.has(path), `${config.name}/${page} loads missing ${path}`).toBe(true);
+				}
+			});
+		}
+	}
+});
+
 describe('version.json', () => {
-	const { version } = JSON.parse(readFileSync(new URL('../package.json', import.meta.url), 'utf8')) as {
-		version: string;
-	};
+	const version = packageVersion;
 
 	for (const config of frontendConfigs) {
 		it(`names the version, the commit and the components of ${config.name}`, async () => {
@@ -295,14 +393,17 @@ describe('zstd bundles match regular bundles', () => {
 	}
 });
 
-describe('bundles use hardlinks for duplicated glyph ranges', () => {
+describe('bundles use hardlinks for duplicated glyph ranges and versioned libraries', () => {
 	for (const ext of ['.tar.gz', '.br.tar.gz', '.tar.zst']) {
 		it(`frontend-min${ext}`, async () => {
-			// The italic Noto Sans faces share many ranges with the upright faces.
+			// The italic Noto Sans faces share many ranges with the upright faces, and every library
+			// file is also in its versioned folder.
 			const files = await listTarFiles(`frontend-min${ext}`);
 			const links = files.filter((f) => f.linkTo != null);
-			expect(links.length).toBeGreaterThan(0);
-			expect(links.every((f) => f.name.startsWith('assets/glyphs/'))).toBe(true);
+			expect(links.some((f) => f.name.startsWith('assets/glyphs/'))).toBe(true);
+			expect(links.some((f) => isVersioned(f.name))).toBe(true);
+			const others = links.filter((f) => !f.name.startsWith('assets/glyphs/') && !isVersioned(f.name));
+			expect(others.map((f) => f.name)).toStrictEqual([]);
 		});
 	}
 });

@@ -75,7 +75,7 @@ function generateFrontend(
 			sGz.start();
 			sZst.start();
 			// Create a new Frontend instance and generate the compressed tarballs.
-			const frontend = new Frontend(fileDBs, config, [versionFile(config, fileDBs, build)]);
+			const frontend = new Frontend(fileDBs, config, [versionFile(config, fileDBs, build)], build.version);
 			frontends.push(frontend);
 			await Promise.all([
 				(async () => {

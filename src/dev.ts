@@ -3,6 +3,7 @@ import { frontendConfigs, sourceConfigs } from './config';
 import { serveFrontends } from './server/serve';
 import arg from 'arg';
 import { resolve } from 'path';
+import { readFileSync } from 'fs';
 import { FileDBs } from './sources';
 import { loadSources } from './pipeline';
 
@@ -68,6 +69,7 @@ const { landingPort, entries } = await serveFrontends(fileDBs, configs, {
 		},
 	],
 	onBusy: (busy) => console.log(`Port ${busy} is already in use, trying the next one.`),
+	version: (JSON.parse(readFileSync(resolve(projectFolder, 'package.json'), 'utf8')) as { version: string }).version,
 });
 
 const width = Math.max(...entries.map((entry) => entry.name.length));
