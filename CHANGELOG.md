@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Features
 
 - serve every library also from a folder named with its version, for long caching (closes #97) ([e07d327](https://github.com/versatiles-org/versatiles-frontend/commit/e07d327e4449761311d14d12ffebefa45c20a915))
+  - With versatiles-rs 5.15 or later, a server can let browsers keep these folders for a year: add `immutable: ['assets/lib/*@*/**']` to the frontend's `static` entry, see "Caching" in the README. The versioned folders change with every release, so pages elsewhere should keep loading the unversioned paths.
 
 ## [3.19.0] - 2026-11-23
 
