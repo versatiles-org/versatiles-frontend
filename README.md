@@ -64,7 +64,13 @@ static:
     immutable: ['assets/lib/*@*/**']
 ```
 
-Older versions of versatiles-rs refuse the configuration file with this field, so add it only after updating. Every other file is sent with `no-cache` from versatiles-rs 5.14 on: browsers ask each time whether it is still current.
+On the command line, versatiles-rs 5.16 or later takes the same pattern with `--immutable`, as the [`versatiles-frontend` Docker image](https://hub.docker.com/r/versatiles/versatiles-frontend) does:
+
+```bash
+versatiles serve --static frontend-dev.br.tar.gz --immutable 'assets/lib/*@*/**' osm-vector.versatiles
+```
+
+Older versions of versatiles-rs refuse the configuration file with this field, and the command line with this option, so add it only after updating. Every other file is sent with `no-cache` from versatiles-rs 5.14 on: browsers ask each time whether it is still current.
 
 The versioned folders change with every release, and the previous ones are gone from a server that updated. A page elsewhere that embeds a library from a tile server should keep using the unversioned path, such as `/assets/lib/maplibre-gl/maplibre-gl.js`.
 
