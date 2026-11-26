@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.20.1] - 2026-11-26
+
+### Documentation
+
+- add how servers cache the versioned library folders to the 3.20.0 changelog ([7fa859e](https://github.com/versatiles-org/versatiles-frontend/commit/7fa859e9ae3a470f133db3ac0dc62189343325fb))
+- **readme:** show --immutable on the command line ([f5f70d7](https://github.com/versatiles-org/versatiles-frontend/commit/f5f70d7677c59bd80e76461de8da508a4952901f))
+
+### Chores
+
+- update dependencies, @versatiles/style to 9.1.3 ([7534fde](https://github.com/versatiles-org/versatiles-frontend/commit/7534fde054e51826916b2063f6185f6fc278fbf7))
+
 ## [3.20.0] - 2026-11-24
 
 ### Features
