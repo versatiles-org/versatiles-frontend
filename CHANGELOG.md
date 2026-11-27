@@ -5,6 +5,12 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [3.20.2] - 2026-11-27
+
+### Chores
+
+- update dependencies, maplibre-gl to 6.20.0 ([1f4c491](https://github.com/versatiles-org/versatiles-frontend/commit/1f4c491c0a9e8976e87f6fce21658778faceae19))
+
 ## [3.20.1] - 2026-11-26
 
 ### Documentation
